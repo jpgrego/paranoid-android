@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">ThesisApp</string>
+
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example">Example action</string>
+
+    <string name="action_settings">Settings</string>
+
+
+    <!-- registered cell strings -->
+    <string name="current_cell_id">Cell ID</string>
+    <string name="current_cell_lac">Local Area Code</string>
+    <string name="current_cell_mcc">Mobile Country Code</string>
+    <string name="current_cell_mnc">Mobile National Code</string>
+    <string name="current_cell_psc">PSC</string>
+</resources>
