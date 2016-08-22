@@ -1,37 +1,26 @@
 package com.jpgrego.thesisapp.thesisapp;
 
-import android.os.Handler;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.os.Bundle;
-import android.telephony.NeighboringCellInfo;
-import android.telephony.PhoneStateListener;
+import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.GridView;
-
-import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
-    private static final Handler mRefreshHandler = new Handler();
+public class MainActivity extends AppCompatActivity {
 
-    private RegisteredCellFragment registeredCellFragment;
     private TelephonyManager telephonyManager;
-    private static MyCellInfo registeredCell;
-    private static List<NeighboringCellInfo> neighboringCells;
-    private static String operator;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
+    //private NavigationDrawerFragment mNavigationDrawerFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -40,24 +29,28 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        final ViewPager mViewPager;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        telephonyManager.listen(new BTSInfoListener(this.getBaseContext()),
-                PhoneStateListener.LISTEN_CELL_LOCATION);
+        mTitle = getTitle();
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
+        /*
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
+        */
         //mRefreshHandler.postDelayed(mUpdateCellData, 5000);
     }
 
+    /*
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
@@ -98,6 +91,7 @@ public class MainActivity extends ActionBarActivity
                 break;
         }
     }
+    */
 
     public void restoreActionBar() {
         ActionBar actionBar = getSupportActionBar();
@@ -109,6 +103,7 @@ public class MainActivity extends ActionBarActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        /*
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
@@ -117,6 +112,7 @@ public class MainActivity extends ActionBarActivity
             restoreActionBar();
             return true;
         }
+        */
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -135,29 +131,18 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public static void setRegisteredCell(MyCellInfo registeredCell) {
-        MainActivity.registeredCell = registeredCell;
+    public TelephonyManager getTelephonyManager() {
+        return telephonyManager;
     }
 
-    public static void setNeighboringCells(List<NeighboringCellInfo> neighboringCells) {
-        MainActivity.neighboringCells = neighboringCells;
-    }
-
-    public static String getOperator() {
-        return operator;
-    }
-
-    public static void setOperator(String operatorName) {
-        MainActivity.operator = operatorName;
-    }
-
+    /*
     private Runnable mUpdateCellData = new Runnable() {
         public void run() {
-            registeredCellFragment.setOperatorView(operator);
-            registeredCellFragment.setCurrentCellInfo(registeredCell);
-            //getWindow().getDecorView().findViewById(android.R.id.content).invalidate();
+            registeredCellFragment.setOperatorView(telephonyManager.getNetworkOperatorName());
+            registeredCellFragment.setCurrentCellInfo(phoneStateListener.getCurrentCellInfo());
         }
     };
+    */
 
 /*
     *//**
@@ -200,4 +185,25 @@ public class MainActivity extends ActionBarActivity
         }
     }*/
 
+    private class MyPagerAdapter extends FragmentPagerAdapter {
+
+        public MyPagerAdapter(FragmentManager fragmentManager) {
+            super(fragmentManager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch(position) {
+                case 0:
+                    return new RegisteredCellFragment();
+            }
+
+            return null;
+        }
+
+        @Override
+        public int getCount() {
+            return 1;
+        }
+    }
 }

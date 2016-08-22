@@ -1,117 +1,178 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity$PlaceholderFragment">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="15px">
 
-    <TextView android:id="@+id/section_label" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/root_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/operator_id"
-        android:layout_marginTop="36dp"
-        android:layout_below="@+id/section_label"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="31dp" />
+        android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/current_cell_id"
-        android:id="@+id/current_cell_id"
-        android:layout_marginTop="49dp"
-        android:layout_below="@+id/operator_id"
-        android:layout_alignParentStart="true" />
+        <LinearLayout
+            android:id="@+id/cells_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=""
-        android:id="@+id/current_cell_id_val"
-        android:layout_below="@+id/current_cell_id"
-        android:layout_alignParentEnd="true" />
+            <TextView
+                android:id="@+id/cells_title"
+                style="@style/titleTextViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cells_title" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/current_cell_lac"
-        android:id="@+id/current_cell_lac"
-        android:layout_marginTop="25dp"
-        android:layout_below="@+id/current_cell_id_val"
-        android:layout_toEndOf="@+id/section_label" />
+            <LinearLayout
+                android:id="@+id/cells_table_header_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=""
-        android:id="@+id/current_cell_lac_val"
-        android:layout_below="@+id/current_cell_lac"
-        android:layout_alignEnd="@+id/current_cell_id_val" />
+            </LinearLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/current_cell_mcc"
-        android:id="@+id/current_cell_mcc"
-        android:layout_marginTop="25dp"
-        android:layout_below="@+id/current_cell_lac_val"
-        android:layout_toEndOf="@+id/section_label" />
+            <TableLayout
+                android:id="@+id/cells_table"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:showDividers="beginning|middle">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=""
-        android:id="@+id/current_cell_mcc_val"
-        android:layout_below="@+id/current_cell_mcc"
-        android:layout_alignEnd="@+id/current_cell_lac_val" />
+                <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/current_cell_mnc"
-        android:id="@+id/current_cell_mnc"
-        android:layout_marginTop="25dp"
-        android:layout_below="@+id/current_cell_mcc_val"
-        android:layout_toEndOf="@+id/section_label" />
+                    <TextView
+                        android:id="@+id/generation"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=""
-        android:id="@+id/current_cell_mnc_val"
-        android:layout_below="@+id/current_cell_mnc"
-        android:layout_alignEnd="@+id/current_cell_mcc_val" />
+                    <TextView
+                        android:id="@+id/mcc"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/mcc_string"
+                        android:textStyle="bold" />
 
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
-        <!--android:text="@string/current_cell_psc"-->
-        <!--android:id="@+id/current_cell_psc"-->
-        <!--android:layout_marginTop="25dp"-->
-        <!--android:layout_below="@+id/current_cell_lac_val"-->
-        <!--android:layout_toEndOf="@+id/section_label" />-->
+                    <TextView
+                        android:id="@+id/mnc"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/mnc_string"
+                        android:textStyle="bold" />
 
-    <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textAppearance="?android:attr/textAppearanceMedium"-->
-        <!--android:text=""-->
-        <!--android:id="@+id/current_cell_psc_val"-->
-        <!--android:layout_below="@+id/current_cell_psc"-->
-        <!--android:layout_alignEnd="@+id/current_cell_lac_val" />-->
+                    <TextView
+                        android:id="@+id/cid"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/cid_string"
+                        android:textStyle="bold" />
 
-</RelativeLayout>
+                    <TextView
+                        android:id="@+id/lac"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/lac_string"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/psc"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/psc_string"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/cell_dbm"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/dbm_string"
+                        android:textStyle="bold" />
+
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/wifi_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/wifi_title"
+                style="@style/titleTextViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wifi_title" />
+
+            <TableLayout
+                android:id="@+id/wifi_table"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:showDividers="beginning|middle">
+
+                <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/security"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/ssid"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/ssid_string"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/channel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/channel_string"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/wifi_dbm"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="1"
+                        android:text="@string/dbm_string"
+                        android:textStyle="bold" />
+
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -13,10 +13,16 @@
     <string name="action_settings">Settings</string>
 
 
-    <!-- registered cell strings -->
-    <string name="current_cell_id">Cell ID</string>
-    <string name="current_cell_lac">Local Area Code</string>
-    <string name="current_cell_mcc">Mobile Country Code</string>
-    <string name="current_cell_mnc">Mobile National Code</string>
-    <string name="current_cell_psc">PSC</string>
+    <!-- cell / wifi strings -->
+    <string name="cells_title">Cells</string>
+    <string name="wifi_title">WIFI</string>
+    <string name="mcc_string">MCC</string>
+    <string name="mnc_string">MNC</string>
+    <string name="cid_string">CID</string>
+    <string name="lac_string">LAC</string>
+    <string name="psc_string">PSC</string>
+    <string name="dbm_string">dBm</string>
+    <string name="ssid_string">SSID</string>
+    <string name="channel_string">Ch</string>
+
 </resources>

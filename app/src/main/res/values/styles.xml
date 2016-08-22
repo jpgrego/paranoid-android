@@ -1,8 +1,15 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat">
         <!-- Customize your theme here. -->
+    </style>
+
+    <style name="titleTextViewStyle">
+        <item name="android:paddingTop">16dip</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault</item>
+        <item name="android:textColor">#A85E4F</item>
+        <item name="android:layout_marginBottom">8dip</item>
     </style>
 
 </resources>
