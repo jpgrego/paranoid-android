@@ -1,5 +1,8 @@
-package com.jpgrego.thesisapp.thesisapp;
+package com.jpgrego.thesisapp.thesisapp.activities;
 
+import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -7,15 +10,25 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.CellInfo;
+import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import com.jpgrego.thesisapp.thesisapp.R;
+import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
+import com.jpgrego.thesisapp.thesisapp.utils.CellInfoListener;
+import com.jpgrego.thesisapp.thesisapp.utils.WifiInfoReceiver;
 
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int WIFI_SCAN_DELAY = 3000;
+
+    private CellInfoListener cellInfoListener;
+    private WifiInfoReceiver wifiInfoReceiver;
     private TelephonyManager telephonyManager;
+    private WifiManager wifiManager;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -30,14 +43,30 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final ViewPager mViewPager;
+        final Handler wifiScanHandler;
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        cellInfoListener = new CellInfoListener(telephonyManager);
+        wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
+        wifiScanHandler = new Handler();
         mTitle = getTitle();
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
+
+        telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        registerReceiver(wifiInfoReceiver,
+                new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        new Runnable() {
+            @Override
+            public void run() {
+                wifiManager.startScan();
+                wifiScanHandler.postDelayed(this, WIFI_SCAN_DELAY);
+            }
+        }.run();
         /*
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -48,6 +77,13 @@ public class MainActivity extends AppCompatActivity {
                 (DrawerLayout) findViewById(R.id.drawer_layout));
         */
         //mRefreshHandler.postDelayed(mUpdateCellData, 5000);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_NONE);
+        unregisterReceiver(wifiInfoReceiver);
     }
 
     /*
@@ -63,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
         switch(position) {
             default:
             case 0:
-                fragment = new RegisteredCellFragment();
-                registeredCellFragment = (RegisteredCellFragment) fragment;
+                fragment = new WifiAndCellFragment();
+                registeredCellFragment = (WifiAndCellFragment) fragment;
                 mRefreshHandler.postDelayed(mUpdateCellData, 1000);
                 break;
             case 1:
@@ -135,14 +171,14 @@ public class MainActivity extends AppCompatActivity {
         return telephonyManager;
     }
 
-    /*
-    private Runnable mUpdateCellData = new Runnable() {
-        public void run() {
-            registeredCellFragment.setOperatorView(telephonyManager.getNetworkOperatorName());
-            registeredCellFragment.setCurrentCellInfo(phoneStateListener.getCurrentCellInfo());
-        }
-    };
-    */
+    public WifiManager getWifiManager() { return wifiManager; }
+
+    public CellInfoListener getCellInfoListener() { return cellInfoListener; }
+
+    public WifiInfoReceiver getWifiInfoReceiver() {
+        return wifiInfoReceiver;
+    }
+
 
 /*
     *//**
@@ -195,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch(position) {
                 case 0:
-                    return new RegisteredCellFragment();
+                    return new WifiAndCellFragment();
             }
 
             return null;

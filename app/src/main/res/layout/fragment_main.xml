@@ -1,7 +1,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="15px">
+    android:padding="15dp">
 
     <LinearLayout
         android:id="@+id/root_layout"
@@ -37,74 +37,6 @@
                 android:divider="?android:attr/listDivider"
                 android:showDividers="beginning|middle">
 
-                <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/generation"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:id="@+id/mcc"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/mcc_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/mnc"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/mnc_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/cid"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/cid_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/lac"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/lac_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/psc"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/psc_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/cell_dbm"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/dbm_string"
-                        android:textStyle="bold" />
-
-                </TableRow>
-
             </TableLayout>
 
         </LinearLayout>
@@ -128,47 +60,6 @@
                 android:layout_height="wrap_content"
                 android:divider="?android:attr/listDivider"
                 android:showDividers="beginning|middle">
-
-                <TableRow xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/security"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:id="@+id/ssid"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/ssid_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/channel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/channel_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/wifi_dbm"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="1"
-                        android:text="@string/dbm_string"
-                        android:textStyle="bold" />
-
-                </TableRow>
 
             </TableLayout>
 
