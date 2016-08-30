@@ -80,8 +80,7 @@ public class WifiAndCellFragment extends Fragment {
 
     private void updateCellTable() {
         final TableRow cellTableTitleRow;
-        final Cell registeredCell;
-        final List<Cell> neighbourCells;
+        final List<Cell> cellList;
 
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
@@ -98,38 +97,9 @@ public class WifiAndCellFragment extends Fragment {
         cellsTable.removeAllViews();
         cellsTable.addView(cellTableTitleRow);
 
-        registeredCell = this.mainActivity.getCellInfoListener().getRegisteredCell();
-        neighbourCells = this.mainActivity.getCellInfoListener().getCellList();
+        cellList = this.mainActivity.getCellInfoListener().getCellList();
 
-        addRegisteredCellToTable(registeredCell);
-        addCellsToTable(neighbourCells);
-    }
-
-    private void addRegisteredCellToTable(Cell registeredCell) {
-        final TableRow cellTableDataRow;
-        final TextView generation, mcc, mnc, cid, lac, psc, dbm;
-
-
-        cellTableDataRow = (TableRow) View.inflate(getActivity(), R.layout.cell_table_data_row,
-                null);
-        generation = (TextView) cellTableDataRow.findViewById(R.id.generation);
-        mcc = (TextView) cellTableDataRow.findViewById(R.id.mcc);
-        mnc = (TextView) cellTableDataRow.findViewById(R.id.mnc);
-        cid = (TextView) cellTableDataRow.findViewById(R.id.cid);
-        lac = (TextView) cellTableDataRow.findViewById(R.id.lac);
-        psc = (TextView) cellTableDataRow.findViewById(R.id.psc);
-        dbm = (TextView) cellTableDataRow.findViewById(R.id.cell_dbm);
-        generation.setText(registeredCell.generation);
-        mcc.setText(this.mainActivity.getCellInfoListener().getMCC());
-        mnc.setText(this.mainActivity.getCellInfoListener().getMNC());
-        cid.setText(String.format(Locale.US, "%d", registeredCell.cid));
-        lac.setText(String.format(Locale.US, "%d", registeredCell.lac));
-        psc.setText(String.format(Locale.US, "%d", registeredCell.psc));
-        dbm.setText(String.format(Locale.US, "%d", registeredCell.dbm));
-
-        cellTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
-        cellsTable.addView(cellTableDataRow, new TableLayout.LayoutParams(
-                TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        addCellsToTable(cellList);
     }
 
     private void addCellsToTable(List<Cell> cellList) {
@@ -147,17 +117,20 @@ public class WifiAndCellFragment extends Fragment {
             psc = (TextView) cellTableDataRow.findViewById(R.id.psc);
             dbm = (TextView) cellTableDataRow.findViewById(R.id.cell_dbm);
             generation.setText(cell.generation);
-            mcc.setText(this.mainActivity.getCellInfoListener().getMCC());
-            mnc.setText(this.mainActivity.getCellInfoListener().getMNC());
+            mcc.setText(String.format(Locale.US, "%d", cell.mcc));
+            mnc.setText(String.format(Locale.US, "%d", cell.mnc));
             cid.setText(String.format(Locale.US, "%d", cell.cid));
             lac.setText(String.format(Locale.US, "%d", cell.lac));
             psc.setText(String.format(Locale.US, "%d", cell.psc));
             dbm.setText(String.format(Locale.US, "%d", cell.dbm));
 
+            if(cell.isRegisteredCell()) {
+                cellTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
+            }
+
             cellsTable.addView(cellTableDataRow, new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
-
     }
 
     private void updateWifiTable() {

@@ -1,6 +1,9 @@
 package com.jpgrego.thesisapp.thesisapp.data;
 
 import android.support.annotation.NonNull;
+import android.telephony.CellIdentityGsm;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
@@ -9,11 +12,33 @@ import android.telephony.gsm.GsmCellLocation;
  * Created by jpgrego on 25-08-2016.
  */
 public class Cell implements Comparable<Cell> {
-    public final int cid, lac, psc, dbm;
+    public final int mcc, mnc, cid, lac, psc, dbm;
     public final String generation;
     private boolean isRegisteredCell = false;
 
-    public Cell(final int networkType, @NonNull final GsmCellLocation cellLocation) {
+    public Cell(final int networkType, @NonNull final CellInfoGsm cellInfoGsm) {
+        final CellIdentityGsm cellIdentityGsm;
+        final CellSignalStrengthGsm cellSignalStrengthGsm;
+
+        cellIdentityGsm = cellInfoGsm.getCellIdentity();
+        cellSignalStrengthGsm = cellInfoGsm.getCellSignalStrength();
+
+        this.mcc = cellIdentityGsm.getMcc();
+        this.mnc = cellIdentityGsm.getMnc();
+        this.cid = cellIdentityGsm.getCid();
+        this.lac = cellIdentityGsm.getLac();
+        //noinspection deprecation
+        this.psc = cellIdentityGsm.getPsc();
+        this.dbm = cellSignalStrengthGsm.getDbm();
+        this.generation = getGenerationFromNetworkType(networkType);
+
+        this.isRegisteredCell = this.isRegisteredCell();
+    }
+
+    public Cell(final int networkType, final int mcc, final int mnc,
+                @NonNull final GsmCellLocation cellLocation) {
+        this.mcc = mcc;
+        this.mnc = mnc;
         this.cid = cellLocation.getCid();
         this.lac = cellLocation.getLac();
         this.psc = cellLocation.getPsc();
@@ -21,7 +46,10 @@ public class Cell implements Comparable<Cell> {
         this.generation = getGenerationFromNetworkType(networkType);
     }
 
-    public Cell(final int networkType, @NonNull final NeighboringCellInfo neighboringCellInfo) {
+    public Cell(final int networkType, final int mcc, final int mnc,
+                @NonNull final NeighboringCellInfo neighboringCellInfo) {
+        this.mcc = mcc;
+        this.mnc = mnc;
         this.cid = neighboringCellInfo.getCid();
         this.lac = neighboringCellInfo.getLac();
         this.psc = neighboringCellInfo.getPsc();
