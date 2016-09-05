@@ -46,7 +46,7 @@ public class WifiAP implements Comparable<WifiAP> {
 
         this.ssid = scanResult.SSID;
         this.bssid = scanResult.BSSID;
-        this.channel = frequencyToChannel(scanResult.frequency);
+        this.channel = WifiUtils.frequencyToChannel(scanResult.frequency);
         this.dbm = scanResult.level;
     }
 
@@ -56,25 +56,6 @@ public class WifiAP implements Comparable<WifiAP> {
 
     public int getVisibilityCounter() {
         return visibilityCounter;
-    }
-
-    /*
-     * Thought out by myself... please excuse me for any mistake. I wanted an alternative to
-     * creating an array or an HashMap, though not sure if this is better in terms of performance!
-     * (jpgrego)
-     */
-    private int frequencyToChannel(int frequency) {
-        if (frequency <= 2484) {                             // 802.11 b/g/n (2.4 GHz)
-            return frequency % 2412 / 5 + 1;
-        } else if (frequency <= 4980) {                      // 802.11 a/h/j/n/ac (5 GHz)
-            return frequency % 4915 / 5 + 183;
-        } else if (frequency <= 5080) {
-            return frequency % 5035 / 5 + 7;
-        } else if (frequency <= 5320) {
-            return frequency % 5170 / 5 + 34;
-        } else {
-            return frequency % 5500 / 5 + 100;
-        }
     }
 
     @Override

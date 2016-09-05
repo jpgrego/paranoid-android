@@ -76,9 +76,7 @@ public class CellUtilsTest_rssiToDbm {
 
     @Test
     public void rssiToDbm() {
-        final int result;
-        result = CellUtils.rssiToDbm(networkType, rssi);
-        Assert.assertEquals(retVal, result);
+        Assert.assertEquals(retVal, CellUtils.rssiToDbm(networkType, rssi));
     }
 
 }

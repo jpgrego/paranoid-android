@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +26,7 @@ public class CellUtilsTest_getGenerationFromNetworkType {
     @Parameter(value = 1)
     public String expResult;
 
-    @Parameterized.Parameters(name = "{index}: getGenerationFromNetworkType({0}) = {1}")
+    @Parameters(name = "{index}: getGenerationFromNetworkType({0}) = {1}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {TelephonyManager.NETWORK_TYPE_CDMA, "2G"},
