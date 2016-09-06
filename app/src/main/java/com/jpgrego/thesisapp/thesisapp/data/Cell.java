@@ -32,7 +32,7 @@ public class Cell implements Comparable<Cell> {
         this.dbm = cellSignalStrengthGsm.getDbm();
         this.generation = CellUtils.getGenerationFromNetworkType(networkType);
 
-        this.isRegisteredCell = this.isRegisteredCell();
+        this.isRegisteredCell = cellInfoGsm.isRegistered();
     }
 
     public Cell(final int networkType, final int mcc, final int mnc,
