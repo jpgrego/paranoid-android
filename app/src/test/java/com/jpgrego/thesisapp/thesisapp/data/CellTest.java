@@ -66,5 +66,8 @@ public class CellTest {
         cell3 = new Cell(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, neighboringCellInfo);
     }
 
+    @Test
+    public void toImplement() {
 
+    }
 }
