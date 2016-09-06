@@ -21,27 +21,32 @@ public class WifiAP implements Comparable<WifiAP> {
     public WifiAP(@NonNull ScanResult scanResult) {
         final Matcher matcher;
 
-        matcher = WIFI_SECURITY_PATTERN.matcher(scanResult.capabilities);
-        if (matcher.find()) {
-            this.securityLabel = matcher.group(2);
+        if(scanResult.capabilities != null) {
+            matcher = WIFI_SECURITY_PATTERN.matcher(scanResult.capabilities);
+            if (matcher.find()) {
+                this.securityLabel = matcher.group(2);
 
-            switch (this.securityLabel) {
-                case "IBSS":
-                    this.wifiSecurityImageResource = R.drawable.wifi_security_adhoc;
-                    break;
+                switch (this.securityLabel) {
+                    case "IBSS":
+                        this.wifiSecurityImageResource = R.drawable.wifi_security_adhoc;
+                        break;
 
-                case "WPA2":
-                case "WPA":
-                case "WEP":
-                    this.wifiSecurityImageResource = R.drawable.wifi_security_wep_wpa;
-                    break;
+                    case "WPA2":
+                    case "WPA":
+                    case "WEP":
+                        this.wifiSecurityImageResource = R.drawable.wifi_security_wep_wpa;
+                        break;
 
-                default:
-                    this.wifiSecurityImageResource = R.drawable.wifi_security_unknown;
+                    default:
+                        this.wifiSecurityImageResource = R.drawable.wifi_security_unknown;
+                }
+            } else {
+                wifiSecurityImageResource = R.drawable.wifi_security_open;
+                this.securityLabel = "-";
             }
         } else {
-            wifiSecurityImageResource = R.drawable.wifi_security_open;
-            this.securityLabel = "-";
+            wifiSecurityImageResource = R.drawable.wifi_security_unknown;
+            this.securityLabel = "?";
         }
 
         this.ssid = scanResult.SSID;
@@ -80,6 +85,6 @@ public class WifiAP implements Comparable<WifiAP> {
 
     @Override
     public int compareTo(@NonNull WifiAP another) {
-        return another.dbm - this.dbm;
+        return this.dbm - another.dbm;
     }
 }

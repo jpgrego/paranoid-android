@@ -61,7 +61,7 @@ public class WifiInfoReceiver extends BroadcastReceiver {
 
         synchronized (wifiAPSet) {
             wifiAPList = new ArrayList<>(wifiAPSet);
-            Collections.sort(wifiAPList);
+            Collections.sort(wifiAPList, Collections.reverseOrder());
             return Collections.unmodifiableList(wifiAPList);
         }
     }
