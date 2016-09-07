@@ -4,6 +4,12 @@ package com.jpgrego.thesisapp.thesisapp.data;
  * Created by jgrego on 05-09-2016.
  */
 public class WifiUtils {
+
+    // enforce noninstantiability
+    private WifiUtils() {
+
+    }
+
     /*
      * Thought out by myself... please excuse me for any mistake. I wanted an alternative to
      * creating an array or an HashMap, though not sure if this is better in terms of performance!

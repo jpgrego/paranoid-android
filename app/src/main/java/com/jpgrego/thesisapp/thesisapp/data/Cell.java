@@ -7,11 +7,15 @@ import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.gsm.GsmCellLocation;
 
-
 /**
  * Created by jpgrego on 25-08-2016.
  */
+
+/*
+ * No real point in implementing equals, since CellID is not always set
+ */
 public class Cell implements Comparable<Cell> {
+
     public final int mcc, mnc, cid, lac, psc, dbm;
     public final String generation;
     private boolean isRegisteredCell = false;

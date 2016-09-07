@@ -7,6 +7,11 @@ import android.telephony.TelephonyManager;
  */
 public class CellUtils {
 
+    // enforce noninstantiability
+    private CellUtils() {
+        throw new AssertionError();
+    }
+
     /*
      * thanks SatStat!
      */
