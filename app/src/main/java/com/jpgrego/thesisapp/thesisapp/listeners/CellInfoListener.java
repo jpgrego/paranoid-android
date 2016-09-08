@@ -82,7 +82,7 @@ public class CellInfoListener extends PhoneStateListener {
         */
     }
 
-    public List<Cell> getCellList() {
+    public List<Cell> getSortedCellList() {
         synchronized (cellList) {
             Collections.sort(cellList);
             return Collections.unmodifiableList(cellList);

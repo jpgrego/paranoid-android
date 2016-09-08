@@ -3,7 +3,11 @@ package com.jpgrego.thesisapp.thesisapp.listeners;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoGsm;
+import android.telephony.CellSignalStrengthGsm;
+import android.telephony.NeighboringCellInfo;
 import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +30,8 @@ public class CellInfoListenerTest {
 
     private CellInfoListener cellInfoListenerTest;
     private Method getAllCellsMethod;
+    private Method getRegisteredCellInfoMethod;
+    private Method getNeighboringCellsInfoMethod;
     private Field cellListField;
 
     @Mock
@@ -37,15 +43,28 @@ public class CellInfoListenerTest {
     @Mock
     private CellIdentityGsm cellIdentityGsmMock;
 
+    @Mock
+    private CellSignalStrengthGsm cellSignalStrengthMock;
+
+    @Mock
+    private GsmCellLocation gsmCellLocationMock;
+
+    @Mock
+    private NeighboringCellInfo neighboringCellInfoMock;
+
     @Before
     public void setUp() throws NoSuchMethodException, NoSuchFieldException {
         Mockito.when(telephonyManager.getNetworkOperator()).thenReturn(TEST_NETWORK_OPERATOR);
 
         cellInfoListenerTest = new CellInfoListener(telephonyManager);
-        getAllCellsMethod = CellInfoListener.class.getDeclaredMethod("getAllCellInfo", null);
+        getAllCellsMethod = CellInfoListener.class.getDeclaredMethod("getAllCellInfo");
+        getRegisteredCellInfoMethod = CellInfoListener.class.getDeclaredMethod("getRegisteredCellInfo");
+        getNeighboringCellsInfoMethod = CellInfoListener.class.getDeclaredMethod("getNeighboringCellsInfo");
         cellListField = CellInfoListener.class.getDeclaredField("cellList");
 
         getAllCellsMethod.setAccessible(true);
+        getRegisteredCellInfoMethod.setAccessible(true);
+        getNeighboringCellsInfoMethod.setAccessible(true);
         cellListField.setAccessible(true);
 
     }
@@ -56,7 +75,7 @@ public class CellInfoListenerTest {
 
         final boolean retVal;
 
-        retVal = (boolean) getAllCellsMethod.invoke(cellInfoListenerTest, null);
+        retVal = (boolean) getAllCellsMethod.invoke(cellInfoListenerTest);
         Assert.assertFalse(retVal);
     }
 
@@ -66,23 +85,54 @@ public class CellInfoListenerTest {
 
         final boolean retVal;
 
-        retVal = (boolean) getAllCellsMethod.invoke(cellInfoListenerTest, null);
+        retVal = (boolean) getAllCellsMethod.invoke(cellInfoListenerTest);
         Assert.assertTrue(retVal);
     }
 
     @Test
-    public void getAllCellInfoAddsMembers() throws IllegalAccessException, InvocationTargetException {
-        final ArrayList<CellInfo> inputList = new ArrayList<>(), retVal;
+    public void getAllCellInfoAddsToList() throws IllegalAccessException, InvocationTargetException {
+        final ArrayList<CellInfo> inputList = new ArrayList<>();
+        final ArrayList retVal;
 
         cellListField.set(cellInfoListenerTest, new ArrayList<>());
         inputList.add(cellInfoGsmMock);
 
         Mockito.when(telephonyManager.getAllCellInfo()).thenReturn(inputList);
         Mockito.when(cellInfoGsmMock.getCellIdentity()).thenReturn(cellIdentityGsmMock);
-        Mockito.when(cellIdentityGsmMock.getMcc()).thenReturn(268);
+        Mockito.when(cellInfoGsmMock.getCellSignalStrength()).thenReturn(cellSignalStrengthMock);
 
-        getAllCellsMethod.invoke(cellInfoListenerTest, null);
-        //retVal = (ArrayList<CellInfo>) cellListField.get(cellInfoListenerTest);
-        //Assert.assertTrue(retVal.size() == 1);
+        getAllCellsMethod.invoke(cellInfoListenerTest);
+        retVal = (ArrayList) cellListField.get(cellInfoListenerTest);
+
+        Assert.assertTrue(retVal.size() == 1);
+    }
+
+    @Test
+    public void getRegisteredCellInfoAddsToList() throws IllegalAccessException, InvocationTargetException {
+        final ArrayList retVal;
+
+        Mockito.when(telephonyManager.getCellLocation()).thenReturn(gsmCellLocationMock);
+
+        getRegisteredCellInfoMethod.invoke(cellInfoListenerTest);
+        retVal = (ArrayList) cellListField.get(cellInfoListenerTest);
+
+        Assert.assertTrue(retVal.size() == 1);
+    }
+
+    @Test
+    public void getNeighboringCellsInfoAddsToList() throws IllegalAccessException, InvocationTargetException {
+        final ArrayList<NeighboringCellInfo> inputList = new ArrayList<>();
+        final ArrayList retVal;
+
+        cellListField.set(cellInfoListenerTest, new ArrayList<>());
+        inputList.add(neighboringCellInfoMock);
+
+        //noinspection deprecation
+        Mockito.when(telephonyManager.getNeighboringCellInfo()).thenReturn(inputList);
+
+        getNeighboringCellsInfoMethod.invoke(cellInfoListenerTest);
+        retVal = (ArrayList) cellListField.get(cellInfoListenerTest);
+
+        Assert.assertTrue(retVal.size() == 1);
     }
 }

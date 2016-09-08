@@ -97,7 +97,7 @@ public class WifiAndCellFragment extends Fragment {
         cellsTable.removeAllViews();
         cellsTable.addView(cellTableTitleRow);
 
-        cellList = this.mainActivity.getCellInfoListener().getCellList();
+        cellList = this.mainActivity.getCellInfoListener().getSortedCellList();
 
         addCellsToTable(cellList);
     }

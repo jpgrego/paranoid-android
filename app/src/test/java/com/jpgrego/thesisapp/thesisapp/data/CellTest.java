@@ -5,7 +5,6 @@ import android.telephony.CellInfoGsm;
 import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.gsm.GsmCellLocation;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
