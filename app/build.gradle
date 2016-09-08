@@ -17,6 +17,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    testOptions {
+        // I have no choice, otherwise I have to either stop using the Log class or stop testing
+        unitTests.returnDefaultValues = true
+    }
 }
 
 dependencies {

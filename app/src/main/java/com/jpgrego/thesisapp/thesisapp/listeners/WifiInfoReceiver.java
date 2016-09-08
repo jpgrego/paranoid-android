@@ -1,4 +1,4 @@
-package com.jpgrego.thesisapp.thesisapp.utils;
+package com.jpgrego.thesisapp.thesisapp.listeners;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

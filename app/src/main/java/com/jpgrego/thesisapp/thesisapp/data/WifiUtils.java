@@ -6,9 +6,7 @@ package com.jpgrego.thesisapp.thesisapp.data;
 public class WifiUtils {
 
     // enforce noninstantiability
-    private WifiUtils() {
-
-    }
+    private WifiUtils() { throw new AssertionError(); }
 
     /*
      * Thought out by myself... please excuse me for any mistake. I wanted an alternative to

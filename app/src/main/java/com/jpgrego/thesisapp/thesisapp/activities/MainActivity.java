@@ -16,8 +16,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
-import com.jpgrego.thesisapp.thesisapp.utils.CellInfoListener;
-import com.jpgrego.thesisapp.thesisapp.utils.WifiInfoReceiver;
+import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
+import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
 
 
 public class MainActivity extends AppCompatActivity {
