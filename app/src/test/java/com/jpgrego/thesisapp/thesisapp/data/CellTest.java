@@ -12,20 +12,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import static com.jpgrego.thesisapp.thesisapp.TestValues.*;
 
 /**
  * Created by jgrego on 06-09-2016.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CellTest {
-
-    private static final int TEST_MCC           = 268;
-    private static final int TEST_MNC           = 1;
-    private static final int TEST_CID           = 215931256;
-    private static final int TEST_LAC           = 51;
-    private static final int TEST_PSC           = 420;
-    private static final int TEST_DBM           = -80;
-    private static final int TEST_NETWORK_TYPE  = 10;
 
     @Mock
     private CellInfoGsm cellInfoGsm;

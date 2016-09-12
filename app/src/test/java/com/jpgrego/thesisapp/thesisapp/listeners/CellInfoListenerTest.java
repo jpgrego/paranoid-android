@@ -7,7 +7,7 @@ import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
-
+import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +19,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
+import static com.jpgrego.thesisapp.thesisapp.TestValues.*;
 
 /**
  * Created by jgrego on 08-09-2016.
@@ -38,13 +40,13 @@ public class CellInfoListenerTest {
     private TelephonyManager telephonyManager;
 
     @Mock
-    private CellInfoGsm cellInfoGsmMock;
+    private CellInfoGsm cellInfoGsmMock1, cellInfoGsmMock2;
 
     @Mock
     private CellIdentityGsm cellIdentityGsmMock;
 
     @Mock
-    private CellSignalStrengthGsm cellSignalStrengthMock;
+    private CellSignalStrengthGsm cellSignalStrengthMock1, cellSignalStrengthMock2;
 
     @Mock
     private GsmCellLocation gsmCellLocationMock;
@@ -95,11 +97,11 @@ public class CellInfoListenerTest {
         final ArrayList retVal;
 
         cellListField.set(cellInfoListenerTest, new ArrayList<>());
-        inputList.add(cellInfoGsmMock);
+        inputList.add(cellInfoGsmMock1);
 
         Mockito.when(telephonyManager.getAllCellInfo()).thenReturn(inputList);
-        Mockito.when(cellInfoGsmMock.getCellIdentity()).thenReturn(cellIdentityGsmMock);
-        Mockito.when(cellInfoGsmMock.getCellSignalStrength()).thenReturn(cellSignalStrengthMock);
+        Mockito.when(cellInfoGsmMock1.getCellIdentity()).thenReturn(cellIdentityGsmMock);
+        Mockito.when(cellInfoGsmMock1.getCellSignalStrength()).thenReturn(cellSignalStrengthMock1);
 
         getAllCellsMethod.invoke(cellInfoListenerTest);
         retVal = (ArrayList) cellListField.get(cellInfoListenerTest);
@@ -134,5 +136,31 @@ public class CellInfoListenerTest {
         retVal = (ArrayList) cellListField.get(cellInfoListenerTest);
 
         Assert.assertTrue(retVal.size() == 1);
+    }
+
+    @Test
+    public void getSortedCellList() throws IllegalAccessException {
+        final ArrayList<Cell> inputList;
+        final List<Cell> retVal;
+        final Cell testCell1, testCell2;
+
+        Mockito.when(cellInfoGsmMock1.getCellSignalStrength()).thenReturn(cellSignalStrengthMock1);
+        Mockito.when(cellInfoGsmMock2.getCellSignalStrength()).thenReturn(cellSignalStrengthMock2);
+        Mockito.when(cellInfoGsmMock1.getCellIdentity()).thenReturn(cellIdentityGsmMock);
+        Mockito.when(cellInfoGsmMock2.getCellIdentity()).thenReturn(cellIdentityGsmMock);
+        Mockito.when(cellSignalStrengthMock1.getDbm()).thenReturn(-40);
+        Mockito.when(cellSignalStrengthMock2.getDbm()).thenReturn(-30);
+
+        inputList = new ArrayList<>();
+        testCell1 = new Cell(TEST_NETWORK_TYPE, cellInfoGsmMock1);
+        testCell2 = new Cell(TEST_NETWORK_TYPE, cellInfoGsmMock2);
+
+        inputList.add(testCell1);
+        inputList.add(testCell2);
+        cellListField.set(cellInfoListenerTest, inputList);
+
+        retVal = cellInfoListenerTest.getSortedCellList();
+
+        Assert.assertTrue(retVal.size() == 2 && retVal.get(0).dbm == -30);
     }
 }
