@@ -34,7 +34,6 @@ public class WifiInfoReceiver extends BroadcastReceiver {
 
         wifiScanList = wifiManager.getScanResults();
 
-
         if (wifiScanList != null) {
             synchronized (wifiAPSet) {
                 for (Iterator<WifiAP> it = wifiAPSet.iterator(); it.hasNext(); ) {

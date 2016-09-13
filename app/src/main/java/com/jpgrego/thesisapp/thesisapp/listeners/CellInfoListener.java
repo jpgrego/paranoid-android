@@ -25,30 +25,11 @@ public class CellInfoListener extends PhoneStateListener {
     private final List<Cell> cellList = new ArrayList<>();
     private int mcc, mnc;
     private int networkType;
+    private int registedCellSignalStrength = -1;
 
     public CellInfoListener(final TelephonyManager telephonyManager) {
-        final String networkOperatorString;
-
-        networkOperatorString = telephonyManager.getNetworkOperator();
         this.telephonyManager = telephonyManager;
-
-        try {
-            this.mcc = Integer.parseInt(networkOperatorString.substring(0, 3));
-            this.mnc = Integer.parseInt(networkOperatorString.substring(3));
-        } catch (IndexOutOfBoundsException ex) {
-            Log.w(this.getClass().getName(), "Obtaining the MCC and MNC values failed " +
-                    "(" + ex.getClass().getName() + ")");
-            this.mcc = -1;
-            this.mnc = -1;
-        } catch (NumberFormatException ex) {
-            Log.w(this.getClass().getName(), "Obtaining the MCC and MNC values failed " +
-                    "( + " + ex.getClass().getName() + ")");
-            this.mcc = -1;
-            this.mnc = -1;
-        }
-
-        this.networkType = telephonyManager.getNetworkType();
-        getCellInfo();
+        onSignalStrengthsChanged(null);
     }
 
     @Override
@@ -56,6 +37,11 @@ public class CellInfoListener extends PhoneStateListener {
         final String networkOperatorString;
 
         networkOperatorString = telephonyManager.getNetworkOperator();
+        this.networkType = telephonyManager.getNetworkType();
+
+        if(signalStrength != null) {
+            registedCellSignalStrength = signalStrength.getGsmSignalStrength() * 2 - 113;
+        }
 
         try {
             this.mcc = Integer.parseInt(networkOperatorString.substring(0, 3));
@@ -72,14 +58,7 @@ public class CellInfoListener extends PhoneStateListener {
             this.mnc = -1;
         }
 
-        this.networkType = telephonyManager.getNetworkType();
         getCellInfo();
-
-        /*
-        if (signalStrength.isGsm()) {
-            updateCellInfoTable(signalStrength.getGsmSignalStrength() * 2 - 113);
-        }
-        */
     }
 
     public List<Cell> getSortedCellList() {
@@ -130,7 +109,8 @@ public class CellInfoListener extends PhoneStateListener {
 
             if (cellLocation != null && cellLocation instanceof GsmCellLocation) {
                 gsmCellLocation = (GsmCellLocation) cellLocation;
-                registeredCell = new Cell(this.networkType, mcc, mnc, gsmCellLocation);
+                registeredCell = new Cell(this.networkType, mcc, mnc, registedCellSignalStrength,
+                        gsmCellLocation);
                 registeredCell.setRegisteredCell();
                 cellList.add(registeredCell);
             }

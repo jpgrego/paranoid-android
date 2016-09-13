@@ -5,6 +5,7 @@ import android.telephony.CellInfo;
 import android.telephony.CellInfoGsm;
 import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
+import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
@@ -28,16 +29,15 @@ import static com.jpgrego.thesisapp.thesisapp.TestValues.*;
 @RunWith(MockitoJUnitRunner.class)
 public class CellInfoListenerTest {
 
-    private static final String TEST_NETWORK_OPERATOR = "26801";
-
     private CellInfoListener cellInfoListenerTest;
     private Method getAllCellsMethod;
     private Method getRegisteredCellInfoMethod;
     private Method getNeighboringCellsInfoMethod;
-    private Field cellListField;
+    private Field cellListField, mccField, mncField, telephonyManagerField,
+            registeredCellSignalStrengthField;
 
     @Mock
-    private TelephonyManager telephonyManager;
+    private TelephonyManager telephonyManagerMock;
 
     @Mock
     private CellInfoGsm cellInfoGsmMock1, cellInfoGsmMock2;
@@ -54,26 +54,46 @@ public class CellInfoListenerTest {
     @Mock
     private NeighboringCellInfo neighboringCellInfoMock;
 
+    @Mock
+    private SignalStrength signalStrengthMock;
+
     @Before
     public void setUp() throws NoSuchMethodException, NoSuchFieldException {
-        Mockito.when(telephonyManager.getNetworkOperator()).thenReturn(TEST_NETWORK_OPERATOR);
+        Mockito.when(telephonyManagerMock.getNetworkOperator()).thenReturn(TEST_NETWORK_OPERATOR);
+        Mockito.when(telephonyManagerMock.getNetworkType()).thenReturn(TEST_NETWORK_TYPE);
 
-        cellInfoListenerTest = new CellInfoListener(telephonyManager);
+        cellInfoListenerTest = new CellInfoListener(telephonyManagerMock);
         getAllCellsMethod = CellInfoListener.class.getDeclaredMethod("getAllCellInfo");
         getRegisteredCellInfoMethod = CellInfoListener.class.getDeclaredMethod("getRegisteredCellInfo");
         getNeighboringCellsInfoMethod = CellInfoListener.class.getDeclaredMethod("getNeighboringCellsInfo");
         cellListField = CellInfoListener.class.getDeclaredField("cellList");
+        mccField = CellInfoListener.class.getDeclaredField("mcc");
+        mncField = CellInfoListener.class.getDeclaredField("mnc");
+        telephonyManagerField = CellInfoListener.class.getDeclaredField("telephonyManager");
+        registeredCellSignalStrengthField = CellInfoListener.class.getDeclaredField("registedCellSignalStrength");
 
         getAllCellsMethod.setAccessible(true);
         getRegisteredCellInfoMethod.setAccessible(true);
         getNeighboringCellsInfoMethod.setAccessible(true);
         cellListField.setAccessible(true);
+        mccField.setAccessible(true);
+        mncField.setAccessible(true);
+        telephonyManagerField.setAccessible(true);
+        registeredCellSignalStrengthField.setAccessible(true);
+    }
 
+    @Test
+    public void cellInfoListenerConstructor() throws IllegalAccessException {
+        final TelephonyManager telephonyManager;
+
+        telephonyManager = (TelephonyManager) telephonyManagerField.get(cellInfoListenerTest);
+
+        Assert.assertEquals(telephonyManagerMock, telephonyManager);
     }
 
     @Test
     public void getAllCellInfoReturnsFalseOnNull() throws InvocationTargetException, IllegalAccessException {
-        Mockito.when(telephonyManager.getAllCellInfo()).thenReturn(null);
+        Mockito.when(telephonyManagerMock.getAllCellInfo()).thenReturn(null);
 
         final boolean retVal;
 
@@ -83,7 +103,7 @@ public class CellInfoListenerTest {
 
     @Test
     public void getAllCellInfoReturnsTrueOnList() throws InvocationTargetException, IllegalAccessException {
-        Mockito.when(telephonyManager.getAllCellInfo()).thenReturn(new ArrayList<CellInfo>());
+        Mockito.when(telephonyManagerMock.getAllCellInfo()).thenReturn(new ArrayList<CellInfo>());
 
         final boolean retVal;
 
@@ -99,7 +119,7 @@ public class CellInfoListenerTest {
         cellListField.set(cellInfoListenerTest, new ArrayList<>());
         inputList.add(cellInfoGsmMock1);
 
-        Mockito.when(telephonyManager.getAllCellInfo()).thenReturn(inputList);
+        Mockito.when(telephonyManagerMock.getAllCellInfo()).thenReturn(inputList);
         Mockito.when(cellInfoGsmMock1.getCellIdentity()).thenReturn(cellIdentityGsmMock);
         Mockito.when(cellInfoGsmMock1.getCellSignalStrength()).thenReturn(cellSignalStrengthMock1);
 
@@ -113,7 +133,7 @@ public class CellInfoListenerTest {
     public void getRegisteredCellInfoAddsToList() throws IllegalAccessException, InvocationTargetException {
         final ArrayList retVal;
 
-        Mockito.when(telephonyManager.getCellLocation()).thenReturn(gsmCellLocationMock);
+        Mockito.when(telephonyManagerMock.getCellLocation()).thenReturn(gsmCellLocationMock);
 
         getRegisteredCellInfoMethod.invoke(cellInfoListenerTest);
         retVal = (ArrayList) cellListField.get(cellInfoListenerTest);
@@ -130,7 +150,7 @@ public class CellInfoListenerTest {
         inputList.add(neighboringCellInfoMock);
 
         //noinspection deprecation
-        Mockito.when(telephonyManager.getNeighboringCellInfo()).thenReturn(inputList);
+        Mockito.when(telephonyManagerMock.getNeighboringCellInfo()).thenReturn(inputList);
 
         getNeighboringCellsInfoMethod.invoke(cellInfoListenerTest);
         retVal = (ArrayList) cellListField.get(cellInfoListenerTest);
@@ -162,5 +182,35 @@ public class CellInfoListenerTest {
         retVal = cellInfoListenerTest.getSortedCellList();
 
         Assert.assertTrue(retVal.size() == 2 && retVal.get(0).dbm == -30);
+    }
+
+    @Test
+    public void onSignalStrengthsChangedTestMccAssignment() throws IllegalAccessException {
+        final int mccVal;
+
+        cellInfoListenerTest.onSignalStrengthsChanged(signalStrengthMock);
+        mccVal = mccField.getInt(cellInfoListenerTest);
+        Assert.assertEquals(TEST_MCC, mccVal);
+    }
+
+    @Test
+    public void onSignalStrengthsChangedTestMncAssignment() throws IllegalAccessException {
+        final int mncVal;
+
+        cellInfoListenerTest.onSignalStrengthsChanged(signalStrengthMock);
+        mncVal = mncField.getInt(cellInfoListenerTest);
+        Assert.assertEquals(TEST_MNC, mncVal);
+    }
+
+    @Test
+    public void onSignalStrengthsChangedTestSignalStrength() throws IllegalAccessException {
+        final int registeredCellSignalStrength;
+
+        Mockito.when(signalStrengthMock.getGsmSignalStrength()).thenReturn(TEST_SIGNAL_STRENGTH);
+        cellInfoListenerTest.onSignalStrengthsChanged(signalStrengthMock);
+        registeredCellSignalStrength = registeredCellSignalStrengthField.
+                getInt(cellInfoListenerTest);
+
+        Assert.assertEquals(TEST_DBM, registeredCellSignalStrength);
     }
 }

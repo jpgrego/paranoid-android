@@ -39,14 +39,14 @@ public class Cell implements Comparable<Cell> {
         this.isRegisteredCell = cellInfoGsm.isRegistered();
     }
 
-    public Cell(final int networkType, final int mcc, final int mnc,
+    public Cell(final int networkType, final int mcc, final int mnc, final int dbm,
                 @NonNull final GsmCellLocation cellLocation) {
         this.mcc = mcc;
         this.mnc = mnc;
         this.cid = cellLocation.getCid();
         this.lac = cellLocation.getLac();
         this.psc = cellLocation.getPsc();
-        this.dbm = -1;
+        this.dbm = dbm;
         this.generation = CellUtils.getGenerationFromNetworkType(networkType);
     }
 

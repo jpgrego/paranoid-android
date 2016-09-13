@@ -57,7 +57,7 @@ public class CellTest {
         Mockito.when(neighboringCellInfo.getRssi()).thenReturn(TEST_DBM);
 
         cell1 = new Cell(TEST_NETWORK_TYPE, cellInfoGsm);
-        cell2 = new Cell(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, gsmCellLocation);
+        cell2 = new Cell(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, TEST_DBM, gsmCellLocation);
         cell3 = new Cell(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, neighboringCellInfo);
     }
 
@@ -75,7 +75,7 @@ public class CellTest {
 
     @Test
     public void testCellConstructor2_1() {
-        final int[] array1 = {TEST_MCC, TEST_MNC, TEST_CID, TEST_LAC, TEST_PSC, -1};
+        final int[] array1 = {TEST_MCC, TEST_MNC, TEST_CID, TEST_LAC, TEST_PSC, TEST_DBM};
         final int[] array2 = {cell2.mcc, cell2.mnc, cell2.cid, cell2.lac, cell2.psc, cell2.dbm};
         Assert.assertArrayEquals(array1, array2);
     }
