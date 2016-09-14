@@ -103,7 +103,7 @@ public class WifiAndCellFragment extends Fragment {
     }
 
     private void addCellsToTable(List<Cell> cellList) {
-        for(Cell cell : cellList) {
+        for (Cell cell : cellList) {
             final TextView generation, mcc, mnc, cid, lac, psc, dbm;
             final TableRow cellTableDataRow;
 
@@ -124,7 +124,7 @@ public class WifiAndCellFragment extends Fragment {
             psc.setText(String.format(Locale.US, "%d", cell.psc));
             dbm.setText(String.format(Locale.US, "%d", cell.dbm));
 
-            if(cell.isRegisteredCell()) {
+            if (cell.isRegisteredCell()) {
                 cellTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
             }
 
@@ -185,7 +185,7 @@ public class WifiAndCellFragment extends Fragment {
                 bssid.setTextColor(FADED_COLOR);
                 channel.setTextColor(FADED_COLOR);
                 dbm.setTextColor(FADED_COLOR);
-            } else if(wifiAP.bssid.equals(currentWifiConnectionInfo.getBSSID())) {
+            } else if (wifiAP.bssid.equals(currentWifiConnectionInfo.getBSSID())) {
                 wifiTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
             }
 

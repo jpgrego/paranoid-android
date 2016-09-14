@@ -46,14 +46,9 @@ public class CellInfoListener extends PhoneStateListener {
         try {
             this.mcc = Integer.parseInt(networkOperatorString.substring(0, 3));
             this.mnc = Integer.parseInt(networkOperatorString.substring(3));
-        } catch (IndexOutOfBoundsException ex) {
+        } catch (IndexOutOfBoundsException | NumberFormatException | NullPointerException ex) {
             Log.w(this.getClass().getName(), "Obtaining the MCC and MNC values failed " +
                     "(" + ex.getClass().getName() + ")");
-            this.mcc = -1;
-            this.mnc = -1;
-        } catch (NumberFormatException ex) {
-            Log.w(this.getClass().getName(), "Obtaining the MCC and MNC values failed " +
-                    "( + " + ex.getClass().getName() + ")");
             this.mcc = -1;
             this.mnc = -1;
         }
