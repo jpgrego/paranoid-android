@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 
 
 /**
@@ -86,12 +87,14 @@ public class CellUtilsTest {
 
     @Test
     @Parameters
+    @TestCaseName("getGenerationFromNetworkType({0}) = {1}")
     public void getGenerationFromNetworkType(int networkType, String expResult) {
         Assert.assertEquals(expResult, CellUtils.getGenerationFromNetworkType(networkType));
     }
 
     @Test
     @Parameters
+    @TestCaseName("rssiToDbm({0}, {1}) = {2}")
     public void rssiToDbm(int networkType, int rssi, int expResult) {
         Assert.assertEquals(expResult, CellUtils.rssiToDbm(networkType, rssi));
     }
