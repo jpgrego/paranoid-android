@@ -4,32 +4,42 @@ import android.telephony.TelephonyManager;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-
-import java.util.Arrays;
-import java.util.Collection;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 
 /**
- * Created by jpgrego on 03-09-2016.
+ * Created by jpgrego on 04-09-2016.
  */
-@RunWith(value = Parameterized.class)
-public class CellUtilsTest_rssiToDbm {
+@RunWith(JUnitParamsRunner.class)
+public class CellUtilsTest {
 
-    @Parameter(value = 0)
-    public int networkType;
+    @SuppressWarnings("unused")
+    private Object[] parametersForGetGenerationFromNetworkType() {
+        return new Object[][] {
+                {TelephonyManager.NETWORK_TYPE_CDMA, "2G"},
+                {TelephonyManager.NETWORK_TYPE_EDGE, "2G"},
+                {TelephonyManager.NETWORK_TYPE_GPRS, "2G"},
+                {TelephonyManager.NETWORK_TYPE_IDEN, "2G"},
 
-    @Parameter(value = 1)
-    public int rssi;
+                {TelephonyManager.NETWORK_TYPE_1xRTT, "3G"},
+                {TelephonyManager.NETWORK_TYPE_EHRPD, "3G"},
+                {TelephonyManager.NETWORK_TYPE_EVDO_0, "3G"},
+                {TelephonyManager.NETWORK_TYPE_EVDO_A, "3G"},
+                {TelephonyManager.NETWORK_TYPE_EVDO_B, "3G"},
+                {TelephonyManager.NETWORK_TYPE_HSDPA, "3G"},
+                {TelephonyManager.NETWORK_TYPE_HSPA, "3G"},
+                {TelephonyManager.NETWORK_TYPE_HSPAP, "3G"},
+                {TelephonyManager.NETWORK_TYPE_HSUPA, "3G"},
+                {TelephonyManager.NETWORK_TYPE_UMTS, "3G"},
 
-    @Parameter(value = 2)
-    public int retVal;
+                {TelephonyManager.NETWORK_TYPE_LTE, "4G"}
+        };
+    }
 
-    @Parameters(name = "{index}: rssiToDbm({0},{1}) = {2}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
+    @SuppressWarnings("unused")
+    private Object[] parametersForRssiToDbm() {
+        return new Object[][] {
                 {TelephonyManager.NETWORK_TYPE_UMTS, -6, -1111},
                 {TelephonyManager.NETWORK_TYPE_UMTS, -5, -121},
                 {TelephonyManager.NETWORK_TYPE_UMTS, 91, -25},
@@ -70,13 +80,20 @@ public class CellUtilsTest_rssiToDbm {
                 {TelephonyManager.NETWORK_TYPE_EDGE, 0, -113},
                 {TelephonyManager.NETWORK_TYPE_EDGE, 1, -111},
                 {TelephonyManager.NETWORK_TYPE_EDGE, 31, -51},
-                {TelephonyManager.NETWORK_TYPE_EDGE, 32, -1111},
-        });
+                {TelephonyManager.NETWORK_TYPE_EDGE, 32, -1111}
+        };
     }
 
     @Test
-    public void rssiToDbm() {
-        Assert.assertEquals(retVal, CellUtils.rssiToDbm(networkType, rssi));
+    @Parameters
+    public void getGenerationFromNetworkType(int networkType, String expResult) {
+        Assert.assertEquals(expResult, CellUtils.getGenerationFromNetworkType(networkType));
+    }
+
+    @Test
+    @Parameters
+    public void rssiToDbm(int networkType, int rssi, int expResult) {
+        Assert.assertEquals(expResult, CellUtils.rssiToDbm(networkType, rssi));
     }
 
 }
