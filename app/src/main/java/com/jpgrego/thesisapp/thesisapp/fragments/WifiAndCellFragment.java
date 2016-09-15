@@ -1,7 +1,6 @@
 package com.jpgrego.thesisapp.thesisapp.fragments;
 
 import android.graphics.Color;
-import android.net.wifi.WifiInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -136,7 +135,7 @@ public class WifiAndCellFragment extends Fragment {
     private void updateWifiTable() {
         final TableRow wifiTableTitleRow;
         final List<WifiAP> wifiAPList;
-        final WifiInfo currentWifiConnectionInfo;
+        final String currentWifiConnectionBSSID;
 
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
@@ -154,7 +153,8 @@ public class WifiAndCellFragment extends Fragment {
         wifiTable.addView(wifiTableTitleRow);
 
         wifiAPList = this.mainActivity.getWifiInfoReceiver().getOrderedWifiAPList();
-        currentWifiConnectionInfo = this.mainActivity.getWifiManager().getConnectionInfo();
+        currentWifiConnectionBSSID = this.mainActivity.getWifiInfoReceiver()
+                .getCurrentWifiConnectionBSSID();
 
         for (WifiAP wifiAP : wifiAPList) {
             final TableRow wifiTableDataRow;
@@ -185,7 +185,7 @@ public class WifiAndCellFragment extends Fragment {
                 bssid.setTextColor(FADED_COLOR);
                 channel.setTextColor(FADED_COLOR);
                 dbm.setTextColor(FADED_COLOR);
-            } else if (wifiAP.bssid.equals(currentWifiConnectionInfo.getBSSID())) {
+            } else if (wifiAP.bssid.equals(currentWifiConnectionBSSID)) {
                 wifiTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
             }
 

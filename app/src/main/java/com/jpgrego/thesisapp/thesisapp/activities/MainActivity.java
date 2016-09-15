@@ -2,7 +2,7 @@ package com.jpgrego.thesisapp.thesisapp.activities;
 
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -18,16 +18,19 @@ import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
 import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.Process;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int WIFI_SCAN_DELAY = 3000;
-
     private CellInfoListener cellInfoListener;
     private WifiInfoReceiver wifiInfoReceiver;
     private TelephonyManager telephonyManager;
-    private WifiManager wifiManager;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -42,7 +45,59 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final ViewPager mViewPager;
-        final Handler wifiScanHandler;
+        final WifiManager wifiManager;
+
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) {
+                final File logFile;
+                final FileWriter fileWriter;
+                final Process logProcess;
+                BufferedWriter bufferedWriter = null;
+                InputStreamReader inputStreamReader = null;
+                char[] buffer = new char[10000];
+                int readBytes;
+
+                try {
+                    ex.printStackTrace();
+
+                    logFile = new File(Environment.getExternalStorageDirectory()
+                            + "/ThesisApp/THESIS_APP_LOG.txt");
+                    fileWriter = new FileWriter(logFile);
+                    bufferedWriter = new BufferedWriter(fileWriter);
+                    logProcess = Runtime.getRuntime().exec("logcat -d -v time");
+                    inputStreamReader = new InputStreamReader(logProcess.getInputStream());
+
+                    while((readBytes = inputStreamReader.read(buffer, 0, buffer.length)) > -1) {
+                        bufferedWriter.write(buffer, 0, readBytes);
+                    }
+
+                    bufferedWriter.close();
+                    inputStreamReader.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if(bufferedWriter != null) {
+                        try {
+                            bufferedWriter.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if(inputStreamReader != null) {
+                        try {
+                            inputStreamReader.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                System.exit(1);
+            }
+        });
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -51,21 +106,19 @@ public class MainActivity extends AppCompatActivity {
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         cellInfoListener = new CellInfoListener(telephonyManager);
         wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
-        wifiScanHandler = new Handler();
         mTitle = getTitle();
         mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
+
+        if(mViewPager != null) {
+            mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
+        }
 
         telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         registerReceiver(wifiInfoReceiver,
                 new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        new Runnable() {
-            @Override
-            public void run() {
-                wifiManager.startScan();
-                wifiScanHandler.postDelayed(this, WIFI_SCAN_DELAY);
-            }
-        }.run();
+        registerReceiver(wifiInfoReceiver,
+                new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+
         /*
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -129,10 +182,12 @@ public class MainActivity extends AppCompatActivity {
     */
 
     public void restoreActionBar() {
+        /*
         ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
+        */
     }
 
 
@@ -166,13 +221,9 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public TelephonyManager getTelephonyManager() {
-        return telephonyManager;
+    public CellInfoListener getCellInfoListener() {
+        return cellInfoListener;
     }
-
-    public WifiManager getWifiManager() { return wifiManager; }
-
-    public CellInfoListener getCellInfoListener() { return cellInfoListener; }
 
     public WifiInfoReceiver getWifiInfoReceiver() {
         return wifiInfoReceiver;
@@ -231,9 +282,10 @@ public class MainActivity extends AppCompatActivity {
             switch(position) {
                 case 0:
                     return new WifiAndCellFragment();
-            }
 
-            return null;
+                default:
+                    throw new IllegalArgumentException();
+            }
         }
 
         @Override

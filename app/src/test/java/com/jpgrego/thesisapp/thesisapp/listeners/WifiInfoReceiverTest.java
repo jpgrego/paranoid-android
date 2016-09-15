@@ -2,6 +2,7 @@ package com.jpgrego.thesisapp.thesisapp.listeners;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
@@ -42,6 +43,9 @@ public class WifiInfoReceiverTest {
     @Mock
     private Intent intentMock;
 
+    @Mock
+    private NetworkInfo networkInfo;
+
     @Before
     public void setUp() throws NoSuchFieldException {
         wifiInfoReceiverTest = new WifiInfoReceiver(wifiManagerMock);
@@ -61,6 +65,32 @@ public class WifiInfoReceiverTest {
     }
 
     @Test
+    public void onReceiveNewConnection() {
+        final String testBSSID = "00:11:22:33:44:55";
+
+        Mockito.when(intentMock.getAction()).thenReturn(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        Mockito.when(intentMock.getStringExtra(WifiManager.EXTRA_BSSID))
+                .thenReturn(testBSSID);
+        Mockito.when(networkInfo.isConnected()).thenReturn(true);
+        Mockito.when(intentMock.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO))
+                .thenReturn(networkInfo);
+
+        wifiInfoReceiverTest.onReceive(contextMock, intentMock);
+        Assert.assertEquals(testBSSID, wifiInfoReceiverTest.getCurrentWifiConnectionBSSID());
+    }
+
+    @Test
+    public void onReceiveDisconnected() {
+        Mockito.when(intentMock.getAction()).thenReturn(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        Mockito.when(networkInfo.isConnected()).thenReturn(false);
+        Mockito.when(intentMock.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO))
+                .thenReturn(networkInfo);
+
+        wifiInfoReceiverTest.onReceive(contextMock, intentMock);
+        Assert.assertEquals("", wifiInfoReceiverTest.getCurrentWifiConnectionBSSID());
+    }
+
+    @Test
     public void onReceiveTestUniqueness() throws IllegalAccessException {
         final List<ScanResult> scanResultList;
         final Set retVal;
@@ -74,6 +104,7 @@ public class WifiInfoReceiverTest {
         scanResultList.add(scanResultMock1);
         scanResultList.add(scanResultMock2);
 
+        Mockito.when(intentMock.getAction()).thenReturn(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         Mockito.when(wifiManagerMock.getScanResults()).thenReturn(scanResultList);
         wifiInfoReceiverTest.onReceive(contextMock, intentMock);
 
@@ -95,6 +126,7 @@ public class WifiInfoReceiverTest {
         scanResultList.add(scanResultMock1);
         scanResultList.add(scanResultMock2);
 
+        Mockito.when(intentMock.getAction()).thenReturn(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         Mockito.when(wifiManagerMock.getScanResults()).thenReturn(scanResultList);
         wifiInfoReceiverTest.onReceive(contextMock, intentMock);
 
@@ -116,10 +148,12 @@ public class WifiInfoReceiverTest {
         scanResultList.add(scanResultMock1);
         scanResultList.add(scanResultMock2);
 
+        Mockito.when(intentMock.getAction()).thenReturn(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         Mockito.when(wifiManagerMock.getScanResults()).thenReturn(scanResultList);
         wifiInfoReceiverTest.onReceive(contextMock, intentMock);
 
         retVal = wifiInfoReceiverTest.getOrderedWifiAPList();
         Assert.assertTrue(retVal.get(0).dbm == -70);
     }
+
 }
