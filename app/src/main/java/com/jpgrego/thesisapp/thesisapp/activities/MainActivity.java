@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import com.jpgrego.thesisapp.thesisapp.R;
@@ -24,9 +25,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Process;
+import java.util.Arrays;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String THESIS_DIR_NAME = "ThesisApp";
+    private static final String LOG_FILE_NAME = "THESIS_APP_LOG.TXT";
 
     private CellInfoListener cellInfoListener;
     private WifiInfoReceiver wifiInfoReceiver;
@@ -50,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread thread, Throwable ex) {
-                final File logFile;
+                final File thesisAppDir, logFile;
                 final FileWriter fileWriter;
                 final Process logProcess;
                 BufferedWriter bufferedWriter = null;
@@ -59,13 +64,33 @@ public class MainActivity extends AppCompatActivity {
                 int readBytes;
 
                 try {
-                    ex.printStackTrace();
 
-                    logFile = new File(Environment.getExternalStorageDirectory()
-                            + "/ThesisApp/THESIS_APP_LOG.txt");
+                    Log.e(thread.getName(), Arrays.toString(ex.getStackTrace()));
+
+                    thesisAppDir = new File(Environment.getExternalStorageDirectory()
+                            + "/" + THESIS_DIR_NAME + "/");
+                    logFile = new File(thesisAppDir + "/" + LOG_FILE_NAME);
+
+
+                    if(!thesisAppDir.exists()) {
+                        if(!thesisAppDir.mkdir()) {
+                            throw new IOException("Unable to create ThesisApp dir");
+                        }
+                    } else if(!thesisAppDir.isDirectory()) {
+                        throw new IOException("A file named ThesisApp already exists");
+                    }
+
+                    if(!logFile.exists()) {
+                        if(logFile.createNewFile()) {
+                            throw new IOException("Unable to create log file");
+                        }
+                    } else if(!logFile.isFile()) {
+                        throw new IOException(LOG_FILE_NAME + " already exists");
+                    }
+
                     fileWriter = new FileWriter(logFile);
                     bufferedWriter = new BufferedWriter(fileWriter);
-                    logProcess = Runtime.getRuntime().exec("logcat -d -v time");
+                    logProcess = Runtime.getRuntime().exec("logcat -t 1000 -v time");
                     inputStreamReader = new InputStreamReader(logProcess.getInputStream());
 
                     while((readBytes = inputStreamReader.read(buffer, 0, buffer.length)) > -1) {
@@ -98,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 System.exit(1);
             }
         });
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
