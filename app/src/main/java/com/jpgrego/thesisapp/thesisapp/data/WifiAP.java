@@ -2,6 +2,8 @@ package com.jpgrego.thesisapp.thesisapp.data;
 
 import android.net.wifi.ScanResult;
 import android.support.annotation.NonNull;
+import android.util.Log;
+
 import com.jpgrego.thesisapp.thesisapp.R;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,6 +27,12 @@ public class WifiAP implements Comparable<WifiAP> {
             matcher = WIFI_SECURITY_PATTERN.matcher(scanResult.capabilities);
             if (matcher.find()) {
                 this.securityLabel = matcher.group(2);
+
+                if(this.securityLabel == null) {
+                    Log.e(this.getClass().getName(), "Weird WiFi capabilities found, please investigate!");
+                    Log.e(this.getClass().getName(), "capabilities: " + scanResult.capabilities);
+                    System.exit(1);
+                }
 
                 switch (this.securityLabel) {
                     case "IBSS":
