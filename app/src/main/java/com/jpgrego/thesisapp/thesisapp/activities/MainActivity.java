@@ -1,6 +1,8 @@
 package com.jpgrego.thesisapp.thesisapp.activities;
 
 import android.content.IntentFilter;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -17,6 +19,7 @@ import android.view.MenuItem;
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
 import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
+import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,7 +37,9 @@ public class MainActivity extends AppCompatActivity {
 
     private CellInfoListener cellInfoListener;
     private WifiInfoReceiver wifiInfoReceiver;
+    private SensorInfoListener sensorInfoListener;
     private TelephonyManager telephonyManager;
+    private SensorManager sensorManager;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -128,9 +133,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         cellInfoListener = new CellInfoListener(telephonyManager);
         wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
+        sensorInfoListener = new SensorInfoListener();
         mTitle = getTitle();
         mViewPager = (ViewPager) findViewById(R.id.pager);
 
@@ -144,6 +151,10 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(wifiInfoReceiver,
                 new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
 
+        for(Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
+            sensorManager.registerListener(sensorInfoListener, sensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+        }
         /*
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -161,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_NONE);
         unregisterReceiver(wifiInfoReceiver);
+        sensorManager.unregisterListener(sensorInfoListener);
     }
 
     /*
@@ -254,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
         return wifiInfoReceiver;
     }
 
+    public SensorInfoListener getSensorInfoListener() { return sensorInfoListener; }
 
 /*
     *//**
