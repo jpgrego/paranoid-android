@@ -1,5 +1,6 @@
 package com.jpgrego.thesisapp.thesisapp.activities;
 
+import android.hardware.SensorManager;
 import android.telephony.TelephonyManager;
 import android.widget.TableRow;
 import com.jpgrego.thesisapp.thesisapp.BuildConfig;
@@ -23,26 +24,35 @@ public class MainActivityTest {
 
     private MainActivity mainActivityTest;
     private TelephonyManager telephonyManager;
+    private SensorManager sensorManager;
 
     @Mock
     private TableRow tableRowMock;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
-        final Field telephonyManagerField;
+        final Field telephonyManagerField, sensorManagerField;
 
         mainActivityTest = Robolectric.setupActivity(MainActivity.class);
 
         telephonyManagerField = MainActivity.class.getDeclaredField("telephonyManager");
+        sensorManagerField = MainActivity.class.getDeclaredField("sensorManager");
 
         telephonyManagerField.setAccessible(true);
+        sensorManagerField.setAccessible(true);
 
         telephonyManager = (TelephonyManager) telephonyManagerField.get(mainActivityTest);
+        sensorManager = (SensorManager) sensorManagerField.get(mainActivityTest);
     }
 
     @Test
     public void telephonyManagerNotNull() {
         Assert.assertNotNull(telephonyManager);
+    }
+
+    @Test
+    public void sensorManagerNotNull() {
+        Assert.assertNotNull(sensorManager);
     }
 
     @Test
@@ -53,6 +63,11 @@ public class MainActivityTest {
     @Test
     public void wifiInfoReceiverNotNull() {
         Assert.assertNotNull(mainActivityTest.getWifiInfoReceiver());
+    }
+
+    @Test
+    public void sensorInfoListenerNotNull() {
+        Assert.assertNotNull(mainActivityTest.getSensorInfoListener());
     }
 
 

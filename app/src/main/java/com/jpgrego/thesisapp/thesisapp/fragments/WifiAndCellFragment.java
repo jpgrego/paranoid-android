@@ -1,6 +1,7 @@
 package com.jpgrego.thesisapp.thesisapp.fragments;
 
 import android.graphics.Color;
+import android.hardware.Sensor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -17,6 +18,7 @@ import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import com.jpgrego.thesisapp.thesisapp.data.WifiAP;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by jpgrego on 6/9/15.
@@ -28,7 +30,7 @@ public class WifiAndCellFragment extends Fragment {
     private static final int HIGHLIGHTED_BACKGROUND = Color.parseColor("#93a2a2");
     private static final int FADED_COLOR = Color.parseColor("#808080");
 
-    private final Handler cellUpdateHandler = new Handler(), wifiUpdateHandler = new Handler();
+    private final Handler cellUpdateHandler = new Handler(), wifiUpdateHandler = new Handler(), sensorUpdateHandler = new Handler();
     private final Runnable cellUpdateRunnable = new Runnable() {
         @Override
         public void run() {
@@ -46,6 +48,16 @@ public class WifiAndCellFragment extends Fragment {
 
     private TableLayout cellsTable, wifiTable;
     private MainActivity mainActivity;
+
+    private static Map<Sensor, float[]> map;
+
+    private final Runnable sensorUpdateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            map = mainActivity.getSensorInfoListener().getSensorMap();
+            sensorUpdateHandler.postDelayed(this, 3000);
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -68,6 +80,7 @@ public class WifiAndCellFragment extends Fragment {
         super.onResume();
         cellUpdateHandler.post(cellUpdateRunnable);
         wifiUpdateHandler.post(wifiUpdateRunnable);
+        sensorUpdateHandler.post(sensorUpdateRunnable);
     }
 
     @Override
@@ -75,6 +88,7 @@ public class WifiAndCellFragment extends Fragment {
         super.onPause();
         cellUpdateHandler.removeCallbacks(cellUpdateRunnable);
         wifiUpdateHandler.removeCallbacks(wifiUpdateRunnable);
+        sensorUpdateHandler.removeCallbacks(sensorUpdateRunnable);
     }
 
     private void updateCellTable() {
