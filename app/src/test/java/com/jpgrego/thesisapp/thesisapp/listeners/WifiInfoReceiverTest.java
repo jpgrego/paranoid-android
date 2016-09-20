@@ -11,6 +11,7 @@ import com.jpgrego.thesisapp.thesisapp.data.WifiAP;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -29,7 +30,7 @@ import java.util.Set;
 public class WifiInfoReceiverTest {
 
     private WifiInfoReceiver wifiInfoReceiverTest;
-    private Field wifiAPSetField, wifiManagerField;
+    private static Field wifiAPSetField, wifiManagerField;
 
     @Mock
     private WifiManager wifiManagerMock;
@@ -46,14 +47,18 @@ public class WifiInfoReceiverTest {
     @Mock
     private NetworkInfo networkInfo;
 
-    @Before
-    public void setUp() throws NoSuchFieldException {
-        wifiInfoReceiverTest = new WifiInfoReceiver(wifiManagerMock);
+    @BeforeClass
+    public static void setUpClass() throws NoSuchFieldException {
         wifiManagerField = WifiInfoReceiver.class.getDeclaredField("wifiManager");
         wifiAPSetField = WifiInfoReceiver.class.getDeclaredField("wifiAPSet");
 
         wifiManagerField.setAccessible(true);
         wifiAPSetField.setAccessible(true);
+    }
+
+    @Before
+    public void setUp() {
+        wifiInfoReceiverTest = new WifiInfoReceiver(wifiManagerMock);
     }
 
     @Test

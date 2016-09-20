@@ -9,6 +9,7 @@ import com.jpgrego.thesisapp.thesisapp.activities.MainActivity;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import junit.framework.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,8 +38,8 @@ public class WifiAndCellFragmentTest {
     public MockitoRule rule = MockitoJUnit.rule();
 
     private WifiAndCellFragment wifiAndCellFragmentTest;
-    private Method updateCellTableMethod, addCellsToTableMethod, updateWifiTableMethod;
-    private Field wifiTableField, cellsTableField;
+    private static Method updateCellTableMethod, addCellsToTableMethod, updateWifiTableMethod;
+    private static Field wifiTableField, cellsTableField;
 
     @Mock
     private CellInfoGsm cellInfoGsmMock;
@@ -49,12 +50,8 @@ public class WifiAndCellFragmentTest {
     @Mock
     private CellSignalStrengthGsm cellSignalStrengthGsm;
 
-    @Before
-    public void setUp() throws NoSuchMethodException, NoSuchFieldException {
-        Mockito.when(cellInfoGsmMock.getCellIdentity()).thenReturn(cellIdentityGsmMock);
-        Mockito.when(cellInfoGsmMock.getCellSignalStrength()).thenReturn(cellSignalStrengthGsm);
-
-        wifiAndCellFragmentTest = new WifiAndCellFragment();
+    @BeforeClass
+    public static void setUpClass() throws NoSuchFieldException, NoSuchMethodException {
         updateCellTableMethod = WifiAndCellFragment.class.getDeclaredMethod("updateCellTable");
         addCellsToTableMethod = WifiAndCellFragment.class.getDeclaredMethod("addCellsToTable",
                 List.class);
@@ -67,6 +64,16 @@ public class WifiAndCellFragmentTest {
         updateCellTableMethod.setAccessible(true);
         addCellsToTableMethod.setAccessible(true);
         updateWifiTableMethod.setAccessible(true);
+    }
+
+    // this initialization is expensive, but @BeforeClass couldn't be used
+    @Before
+    public void setUp() {
+        Mockito.when(cellInfoGsmMock.getCellIdentity()).thenReturn(cellIdentityGsmMock);
+        Mockito.when(cellInfoGsmMock.getCellSignalStrength()).thenReturn(cellSignalStrengthGsm);
+
+        wifiAndCellFragmentTest = new WifiAndCellFragment();
+
         SupportFragmentTestUtil.startFragment(wifiAndCellFragmentTest, MainActivity.class);
     }
 
@@ -138,6 +145,7 @@ public class WifiAndCellFragmentTest {
 
         updateWifiTableMethod.invoke(wifiAndCellFragmentTest);
 
+        // all the rows were removed, and only the title row was added
         Assert.assertTrue(wifiTable.getChildCount() == 1);
     }
 
