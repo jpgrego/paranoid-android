@@ -45,7 +45,7 @@ public class WifiAndCellFragment extends Fragment {
     };
 
     private TableLayout cellsTable, wifiTable;
-    protected MainActivity mainActivity;
+    private MainActivity mainActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
