@@ -16,9 +16,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import com.jpgrego.thesisapp.thesisapp.R;
+import com.jpgrego.thesisapp.thesisapp.fragments.NavigationDrawerFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
 import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -52,78 +54,7 @@ public class MainActivity extends AppCompatActivity {
         final ViewPager mViewPager;
         final WifiManager wifiManager;
 
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread thread, Throwable ex) {
-                final File thesisAppDir, logFile;
-                final FileWriter fileWriter;
-                final Process logProcess;
-                BufferedWriter bufferedWriter = null;
-                InputStreamReader inputStreamReader = null;
-                char[] buffer = new char[10000];
-                int readBytes;
-
-                try {
-
-                    Log.e(thread.getName(), Arrays.toString(ex.getStackTrace()));
-
-                    thesisAppDir = new File(Environment.getExternalStorageDirectory()
-                            + "/" + THESIS_DIR_NAME + "/");
-                    logFile = new File(thesisAppDir + "/" + LOG_FILE_NAME);
-
-
-                    if(!thesisAppDir.exists()) {
-                        if(!thesisAppDir.mkdir()) {
-                            throw new IOException("Unable to create ThesisApp dir");
-                        }
-                    } else if(!thesisAppDir.isDirectory()) {
-                        throw new IOException("A file named ThesisApp already exists");
-                    }
-
-                    if(!logFile.exists()) {
-                        if(logFile.createNewFile()) {
-                            throw new IOException("Unable to create log file");
-                        }
-                    } else if(!logFile.isFile()) {
-                        throw new IOException(LOG_FILE_NAME + " already exists");
-                    }
-
-                    fileWriter = new FileWriter(logFile);
-                    bufferedWriter = new BufferedWriter(fileWriter);
-                    logProcess = Runtime.getRuntime().exec("logcat -t 1000 -v time");
-                    inputStreamReader = new InputStreamReader(logProcess.getInputStream());
-
-                    while((readBytes = inputStreamReader.read(buffer, 0, buffer.length)) > -1) {
-                        bufferedWriter.write(buffer, 0, readBytes);
-                    }
-
-                    bufferedWriter.close();
-                    inputStreamReader.close();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if(bufferedWriter != null) {
-                        try {
-                            bufferedWriter.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if(inputStreamReader != null) {
-                        try {
-                            inputStreamReader.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-
-                System.exit(1);
-            }
-        });
-
+        Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -135,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         mTitle = getTitle();
         mViewPager = (ViewPager) findViewById(R.id.pager);
 
-        if(mViewPager != null) {
+        if (mViewPager != null) {
             mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
         }
 
@@ -154,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
         */
-        //mRefreshHandler.postDelayed(mUpdateCellData, 5000);
     }
 
     @Override
@@ -208,12 +138,15 @@ public class MainActivity extends AppCompatActivity {
     */
 
     public void restoreActionBar() {
-        /*
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-        */
+        final ActionBar actionBar;
+
+        actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle(mTitle);
+        }
     }
 
 
@@ -229,7 +162,12 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         */
-        return super.onCreateOptionsMenu(menu);
+
+
+        getMenuInflater().inflate(R.menu.main, menu);
+        restoreActionBar();
+        return true;
+        //return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -237,12 +175,30 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        final int menuItemID;
+        final FragmentManager fragmentManager;
+        final Fragment fragment;
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        menuItemID = item.getItemId();
+        fragmentManager = getSupportFragmentManager();
+
+        switch (menuItemID) {
+            case R.id.action_settings:
+                fragment = null;
+                break;
+            case R.id.action_example:
+                fragment = new NavigationDrawerFragment();
+                break;
+            default:
+                fragment = null;
         }
+
+        /*
+        if (fragment != null) {
+            fragmentManager.beginTransaction().replace(R.id.pager, fragment);
+        }
+        */
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -262,15 +218,17 @@ public class MainActivity extends AppCompatActivity {
      *//*
     public static class PlaceholderFragment extends Fragment {
         *//**
-         * The fragment argument representing the section number for this
-         * fragment.
-         *//*
+     * The fragment argument representing the section number for this
+     * fragment.
+     *//*
         private static final String ARG_SECTION_NUMBER = "section_number";
 
-        *//**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         *//*
+        */
+
+    /**
+     * Returns a new instance of this fragment for the given section
+     * number.
+     *//*
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
@@ -305,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            switch(position) {
+            switch (position) {
                 case 0:
                     return new WifiAndCellFragment();
 
@@ -317,6 +275,78 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             return 1;
+        }
+    }
+
+    private class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
+        @Override
+        public void uncaughtException(Thread thread, Throwable ex) {
+            final File thesisAppDir, logFile;
+            final FileWriter fileWriter;
+            final Process logProcess;
+            BufferedWriter bufferedWriter = null;
+            InputStreamReader inputStreamReader = null;
+            char[] buffer = new char[10000];
+            int readBytes;
+
+            try {
+
+                Log.e(thread.getName(), Arrays.toString(ex.getStackTrace()));
+
+                thesisAppDir = new File(Environment.getExternalStorageDirectory()
+                        + "/" + THESIS_DIR_NAME + "/");
+                logFile = new File(thesisAppDir + "/" + LOG_FILE_NAME);
+
+
+                if (!thesisAppDir.exists()) {
+                    if (!thesisAppDir.mkdir()) {
+                        throw new IOException("Unable to create ThesisApp dir");
+                    }
+                } else if (!thesisAppDir.isDirectory()) {
+                    throw new IOException("A file named ThesisApp already exists");
+                }
+
+                if (!logFile.exists()) {
+                    if (logFile.createNewFile()) {
+                        throw new IOException("Unable to create log file");
+                    }
+                } else if (!logFile.isFile()) {
+                    throw new IOException(LOG_FILE_NAME + " already exists");
+                }
+
+                fileWriter = new FileWriter(logFile);
+                bufferedWriter = new BufferedWriter(fileWriter);
+                logProcess = Runtime.getRuntime().exec("logcat -t 1000 -v time");
+                inputStreamReader = new InputStreamReader(logProcess.getInputStream());
+
+                while ((readBytes = inputStreamReader.read(buffer, 0, buffer.length)) > -1) {
+                    bufferedWriter.write(buffer, 0, readBytes);
+                }
+
+                bufferedWriter.close();
+                inputStreamReader.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (bufferedWriter != null) {
+                    try {
+                        bufferedWriter.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (inputStreamReader != null) {
+                    try {
+                        inputStreamReader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            System.exit(1);
         }
     }
 }
