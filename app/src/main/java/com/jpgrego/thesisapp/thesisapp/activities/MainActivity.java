@@ -1,5 +1,6 @@
 package com.jpgrego.thesisapp.thesisapp.activities;
 
+import android.content.Context;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -10,12 +11,18 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ContextThemeWrapper;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.support.design.widget.TabLayout;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.fragments.NavigationDrawerFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
@@ -48,10 +55,6 @@ public class MainActivity extends AppCompatActivity {
      */
     //private NavigationDrawerFragment mNavigationDrawerFragment;
 
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
         cellInfoListener = new CellInfoListener(telephonyManager);
         wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
         sensorInfoListener = new SensorInfoListener();
-        mTitle = getTitle();
         mViewPager = (ViewPager) findViewById(R.id.pager);
 
         if (mViewPager != null) {
@@ -148,17 +150,28 @@ public class MainActivity extends AppCompatActivity {
     }
     */
 
+    /*
     public void restoreActionBar() {
         final ActionBar actionBar;
+        final TabLayout tabLayout;
+        final Context context;
 
         actionBar = getSupportActionBar();
 
         if (actionBar != null) {
-            //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-            actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(mTitle);
+
+            context = new ContextThemeWrapper(getApplication(), R.style.AppTheme);
+            tabLayout = new TabLayout(context);
+            tabLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            );
+
+
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setCustomView(tabLayout);
         }
     }
+    */
 
 
     @Override
@@ -175,8 +188,8 @@ public class MainActivity extends AppCompatActivity {
         */
 
 
-        getMenuInflater().inflate(R.menu.main, menu);
-        restoreActionBar();
+        getMenuInflater().inflate(R.menu.tabbed, menu);
+        //restoreActionBar();
         return true;
         //return super.onCreateOptionsMenu(menu);
     }
