@@ -78,7 +78,7 @@ public class WifiAP implements Comparable<WifiAP> {
 
         WifiAP wifiAP = (WifiAP) o;
 
-        if (bssid.equals(wifiAP.bssid)) {
+        if (bssid == null ? wifiAP.bssid == null : bssid.equals(wifiAP.bssid)) {
             visibilityCounter = 3;
             return true;
         } else {
