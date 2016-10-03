@@ -12,7 +12,8 @@ import android.telephony.gsm.GsmCellLocation;
  */
 
 /*
- * No real point in implementing equals, since CellID is not always set
+ * No real point in implementing equals, since CellID is, unfortunately, not guaranteed to be
+ * correct
  */
 public class Cell implements Comparable<Cell> {
 

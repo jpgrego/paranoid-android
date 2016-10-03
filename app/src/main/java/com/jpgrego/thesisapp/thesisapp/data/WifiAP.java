@@ -74,7 +74,7 @@ public class WifiAP implements Comparable<WifiAP> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if(!(o instanceof WifiAP)) return false;
 
         WifiAP wifiAP = (WifiAP) o;
 
