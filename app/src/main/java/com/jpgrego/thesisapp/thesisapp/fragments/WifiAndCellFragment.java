@@ -67,7 +67,7 @@ public class WifiAndCellFragment extends Fragment {
         mainActivity = (MainActivity) this.getContext();
 
         // Inflate the layout for this fragment
-        thisView = inflater.inflate(R.layout.fragment_main, container, false);
+        thisView = inflater.inflate(R.layout.fragment_wifiandcells, container, false);
 
         cellsTable = (TableLayout) thisView.findViewById(R.id.cells_table);
         wifiTable = (TableLayout) thisView.findViewById(R.id.wifi_table);

@@ -1,6 +1,5 @@
 package com.jpgrego.thesisapp.thesisapp.activities;
 
-import android.content.Context;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -8,23 +7,17 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.ContextThemeWrapper;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.design.widget.TabLayout;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.fragments.NavigationDrawerFragment;
+import com.jpgrego.thesisapp.thesisapp.fragments.SensorsFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
 import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
@@ -58,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final ViewPager mViewPager;
         final WifiManager wifiManager;
 
         Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
@@ -66,17 +58,29 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(savedInstanceState != null) {
+            return;
+        }
+
+        final WifiAndCellFragment wifiAndCellFragment = new WifiAndCellFragment();
+        wifiAndCellFragment.setArguments(getIntent().getExtras());
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, wifiAndCellFragment).commit();
+
         telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         cellInfoListener = new CellInfoListener(telephonyManager);
         wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
         sensorInfoListener = new SensorInfoListener();
+
+        /*
         mViewPager = (ViewPager) findViewById(R.id.pager);
 
         if (mViewPager != null) {
             mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
         }
+        */
 
         telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         registerReceiver(wifiInfoReceiver,
@@ -207,22 +211,19 @@ public class MainActivity extends AppCompatActivity {
         fragmentManager = getSupportFragmentManager();
 
         switch (menuItemID) {
-            case R.id.action_settings:
-                fragment = null;
+            case R.id.action_radio:
+                fragment = new WifiAndCellFragment();
                 break;
-            case R.id.action_example:
-                fragment = new NavigationDrawerFragment();
+            case R.id.action_sensors:
+                fragment = new SensorsFragment();
                 break;
             default:
                 fragment = null;
         }
 
-        /*
         if (fragment != null) {
-            fragmentManager.beginTransaction().replace(R.id.pager, fragment);
+            fragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit();
         }
-        */
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -268,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            View rootView = inflater.inflate(R.layout.fragment_wifiandcells, container, false);
             return rootView;
         }
 
@@ -278,11 +279,11 @@ public class MainActivity extends AppCompatActivity {
             ((MainActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
-    }*/
+    }
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
 
-        public MyPagerAdapter(FragmentManager fragmentManager) {
+        MyPagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
         }
 
@@ -302,6 +303,7 @@ public class MainActivity extends AppCompatActivity {
             return 1;
         }
     }
+    */
 
     private class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
