@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by jgrego on 20-09-2016.
  */
-public class SensorInfoListener implements SensorEventListener {
+public final class SensorInfoListener implements SensorEventListener {
 
     private final Map<Sensor, float[]> sensorMap = new HashMap<>();
 

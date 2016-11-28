@@ -19,7 +19,7 @@ import java.util.Set;
 /**
  * Created by jpgrego on 24-08-2016.
  */
-public class WifiInfoReceiver extends BroadcastReceiver {
+public final class WifiInfoReceiver extends BroadcastReceiver {
 
     private static final int WIFI_SCAN_DELAY = 3000;
 

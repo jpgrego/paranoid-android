@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 /**
  * Created by jpgrego on 24-08-2016.
  */
-public class WifiAP implements Comparable<WifiAP> {
+public final class WifiAP implements Comparable<WifiAP> {
 
     private final static Pattern WIFI_SECURITY_PATTERN =
             java.util.regex.Pattern.compile(".*?(IBSS)|.*?(WPA2)|.*?(WPA)|.*?(WEP)");

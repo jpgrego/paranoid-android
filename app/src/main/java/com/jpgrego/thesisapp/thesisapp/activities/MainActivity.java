@@ -14,15 +14,12 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
 import com.jpgrego.thesisapp.thesisapp.R;
-import com.jpgrego.thesisapp.thesisapp.fragments.NavigationDrawerFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.SensorsFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
 import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -32,7 +29,7 @@ import java.lang.Process;
 import java.util.Arrays;
 
 
-public class MainActivity extends AppCompatActivity {
+public final class MainActivity extends AppCompatActivity {
 
     private static final String THESIS_DIR_NAME = "ThesisApp";
     private static final String LOG_FILE_NAME = "THESIS_APP_LOG.TXT";

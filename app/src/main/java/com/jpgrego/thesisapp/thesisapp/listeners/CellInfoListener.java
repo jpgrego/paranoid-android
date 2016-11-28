@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Created by jpgrego on 25-08-2016.
  */
-public class CellInfoListener extends PhoneStateListener {
+public final class CellInfoListener extends PhoneStateListener {
 
     private final TelephonyManager telephonyManager;
     private final List<Cell> cellList = new ArrayList<>();

@@ -3,7 +3,7 @@ package com.jpgrego.thesisapp.thesisapp.data;
 /**
  * Created by jgrego on 05-09-2016.
  */
-public class WifiUtils {
+final class WifiUtils {
 
     // enforce noninstantiability
     private WifiUtils() { throw new AssertionError(); }

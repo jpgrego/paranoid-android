@@ -5,7 +5,7 @@ import android.telephony.TelephonyManager;
 /**
  * Created by jpgrego on 03-09-2016.
  */
-public class CellUtils {
+final class CellUtils {
 
     // enforce noninstantiability
     private CellUtils() {
