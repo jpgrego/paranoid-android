@@ -10,13 +10,8 @@ import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.activities.MainActivity;
-import com.jpgrego.thesisapp.thesisapp.data.Cell;
-
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -60,8 +55,6 @@ public final class SensorsFragment extends Fragment {
     }
 
     private void updateSensorsTable(Map<Sensor, float[]> sensorMap) {
-        final List<Sensor> sensorList;
-
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
          * fact that getActivity() returns null in case the fragment isn't added to the activity,
@@ -78,33 +71,51 @@ public final class SensorsFragment extends Fragment {
         //sensorsTable.addView(sensorTableDataRow);
 
 
-        for (Cell cell : cellList) {
-            final TextView generation, mcc, mnc, cid, lac, psc, dbm;
-            final TableRow cellTableDataRow;
+        for (Map.Entry<Sensor, float[]> sensorEntry : sensorMap.entrySet()) {
+            final TableRow sensorsTableDataRow =
+                    (TableRow) View.inflate(getActivity(), R.layout.sensors_table_data_row, null);
+            final TextView sensorName = (TextView) sensorsTableDataRow.findViewById(R.id.name);
+            final String sensorType = getTypeFromInt(sensorEntry.getKey().getType());
+            sensorName.setText(
+                    sensorType.equals("Unknown") ? sensorEntry.getKey().getName() : sensorType);
 
-            cellTableDataRow = (TableRow) View.inflate(getActivity(), R.layout.cell_table_data_row,
-                    null);
-            generation = (TextView) cellTableDataRow.findViewById(R.id.generation);
-            mcc = (TextView) cellTableDataRow.findViewById(R.id.mcc);
-            mnc = (TextView) cellTableDataRow.findViewById(R.id.mnc);
-            cid = (TextView) cellTableDataRow.findViewById(R.id.cid);
-            lac = (TextView) cellTableDataRow.findViewById(R.id.lac);
-            psc = (TextView) cellTableDataRow.findViewById(R.id.psc);
-            dbm = (TextView) cellTableDataRow.findViewById(R.id.cell_dbm);
-            generation.setText(cell.generation);
-            mcc.setText(String.format(Locale.US, "%d", cell.mcc));
-            mnc.setText(String.format(Locale.US, "%d", cell.mnc));
-            cid.setText(String.format(Locale.US, "%d", cell.cid));
-            lac.setText(String.format(Locale.US, "%d", cell.lac));
-            psc.setText(String.format(Locale.US, "%d", cell.psc));
-            dbm.setText(String.format(Locale.US, "%d", cell.dbm));
 
-            if (cell.isRegisteredCell()) {
-                cellTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
-            }
-
-            cellsTable.addView(cellTableDataRow, new TableLayout.LayoutParams(
+            sensorsTable.addView(sensorsTableDataRow, new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static String getTypeFromInt(final int type) {
+        switch(type) {
+            case Sensor.TYPE_ACCELEROMETER:
+                return "Accelerometer";
+            case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                return "Ambient Temperature";
+            case Sensor.TYPE_GRAVITY:
+                return "Gravity";
+            case Sensor.TYPE_GYROSCOPE:
+                return "Gyroscope";
+            case Sensor.TYPE_LIGHT:
+                return "Light";
+            case Sensor.TYPE_LINEAR_ACCELERATION:
+                return "Linear Acceleration";
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                return "Magnetic Field";
+            case Sensor.TYPE_PRESSURE:
+                return "Pressure";
+            case Sensor.TYPE_PROXIMITY:
+                return "Proximity";
+            case Sensor.TYPE_RELATIVE_HUMIDITY:
+                return "Relative Humidity";
+            case Sensor.TYPE_ROTATION_VECTOR:
+                return "Rotation Vector";
+            case Sensor.TYPE_ORIENTATION:
+                return "Orientation";
+            case Sensor.TYPE_TEMPERATURE:
+                return "Device temperature";
+            default:
+                return "Unknown";
         }
     }
 
