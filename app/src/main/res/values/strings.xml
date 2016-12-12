@@ -25,4 +25,11 @@
     <string name="ssid_string">SSID</string>
     <string name="channel_string">Ch</string>
 
+    <!-- sensor strings -->
+    <string name="sensors_title">Sensors</string>
+    <string name="sensors_name">Name</string>
+    <string name="sensors_xcoord">X Axis</string>
+    <string name="sensors_ycoord">Y Axis</string>
+    <string name="sensors_zcoord">Z Axis</string>
+
 </resources>

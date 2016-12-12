@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Process;
 import java.util.Arrays;
+import java.util.HashMap;
 
 
 public final class MainActivity extends AppCompatActivity {
@@ -103,9 +104,15 @@ public final class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_NONE);
-        unregisterReceiver(wifiInfoReceiver);
-        sensorManager.unregisterListener(sensorInfoListener);
+        if(telephonyManager != null) {
+            telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_NONE);
+        }
+        if(wifiInfoReceiver != null) {
+            unregisterReceiver(wifiInfoReceiver);
+        }
+        if(sensorManager != null) {
+            sensorManager.unregisterListener(sensorInfoListener);
+        }
     }
 
     /*
@@ -213,6 +220,9 @@ public final class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_sensors:
                 fragment = new SensorsFragment();
+                final Bundle bundle = new Bundle();
+                bundle.putSerializable("SENSOR_MAP", sensorInfoListener.getSensorMap());
+                fragment.setArguments(bundle);
                 break;
             default:
                 fragment = null;

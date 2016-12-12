@@ -4,20 +4,19 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by jgrego on 20-09-2016.
  */
 public final class SensorInfoListener implements SensorEventListener {
 
-    private final Map<Sensor, float[]> sensorMap = new HashMap<>();
+    private final HashMap<Sensor, float[]> sensorMap = new HashMap<>();
 
     public SensorInfoListener() {
 
     }
 
-    public Map<Sensor, float[]> getSensorMap() {
+    public HashMap<Sensor, float[]> getSensorMap() {
         return sensorMap;
     }
 

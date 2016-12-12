@@ -9,27 +9,35 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:text="@string/sensors_name"
+        android:textStyle="bold"/>
 
     <TextView
-        android:id="@+id/x_axis"
+        android:id="@+id/xcoord"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:text="@string/sensors_xcoord"
+        android:textStyle="bold"/>
 
     <TextView
-        android:id="@+id/y_axis"
+        android:id="@+id/ycoord"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:text="@string/sensors_ycoord"
+        android:textStyle="bold"/>
 
     <TextView
-        android:id="@+id/z_axis"
+        android:id="@+id/zcoord"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:text="@string/sensors_zcoord"
+        android:textStyle="bold"/>
 
 </TableRow>

@@ -9,29 +9,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/cells_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
             <TextView
-                android:id="@+id/cells_title"
+                android:id="@+id/sensors_title"
                 style="@style/titleTextViewStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Test" />
-
-            <LinearLayout
-                android:id="@+id/cells_table_header_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-            </LinearLayout>
+                android:text="@string/sensors_title" />
 
             <TableLayout
-                android:id="@+id/cells_table"
+                android:id="@+id/sensors_table"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:divider="?android:attr/listDivider"
@@ -39,6 +25,5 @@
 
             </TableLayout>
 
-        </LinearLayout>
     </LinearLayout>
 </ScrollView>
