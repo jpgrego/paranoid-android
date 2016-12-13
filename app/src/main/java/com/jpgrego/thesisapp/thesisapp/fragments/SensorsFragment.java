@@ -1,8 +1,11 @@
 package com.jpgrego.thesisapp.thesisapp.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,9 +14,11 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import com.jpgrego.thesisapp.thesisapp.R;
-import com.jpgrego.thesisapp.thesisapp.activities.MainActivity;
+import com.jpgrego.thesisapp.thesisapp.data.MySensor;
+import com.jpgrego.thesisapp.thesisapp.utils.Constants;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Created by jpgrego on 28/11/16.
@@ -21,18 +26,16 @@ import java.util.Map;
 
 public final class SensorsFragment extends Fragment {
 
-    private static final Handler SENSOR_UPDATE_HANDLER = new Handler();
-
-    private TableLayout sensorsTable;
-    private MainActivity mainActivity;
-
-    private final Runnable sensorUpdateRunnable = new Runnable() {
+    private final BroadcastReceiver sensorInfoReceiver = new BroadcastReceiver() {
         @Override
-        public void run() {
-            updateSensorsTable(mainActivity.getSensorInfoListener().getSensorMap());
-            SENSOR_UPDATE_HANDLER.postDelayed(this, 3000);
+        public void onReceive(Context context, Intent intent) {
+            final ArrayList<MySensor> sensorList = intent.getParcelableArrayListExtra(
+                    Constants.SENSOR_INFO_LIST_INTENT_EXTRA_NAME);
+            updateSensorsTable(sensorList);
         }
     };
+
+    private TableLayout sensorsTable;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,17 +54,17 @@ public final class SensorsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mainActivity = (MainActivity) this.getContext();
-        SENSOR_UPDATE_HANDLER.post(sensorUpdateRunnable);
+        getActivity().registerReceiver(sensorInfoReceiver,
+                new IntentFilter(Constants.SENSOR_INTENT_FILTER_NAME));
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        SENSOR_UPDATE_HANDLER.removeCallbacks(sensorUpdateRunnable);
+        getActivity().unregisterReceiver(sensorInfoReceiver);
     }
 
-    private void updateSensorsTable(Map<Sensor, float[]> sensorMap) {
+    private void updateSensorsTable(List<MySensor> sensorList) {
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
          * fact that getActivity() returns null in case the fragment isn't added to the activity,
@@ -77,7 +80,7 @@ public final class SensorsFragment extends Fragment {
         sensorsTable.removeAllViews();
         sensorsTable.addView(sensorTableTitleRow);
 
-        for (Map.Entry<Sensor, float[]> sensorEntry : sensorMap.entrySet()) {
+        for (MySensor sensor : sensorList) {
             final TableRow sensorsTableDataRow =
                     (TableRow) View.inflate(getActivity(), R.layout.sensors_table_data_row, null);
             final TextView sensorName = (TextView) sensorsTableDataRow.findViewById(R.id.name);
@@ -88,15 +91,13 @@ public final class SensorsFragment extends Fragment {
             final TextView sensorZAxisVal =
                     (TextView) sensorsTableDataRow.findViewById(R.id.z_axis);
 
-            final String sensorType = getTypeFromInt(sensorEntry.getKey().getType());
+            final String sensorType = getTypeFromInt(sensor.getSensorType());
             sensorName.setText(
-                    sensorType.equals("Unknown") ? sensorEntry.getKey().getName() : sensorType);
+                    sensorType.equals("Unknown") ? sensor.getSensorName() : sensorType);
 
-            final float xVal = sensorEntry.getValue()[0], yVal = sensorEntry.getValue()[1],
-                    zVal = sensorEntry.getValue()[2];
-            sensorXAxisVal.setText(String.format(Locale.US, "%.3f", xVal));
-            sensorYAxisVal.setText(String.format(Locale.US, "%.3f", yVal));
-            sensorZAxisVal.setText(String.format(Locale.US, "%.3f", zVal));
+            sensorXAxisVal.setText(String.format(Locale.US, "%.3f", sensor.getXAxis()));
+            sensorYAxisVal.setText(String.format(Locale.US, "%.3f", sensor.getYAxis()));
+            sensorZAxisVal.setText(String.format(Locale.US, "%.3f", sensor.getZAxis()));
 
             sensorsTable.addView(sensorsTableDataRow, new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));

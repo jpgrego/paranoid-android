@@ -1,8 +1,11 @@
 package com.jpgrego.thesisapp.thesisapp.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +15,11 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import com.jpgrego.thesisapp.thesisapp.R;
-import com.jpgrego.thesisapp.thesisapp.activities.MainActivity;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import com.jpgrego.thesisapp.thesisapp.data.WifiAP;
+import com.jpgrego.thesisapp.thesisapp.utils.Constants;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,36 +28,35 @@ import java.util.Locale;
  */
 public final class WifiAndCellFragment extends Fragment {
 
-    private static final int CELL_UPDATE_TABLE_PERIOD = 1000;
-    private static final int WIFI_UPDATE_TABLE_PERIOD = 1000;
     private static final int HIGHLIGHTED_BACKGROUND = Color.parseColor("#93a2a2");
     private static final int FADED_COLOR = Color.parseColor("#808080");
 
-    private final Handler cellUpdateHandler = new Handler(), wifiUpdateHandler = new Handler();
-    private final Runnable cellUpdateRunnable = new Runnable() {
+    private final BroadcastReceiver cellInfoReceiver = new BroadcastReceiver() {
         @Override
-        public void run() {
-            updateCellTable();
-            cellUpdateHandler.postDelayed(this, CELL_UPDATE_TABLE_PERIOD);
+        public void onReceive(Context context, Intent intent) {
+            final ArrayList<Cell> cellList = intent.getParcelableArrayListExtra(
+                    Constants.CELL_INFO_LIST_INTENT_EXTRA_NAME);
+            updateCellTable(cellList);
         }
     };
-    private final Runnable wifiUpdateRunnable = new Runnable() {
+
+    private final BroadcastReceiver wifiInfoReceiver = new BroadcastReceiver() {
         @Override
-        public void run() {
-            updateWifiTable();
-            wifiUpdateHandler.postDelayed(this, WIFI_UPDATE_TABLE_PERIOD);
+        public void onReceive(Context context, Intent intent) {
+            final ArrayList<WifiAP> wifiAPList = intent.getParcelableArrayListExtra(
+                    Constants.WIFI_INFO_LIST_INTENT_EXTRA_NAME);
+            final String currentBSSID = intent.getStringExtra(
+                    Constants.WIFI_CURRENT_BSSID_INTENT_EXTRA_NAME);
+            updateWifiTable(wifiAPList, currentBSSID);
         }
     };
 
     private TableLayout cellsTable, wifiTable;
-    private MainActivity mainActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View thisView;
-
-        mainActivity = (MainActivity) this.getContext();
 
         // Inflate the layout for this fragment
         thisView = inflater.inflate(R.layout.fragment_wifiandcells, container, false);
@@ -66,20 +70,21 @@ public final class WifiAndCellFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        cellUpdateHandler.post(cellUpdateRunnable);
-        wifiUpdateHandler.post(wifiUpdateRunnable);
+        getActivity().registerReceiver(cellInfoReceiver,
+                new IntentFilter(Constants.CELL_INTENT_FILTER_NAME));
+        getActivity().registerReceiver(wifiInfoReceiver,
+                new IntentFilter(Constants.WIFI_INTENT_FILTER_NAME));
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        cellUpdateHandler.removeCallbacks(cellUpdateRunnable);
-        wifiUpdateHandler.removeCallbacks(wifiUpdateRunnable);
+        getActivity().unregisterReceiver(cellInfoReceiver);
+        getActivity().unregisterReceiver(wifiInfoReceiver);
     }
 
-    private void updateCellTable() {
+    private void updateCellTable(final List<Cell> cellList) {
         final TableRow cellTableTitleRow;
-        final List<Cell> cellList;
 
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
@@ -95,9 +100,6 @@ public final class WifiAndCellFragment extends Fragment {
 
         cellsTable.removeAllViews();
         cellsTable.addView(cellTableTitleRow);
-
-        cellList = this.mainActivity.getCellInfoListener().getSortedCellList();
-
         addCellsToTable(cellList);
     }
 
@@ -132,10 +134,9 @@ public final class WifiAndCellFragment extends Fragment {
         }
     }
 
-    private void updateWifiTable() {
+    private void updateWifiTable(final List<WifiAP> wifiAPList,
+                                 final String currentWifiConnectionBSSID) {
         final TableRow wifiTableTitleRow;
-        final List<WifiAP> wifiAPList;
-        final String currentWifiConnectionBSSID;
 
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
@@ -151,10 +152,6 @@ public final class WifiAndCellFragment extends Fragment {
 
         wifiTable.removeAllViews();
         wifiTable.addView(wifiTableTitleRow);
-
-        wifiAPList = this.mainActivity.getWifiInfoReceiver().getOrderedWifiAPList();
-        currentWifiConnectionBSSID = this.mainActivity.getWifiInfoReceiver()
-                .getCurrentWifiConnectionBSSID();
 
         for (WifiAP wifiAP : wifiAPList) {
             final TableRow wifiTableDataRow;

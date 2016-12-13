@@ -3,26 +3,33 @@ package com.jpgrego.thesisapp.thesisapp.listeners;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import java.util.HashMap;
+import com.jpgrego.thesisapp.thesisapp.data.MySensor;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by jgrego on 20-09-2016.
  */
 public final class SensorInfoListener implements SensorEventListener {
 
-    private final HashMap<Sensor, float[]> sensorMap = new HashMap<>();
+    private final Set<MySensor> sensorSet = new HashSet<>();
 
     public SensorInfoListener() {
 
     }
 
-    public HashMap<Sensor, float[]> getSensorMap() {
-        return sensorMap;
+    public ArrayList<MySensor> getSensorList() {
+        synchronized (sensorSet) {
+            return new ArrayList<>(sensorSet);
+        }
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        sensorMap.put(event.sensor, event.values);
+        final MySensor mySensor = new MySensor(event);
+        sensorSet.remove(mySensor);
+        sensorSet.add(mySensor);
     }
 
     @Override

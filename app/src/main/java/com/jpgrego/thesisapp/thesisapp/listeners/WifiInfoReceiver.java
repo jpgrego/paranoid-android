@@ -98,13 +98,13 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
     }
 
-    public List<WifiAP> getOrderedWifiAPList() {
-        final List<WifiAP> wifiAPList;
+    public ArrayList<WifiAP> getOrderedWifiAPList() {
+        final ArrayList<WifiAP> wifiAPList;
 
         synchronized (wifiAPSet) {
             wifiAPList = new ArrayList<>(wifiAPSet);
             Collections.sort(wifiAPList, Collections.reverseOrder());
-            return Collections.unmodifiableList(wifiAPList);
+            return wifiAPList;
         }
     }
 

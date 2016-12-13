@@ -22,7 +22,7 @@ import java.util.List;
 public final class CellInfoListener extends PhoneStateListener {
 
     private final TelephonyManager telephonyManager;
-    private final List<Cell> cellList = new ArrayList<>();
+    private final ArrayList<Cell> cellList = new ArrayList<>();
     private int mcc, mnc;
     private int networkType;
     private int registedCellSignalStrength = -1;
@@ -56,10 +56,10 @@ public final class CellInfoListener extends PhoneStateListener {
         getCellInfo();
     }
 
-    public List<Cell> getSortedCellList() {
+    public ArrayList<Cell> getSortedCellList() {
         synchronized (cellList) {
             Collections.sort(cellList);
-            return Collections.unmodifiableList(cellList);
+            return cellList;
         }
     }
 

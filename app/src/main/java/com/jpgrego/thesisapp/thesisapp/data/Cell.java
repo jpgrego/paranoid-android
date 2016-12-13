@@ -1,5 +1,7 @@
 package com.jpgrego.thesisapp.thesisapp.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellInfoGsm;
@@ -15,11 +17,22 @@ import android.telephony.gsm.GsmCellLocation;
  * No real point in implementing equals, since CellID is, unfortunately, not guaranteed to be
  * correct
  */
-public final class Cell implements Comparable<Cell> {
+public final class Cell implements Comparable<Cell>, Parcelable {
 
     public final int mcc, mnc, cid, lac, psc, dbm;
     public final String generation;
     private boolean isRegisteredCell = false;
+
+    private Cell(Parcel in) {
+        this.mcc = in.readInt();
+        this.mnc = in.readInt();
+        this.cid = in.readInt();
+        this.lac = in.readInt();
+        this.psc = in.readInt();
+        this.dbm = in.readInt();
+        this.generation = in.readString();
+        this.isRegisteredCell = in.readByte() != 0;
+    }
 
     public Cell(final int networkType, @NonNull final CellInfoGsm cellInfoGsm) {
         final CellIdentityGsm cellIdentityGsm;
@@ -62,6 +75,18 @@ public final class Cell implements Comparable<Cell> {
         this.generation = CellUtils.getGenerationFromNetworkType(networkType);
     }
 
+    public static final Creator<Cell> CREATOR = new Creator<Cell>() {
+        @Override
+        public Cell createFromParcel(Parcel in) {
+            return new Cell(in);
+        }
+
+        @Override
+        public Cell[] newArray(int size) {
+            return new Cell[size];
+        }
+    };
+
     public void setRegisteredCell() {
         isRegisteredCell = true;
     }
@@ -75,4 +100,20 @@ public final class Cell implements Comparable<Cell> {
         return another.dbm - this.dbm;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(mcc);
+        parcel.writeInt(mnc);
+        parcel.writeInt(cid);
+        parcel.writeInt(lac);
+        parcel.writeInt(psc);
+        parcel.writeInt(dbm);
+        parcel.writeString(generation);
+        parcel.writeByte((byte) (isRegisteredCell ? 1 : 0));
+    }
 }
