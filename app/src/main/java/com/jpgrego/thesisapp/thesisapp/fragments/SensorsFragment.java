@@ -29,9 +29,7 @@ public final class SensorsFragment extends Fragment {
     private final Runnable sensorUpdateRunnable = new Runnable() {
         @Override
         public void run() {
-            if(mainActivity != null && mainActivity.getSensorInfoListener() != null) {
-                updateSensorsTable(mainActivity.getSensorInfoListener().getSensorMap());
-            }
+            updateSensorsTable(mainActivity.getSensorInfoListener().getSensorMap());
             SENSOR_UPDATE_HANDLER.postDelayed(this, 3000);
         }
     };
@@ -39,7 +37,6 @@ public final class SensorsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);
     }
 
     @Override

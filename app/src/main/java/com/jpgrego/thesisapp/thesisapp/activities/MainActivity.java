@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Process;
 import java.util.Arrays;
-import java.util.HashMap;
 
 
 public final class MainActivity extends AppCompatActivity {
@@ -41,12 +40,6 @@ public final class MainActivity extends AppCompatActivity {
     private TelephonyManager telephonyManager;
     private SensorManager sensorManager;
 
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-    //private NavigationDrawerFragment mNavigationDrawerFragment;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         final WifiManager wifiManager;
@@ -56,14 +49,12 @@ public final class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if(savedInstanceState != null) {
-            return;
+        if(savedInstanceState == null) {
+            final Fragment wifiAndCellFragment = new WifiAndCellFragment();
+            //wifiAndCellFragment.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, wifiAndCellFragment).commit();
         }
-
-        final WifiAndCellFragment wifiAndCellFragment = new WifiAndCellFragment();
-        wifiAndCellFragment.setArguments(getIntent().getExtras());
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, wifiAndCellFragment).commit();
 
         telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -72,13 +63,6 @@ public final class MainActivity extends AppCompatActivity {
         wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
         sensorInfoListener = new SensorInfoListener();
 
-        /*
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-
-        if (mViewPager != null) {
-            mViewPager.setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
-        }
-        */
 
         telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         registerReceiver(wifiInfoReceiver,
@@ -90,15 +74,6 @@ public final class MainActivity extends AppCompatActivity {
             sensorManager.registerListener(sensorInfoListener, sensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
         }
-        /*
-        mNavigationDrawerFragment = (NavigationDrawerFragment)
-                getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
-
-        // Set up the drawer.
-        mNavigationDrawerFragment.setUp(
-                R.id.navigation_drawer,
-                (DrawerLayout) findViewById(R.id.drawer_layout));
-        */
     }
 
     @Override
@@ -220,9 +195,6 @@ public final class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_sensors:
                 fragment = new SensorsFragment();
-                final Bundle bundle = new Bundle();
-                bundle.putSerializable("SENSOR_MAP", sensorInfoListener.getSensorMap());
-                fragment.setArguments(bundle);
                 break;
             default:
                 fragment = null;
