@@ -1,7 +1,5 @@
 package com.jpgrego.thesisapp.thesisapp.services;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
@@ -10,15 +8,12 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.util.Log;
-
-import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import com.jpgrego.thesisapp.thesisapp.data.MySensor;
 import com.jpgrego.thesisapp.thesisapp.data.WifiAP;
+import com.jpgrego.thesisapp.thesisapp.db.DatabaseHelper;
 import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
@@ -50,6 +45,7 @@ public final class DataService extends Service {
         final CellInfoListener cellInfoListener = new CellInfoListener(telephonyManager);
         final WifiInfoReceiver wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
         final SensorInfoListener sensorInfoListener = new SensorInfoListener();
+        final DatabaseHelper dbHelper = new DatabaseHelper(this);
 
         telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         registerReceiver(wifiInfoReceiver,
