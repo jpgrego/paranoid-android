@@ -41,7 +41,8 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
                 this.securityLabel = matcher.group(2);
 
                 if(this.securityLabel == null) {
-                    Log.e(this.getClass().getName(), "Weird WiFi capabilities found, please investigate!");
+                    Log.e(this.getClass().getName(),
+                            "Weird WiFi capabilities found, please investigate!");
                     Log.e(this.getClass().getName(), "capabilities: " + scanResult.capabilities);
                     System.exit(1);
                 }
