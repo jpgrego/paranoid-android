@@ -14,7 +14,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import com.jpgrego.thesisapp.thesisapp.data.MySensor;
@@ -145,8 +144,8 @@ public final class DataService extends Service {
 
     private Notification generateNotification() {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
-        notificationBuilder.setSmallIcon(R.drawable.wifi_security_open);
-        notificationBuilder.setContentTitle("ThesisApp");
+        notificationBuilder.setSmallIcon(R.drawable.watchtower_notification);
+        notificationBuilder.setContentTitle(getResources().getString(R.string.app_name));
         notificationBuilder.setContentText("Monitoring!");
         return notificationBuilder.build();
     }
