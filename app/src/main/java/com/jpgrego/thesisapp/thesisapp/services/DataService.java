@@ -25,6 +25,11 @@ import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
 import com.jpgrego.thesisapp.thesisapp.utils.Constants;
 import java.util.ArrayList;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by jpgrego on 13/12/16.
@@ -32,8 +37,14 @@ import java.util.ArrayList;
 
 public final class DataService extends Service {
 
+
     private static final int SEND_INFO_PERIOD = 3000;
-    private static final Handler infoHandler = new Handler();
+    private static final Handler INFO_HANDLER = new Handler();
+    private final MozillaLocationService mozillaLocationService = new Retrofit.Builder()
+            .baseUrl(MozillaLocationService.MOZILLA_LOCATION_SERVICE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(MozillaLocationService.class);
 
     @Nullable
     @Override
@@ -64,7 +75,7 @@ public final class DataService extends Service {
         registerReceiver(wifiInfoReceiver,
                 new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
 
-        for(Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
+        for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
             sensorManager.registerListener(sensorInfoListener, sensor, 3000000);
         }
 
@@ -75,12 +86,15 @@ public final class DataService extends Service {
                 final ArrayList<WifiAP> wifiAPList = wifiInfoReceiver.getOrderedWifiAPList();
                 final ArrayList<MySensor> sensorList = sensorInfoListener.getSensorList();
 
+
+                mozillaLocationService.geolocate().enqueue(new LocationCallback());
+
                 sendCellInfo(cellList);
                 sendWifiInfo(wifiAPList);
                 sendSensorInfo(sensorList);
                 writeCellInfoToDB(cellList);
                 writeWifiAPInfoToDB(wifiAPList);
-                infoHandler.postDelayed(this, SEND_INFO_PERIOD);
+                INFO_HANDLER.postDelayed(this, SEND_INFO_PERIOD);
             }
 
             private void sendCellInfo(final ArrayList<Cell> cellList) {
@@ -106,8 +120,8 @@ public final class DataService extends Service {
             private void writeCellInfoToDB(final ArrayList<Cell> cellList) {
                 final ContentValues values = new ContentValues();
 
-                for(Cell cell : cellList) {
-                    if(cell.cid == -1) {
+                for (Cell cell : cellList) {
+                    if (cell.cid == -1) {
                         continue;
                     }
                     values.put(DatabaseContract.CellEntry.CID_COLUMN, cell.cid);
@@ -116,7 +130,7 @@ public final class DataService extends Service {
                     values.put(DatabaseContract.CellEntry.LAC_COLUMN, cell.lac);
                     values.put(DatabaseContract.CellEntry.PSC_COLUMN, cell.psc);
                 }
-                if(values.size() > 0) {
+                if (values.size() > 0) {
                     db.insertWithOnConflict(DatabaseContract.CellEntry.TABLE_NAME, null, values,
                             SQLiteDatabase.CONFLICT_IGNORE);
                 }
@@ -125,19 +139,19 @@ public final class DataService extends Service {
             private void writeWifiAPInfoToDB(final ArrayList<WifiAP> wifiAPList) {
                 final ContentValues values = new ContentValues();
 
-                for(WifiAP wifiAP : wifiAPList) {
+                for (WifiAP wifiAP : wifiAPList) {
                     values.put(DatabaseContract.WifiAPEntry.BSSID_COLUMN, wifiAP.bssid);
                     values.put(DatabaseContract.WifiAPEntry.SSID_COLUMN, wifiAP.ssid);
                     values.put(DatabaseContract.WifiAPEntry.CHANNEL_COLUMN, wifiAP.channel);
                     values.put(DatabaseContract.WifiAPEntry.SECURITY, wifiAP.securityLabel);
                 }
-                if(values.size() > 0) {
+                if (values.size() > 0) {
                     db.insertWithOnConflict(DatabaseContract.WifiAPEntry.TABLE_NAME, null, values,
                             SQLiteDatabase.CONFLICT_IGNORE);
                 }
             }
         };
-        infoHandler.post(sendInfoRunnable);
+        INFO_HANDLER.post(sendInfoRunnable);
         //super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
@@ -149,4 +163,19 @@ public final class DataService extends Service {
         notificationBuilder.setContentText("Monitoring!");
         return notificationBuilder.build();
     }
+
+    private class LocationCallback implements Callback<MozillaLocationResponse> {
+        @Override
+        public void onResponse(Call<MozillaLocationResponse> call,
+                               Response<MozillaLocationResponse> response) {
+            final MozillaLocationResponse resp = response.body();
+            System.out.println("success!");
+        }
+
+        @Override
+        public void onFailure(Call<MozillaLocationResponse> call, Throwable t) {
+
+        }
+    }
 }
+
