@@ -3,10 +3,10 @@ package com.jpgrego.thesisapp.thesisapp.data;
 import android.net.wifi.ScanResult;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import com.jpgrego.thesisapp.thesisapp.R;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
@@ -23,7 +23,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     private final String securityLabel, ssid, bssid;
     private final int wifiSecurityImageResource, channel, frequency, dbm;
     private final AtomicInteger visibilityCounter;
-    private final AtomicLong age;
+    private final AtomicLong timestamp;
 
     private WifiAP(Parcel in) {
         securityLabel = in.readString();
@@ -34,7 +34,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         frequency = in.readInt();
         dbm = in.readInt();
         visibilityCounter = new AtomicInteger(in.readInt());
-        age = new AtomicLong(in.readLong());
+        timestamp = new AtomicLong(in.readLong());
     }
 
     private WifiAP(final ScanResult scanResult) {
@@ -81,7 +81,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         this.frequency = scanResult.frequency;
         this.dbm = scanResult.level;
         this.visibilityCounter = new AtomicInteger(3);
-        this.age = new AtomicLong(scanResult.timestamp);
+        this.timestamp = new AtomicLong(scanResult.timestamp);
     }
 
     public static WifiAP fromScanResult(final ScanResult scanResult) {
@@ -109,7 +109,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
         if (bssid != null && bssid.equals(wifiAP.bssid)) {
             visibilityCounter.set(3);
-            age.set(wifiAP.getAge().get());
+            timestamp.set(wifiAP.timestamp.get());
             return true;
         } else {
             return false;
@@ -141,7 +141,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         parcel.writeInt(frequency);
         parcel.writeInt(dbm);
         parcel.writeInt(visibilityCounter.get());
-        parcel.writeLong(age.get());
+        parcel.writeLong(timestamp.get());
     }
 
     public String getSecurityLabel() {
@@ -176,8 +176,8 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         return visibilityCounter;
     }
 
-    public AtomicLong getAge() {
-        return age;
+    public long getTimeSinceLastSeen() {
+        return SystemClock.elapsedRealtime() * 1000 - this.timestamp.get();
     }
 
 

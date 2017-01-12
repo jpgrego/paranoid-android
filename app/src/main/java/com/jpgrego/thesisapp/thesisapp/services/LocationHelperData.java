@@ -82,11 +82,12 @@ final class LocationHelperData {
     private static class WifiAccessPoint {
 
         private final String macAddress;
-        private final int age, channel, frequency, signalStrength;
+        private final int channel, frequency, signalStrength;
+        private final long age;
 
         private WifiAccessPoint(final WifiAP wifiAP) {
             this.macAddress = wifiAP.getBssid();
-            this.age = -1;
+            this.age = wifiAP.getTimeSinceLastSeen();
             this.channel = wifiAP.getChannel();
             this.frequency = wifiAP.getFrequency();
             this.signalStrength = wifiAP.getDbm();
