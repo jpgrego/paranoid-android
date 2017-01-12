@@ -25,6 +25,9 @@ import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
 import com.jpgrego.thesisapp.thesisapp.utils.Constants;
 import java.util.ArrayList;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,8 +43,13 @@ public final class DataService extends Service {
 
     private static final int SEND_INFO_PERIOD = 3000;
     private static final Handler INFO_HANDLER = new Handler();
+
+    private final HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
+    private final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder().addInterceptor(loggingInterceptor);
+
     private final MozillaLocationService mozillaLocationService = new Retrofit.Builder()
             .baseUrl(MozillaLocationService.MOZILLA_LOCATION_SERVICE_URL)
+            .client(clientBuilder.build())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(MozillaLocationService.class);
@@ -86,8 +94,17 @@ public final class DataService extends Service {
                 final ArrayList<WifiAP> wifiAPList = wifiInfoReceiver.getOrderedWifiAPList();
                 final ArrayList<MySensor> sensorList = sensorInfoListener.getSensorList();
 
+                final String networkOperator = telephonyManager.getNetworkOperator();
 
-                mozillaLocationService.geolocate().enqueue(new LocationCallback());
+                final int homeMCC = Integer.parseInt(networkOperator.substring(0, 3));
+                final int homeMNC = Integer.parseInt(networkOperator.substring(3));
+
+                final LocationHelperData locationHelperData = new LocationHelperData(
+                        telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC, cellList,
+                        wifiAPList);
+
+                mozillaLocationService.geolocate(locationHelperData)
+                        .enqueue(new LocationCallback());
 
                 sendCellInfo(cellList);
                 sendWifiInfo(wifiAPList);
@@ -121,14 +138,14 @@ public final class DataService extends Service {
                 final ContentValues values = new ContentValues();
 
                 for (Cell cell : cellList) {
-                    if (cell.cid == -1) {
+                    if (cell.getCid() == -1) {
                         continue;
                     }
-                    values.put(DatabaseContract.CellEntry.CID_COLUMN, cell.cid);
-                    values.put(DatabaseContract.CellEntry.MCC_COLUMN, cell.mcc);
-                    values.put(DatabaseContract.CellEntry.MNC_COLUMN, cell.mnc);
-                    values.put(DatabaseContract.CellEntry.LAC_COLUMN, cell.lac);
-                    values.put(DatabaseContract.CellEntry.PSC_COLUMN, cell.psc);
+                    values.put(DatabaseContract.CellEntry.CID_COLUMN, cell.getCid());
+                    values.put(DatabaseContract.CellEntry.MCC_COLUMN, cell.getMcc());
+                    values.put(DatabaseContract.CellEntry.MNC_COLUMN, cell.getMnc());
+                    values.put(DatabaseContract.CellEntry.LAC_COLUMN, cell.getLac());
+                    values.put(DatabaseContract.CellEntry.PSC_COLUMN, cell.getPsc());
                 }
                 if (values.size() > 0) {
                     db.insertWithOnConflict(DatabaseContract.CellEntry.TABLE_NAME, null, values,
@@ -140,10 +157,10 @@ public final class DataService extends Service {
                 final ContentValues values = new ContentValues();
 
                 for (WifiAP wifiAP : wifiAPList) {
-                    values.put(DatabaseContract.WifiAPEntry.BSSID_COLUMN, wifiAP.bssid);
-                    values.put(DatabaseContract.WifiAPEntry.SSID_COLUMN, wifiAP.ssid);
-                    values.put(DatabaseContract.WifiAPEntry.CHANNEL_COLUMN, wifiAP.channel);
-                    values.put(DatabaseContract.WifiAPEntry.SECURITY, wifiAP.securityLabel);
+                    values.put(DatabaseContract.WifiAPEntry.BSSID_COLUMN, wifiAP.getBssid());
+                    values.put(DatabaseContract.WifiAPEntry.SSID_COLUMN, wifiAP.getSsid());
+                    values.put(DatabaseContract.WifiAPEntry.CHANNEL_COLUMN, wifiAP.getChannel());
+                    values.put(DatabaseContract.WifiAPEntry.SECURITY, wifiAP.getSecurityLabel());
                 }
                 if (values.size() > 0) {
                     db.insertWithOnConflict(DatabaseContract.WifiAPEntry.TABLE_NAME, null, values,
@@ -164,7 +181,7 @@ public final class DataService extends Service {
         return notificationBuilder.build();
     }
 
-    private class LocationCallback implements Callback<MozillaLocationResponse> {
+    private static class LocationCallback implements Callback<MozillaLocationResponse> {
         @Override
         public void onResponse(Call<MozillaLocationResponse> call,
                                Response<MozillaLocationResponse> response) {

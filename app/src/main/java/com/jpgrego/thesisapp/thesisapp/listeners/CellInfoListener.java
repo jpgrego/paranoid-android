@@ -83,7 +83,7 @@ public final class CellInfoListener extends PhoneStateListener {
                 final CellInfoGsm cellInfoGsm;
                 if (cellInfo instanceof CellInfoGsm) {
                     cellInfoGsm = (CellInfoGsm) cellInfo;
-                    cellList.add(new Cell(this.networkType, cellInfoGsm));
+                    cellList.add(Cell.fromCellInfoGsm(this.networkType, cellInfoGsm));
                 }
             }
             return true;
@@ -104,9 +104,8 @@ public final class CellInfoListener extends PhoneStateListener {
 
             if (cellLocation != null && cellLocation instanceof GsmCellLocation) {
                 gsmCellLocation = (GsmCellLocation) cellLocation;
-                registeredCell = new Cell(this.networkType, mcc, mnc, registedCellSignalStrength,
-                        gsmCellLocation);
-                registeredCell.setRegisteredCell();
+                registeredCell = Cell.fromGsmCellLocation(this.networkType, mcc, mnc,
+                        registedCellSignalStrength, gsmCellLocation);
                 cellList.add(registeredCell);
             }
         } catch (SecurityException ex) {
@@ -126,9 +125,8 @@ public final class CellInfoListener extends PhoneStateListener {
 
                 if (neighboringCellInfoList != null) {
                     for (NeighboringCellInfo neighboringCellInfo : neighboringCellInfoList) {
-                        this.cellList.add(new Cell(this.networkType, mcc, mnc,
+                        this.cellList.add(Cell.fromNeighboringCellInfo(mcc, mnc,
                                 neighboringCellInfo));
-                        //addToCellTable(neighboringCellInfo);
                     }
                 }
 

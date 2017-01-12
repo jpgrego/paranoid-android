@@ -5,8 +5,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.util.Log;
-
 import com.jpgrego.thesisapp.thesisapp.R;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,9 +20,10 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     private final static Pattern WIFI_SECURITY_PATTERN =
             java.util.regex.Pattern.compile(".*?(IBSS)|.*?(WPA2)|.*?(WPA)|.*?(WEP)");
 
-    public final String securityLabel, ssid, bssid;
-    public final int wifiSecurityImageResource, channel, dbm;
-    private int visibilityCounter = 3;
+    private final String securityLabel, ssid, bssid;
+    private final int wifiSecurityImageResource, channel, frequency, dbm;
+    private final AtomicInteger visibilityCounter;
+    private final AtomicLong age;
 
     private WifiAP(Parcel in) {
         securityLabel = in.readString();
@@ -28,11 +31,13 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         bssid = in.readString();
         wifiSecurityImageResource = in.readInt();
         channel = in.readInt();
+        frequency = in.readInt();
         dbm = in.readInt();
-        visibilityCounter = in.readInt();
+        visibilityCounter = new AtomicInteger(in.readInt());
+        age = new AtomicLong(in.readLong());
     }
 
-    public WifiAP(@NonNull ScanResult scanResult) {
+    private WifiAP(final ScanResult scanResult) {
         final Matcher matcher;
 
         if(scanResult.capabilities != null) {
@@ -44,22 +49,22 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
                     Log.e(this.getClass().getName(),
                             "Weird WiFi capabilities found, please investigate!");
                     Log.e(this.getClass().getName(), "capabilities: " + scanResult.capabilities);
-                    System.exit(1);
-                }
+                    this.wifiSecurityImageResource = R.drawable.wifi_security_unknown;
+                } else {
+                    switch (this.securityLabel) {
+                        case "IBSS":
+                            this.wifiSecurityImageResource = R.drawable.wifi_security_adhoc;
+                            break;
 
-                switch (this.securityLabel) {
-                    case "IBSS":
-                        this.wifiSecurityImageResource = R.drawable.wifi_security_adhoc;
-                        break;
+                        case "WPA2":
+                        case "WPA":
+                        case "WEP":
+                            this.wifiSecurityImageResource = R.drawable.wifi_security_wep_wpa;
+                            break;
 
-                    case "WPA2":
-                    case "WPA":
-                    case "WEP":
-                        this.wifiSecurityImageResource = R.drawable.wifi_security_wep_wpa;
-                        break;
-
-                    default:
-                        this.wifiSecurityImageResource = R.drawable.wifi_security_unknown;
+                        default:
+                            this.wifiSecurityImageResource = R.drawable.wifi_security_unknown;
+                    }
                 }
             } else {
                 wifiSecurityImageResource = R.drawable.wifi_security_open;
@@ -73,7 +78,14 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         this.ssid = scanResult.SSID;
         this.bssid = scanResult.BSSID;
         this.channel = WifiUtils.frequencyToChannel(scanResult.frequency);
+        this.frequency = scanResult.frequency;
         this.dbm = scanResult.level;
+        this.visibilityCounter = new AtomicInteger(3);
+        this.age = new AtomicLong(scanResult.timestamp);
+    }
+
+    public static WifiAP fromScanResult(final ScanResult scanResult) {
+        return new WifiAP(scanResult);
     }
 
     public static final Creator<WifiAP> CREATOR = new Creator<WifiAP>() {
@@ -88,14 +100,6 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         }
     };
 
-    public void decrementVisibilityCounter() {
-        visibilityCounter--;
-    }
-
-    public int getVisibilityCounter() {
-        return visibilityCounter;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -103,8 +107,9 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
         WifiAP wifiAP = (WifiAP) o;
 
-        if (bssid == null ? wifiAP.bssid == null : bssid.equals(wifiAP.bssid)) {
-            visibilityCounter = 3;
+        if (bssid != null && bssid.equals(wifiAP.bssid)) {
+            visibilityCounter.set(3);
+            age.set(wifiAP.getAge().get());
             return true;
         } else {
             return false;
@@ -133,7 +138,47 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         parcel.writeString(bssid);
         parcel.writeInt(wifiSecurityImageResource);
         parcel.writeInt(channel);
+        parcel.writeInt(frequency);
         parcel.writeInt(dbm);
-        parcel.writeInt(visibilityCounter);
+        parcel.writeInt(visibilityCounter.get());
+        parcel.writeLong(age.get());
     }
+
+    public String getSecurityLabel() {
+        return securityLabel;
+    }
+
+    public String getSsid() {
+        return ssid;
+    }
+
+    public String getBssid() {
+        return bssid;
+    }
+
+    public int getWifiSecurityImageResource() {
+        return wifiSecurityImageResource;
+    }
+
+    public int getChannel() {
+        return channel;
+    }
+
+    public int getFrequency() {
+        return frequency;
+    }
+
+    public int getDbm() {
+        return dbm;
+    }
+
+    public AtomicInteger getVisibilityCounter() {
+        return visibilityCounter;
+    }
+
+    public AtomicLong getAge() {
+        return age;
+    }
+
+
 }

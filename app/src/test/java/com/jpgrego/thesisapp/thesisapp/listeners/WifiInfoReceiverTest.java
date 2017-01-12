@@ -158,7 +158,7 @@ public class WifiInfoReceiverTest {
         wifiInfoReceiverTest.onReceive(contextMock, intentMock);
 
         retVal = wifiInfoReceiverTest.getOrderedWifiAPList();
-        Assert.assertTrue(retVal.get(0).dbm == -70);
+        Assert.assertTrue(retVal.get(0).getDbm() == -70);
     }
 
 }

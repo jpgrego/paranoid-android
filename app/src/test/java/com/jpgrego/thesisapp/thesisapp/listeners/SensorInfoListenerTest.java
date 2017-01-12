@@ -22,7 +22,7 @@ public class SensorInfoListenerTest {
 
     @Test
     public void sensorMapNotNull() {
-        Assert.assertNotNull(sensorInfoListenerTest.getSensorMap());
+        Assert.assertNotNull(sensorInfoListenerTest.getSensorList());
     }
 
 }

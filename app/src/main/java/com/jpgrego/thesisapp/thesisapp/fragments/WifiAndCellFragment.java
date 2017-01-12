@@ -51,7 +51,7 @@ public final class WifiAndCellFragment extends Fragment {
         }
     };
 
-    private TableLayout cellsTable, wifiTable;
+    TableLayout cellsTable, wifiTable;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -83,7 +83,7 @@ public final class WifiAndCellFragment extends Fragment {
         getActivity().unregisterReceiver(wifiInfoReceiver);
     }
 
-    private void updateCellTable(final List<Cell> cellList) {
+    void updateCellTable(final List<Cell> cellList) {
         final TableRow cellTableTitleRow;
 
         /*
@@ -103,7 +103,7 @@ public final class WifiAndCellFragment extends Fragment {
         addCellsToTable(cellList);
     }
 
-    private void addCellsToTable(List<Cell> cellList) {
+    void addCellsToTable(List<Cell> cellList) {
         for (Cell cell : cellList) {
             final TextView generation, mcc, mnc, cid, lac, psc, dbm;
             final TableRow cellTableDataRow;
@@ -117,13 +117,13 @@ public final class WifiAndCellFragment extends Fragment {
             lac = (TextView) cellTableDataRow.findViewById(R.id.lac);
             psc = (TextView) cellTableDataRow.findViewById(R.id.psc);
             dbm = (TextView) cellTableDataRow.findViewById(R.id.cell_dbm);
-            generation.setText(cell.generation);
-            mcc.setText(String.format(Locale.US, "%d", cell.mcc));
-            mnc.setText(String.format(Locale.US, "%d", cell.mnc));
-            cid.setText(String.format(Locale.US, "%d", cell.cid));
-            lac.setText(String.format(Locale.US, "%d", cell.lac));
-            psc.setText(String.format(Locale.US, "%d", cell.psc));
-            dbm.setText(String.format(Locale.US, "%d", cell.dbm));
+            generation.setText(cell.getGeneration());
+            mcc.setText(String.format(Locale.US, "%d", cell.getMcc()));
+            mnc.setText(String.format(Locale.US, "%d", cell.getMnc()));
+            cid.setText(String.format(Locale.US, "%d", cell.getCid()));
+            lac.setText(String.format(Locale.US, "%d", cell.getLac()));
+            psc.setText(String.format(Locale.US, "%d", cell.getPsc()));
+            dbm.setText(String.format(Locale.US, "%d", cell.getDbm()));
 
             if (cell.isRegisteredCell()) {
                 cellTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
@@ -134,7 +134,7 @@ public final class WifiAndCellFragment extends Fragment {
         }
     }
 
-    private void updateWifiTable(final List<WifiAP> wifiAPList,
+    void updateWifiTable(final List<WifiAP> wifiAPList,
                                  final String currentWifiConnectionBSSID) {
         final TableRow wifiTableTitleRow;
 
@@ -153,6 +153,10 @@ public final class WifiAndCellFragment extends Fragment {
         wifiTable.removeAllViews();
         wifiTable.addView(wifiTableTitleRow);
 
+        addWifiAPToTable(wifiAPList, currentWifiConnectionBSSID);
+    }
+
+    void addWifiAPToTable(final List<WifiAP> wifiAPList, final String currentWifiConnectionBSSID) {
         for (WifiAP wifiAP : wifiAPList) {
             final TableRow wifiTableDataRow;
             final ImageView securityImage;
@@ -169,20 +173,20 @@ public final class WifiAndCellFragment extends Fragment {
             channel = (TextView) wifiTableDataRow.findViewById(R.id.channel);
             dbm = (TextView) wifiTableDataRow.findViewById(R.id.wifi_dbm);
 
-            securityImage.setImageResource(wifiAP.wifiSecurityImageResource);
-            securityLabel.setText(wifiAP.securityLabel);
-            ssid.setText(wifiAP.ssid);
-            bssid.setText(wifiAP.bssid);
-            channel.setText(String.format(Locale.US, "%d", wifiAP.channel));
-            dbm.setText(String.format(Locale.US, "%d", wifiAP.dbm));
+            securityImage.setImageResource(wifiAP.getWifiSecurityImageResource());
+            securityLabel.setText(wifiAP.getSecurityLabel());
+            ssid.setText(wifiAP.getSsid());
+            bssid.setText(wifiAP.getBssid());
+            channel.setText(String.format(Locale.US, "%d", wifiAP.getChannel()));
+            dbm.setText(String.format(Locale.US, "%d", wifiAP.getDbm()));
 
-            if (wifiAP.getVisibilityCounter() < 3) {
+            if (wifiAP.getVisibilityCounter().get() < 3) {
                 securityLabel.setTextColor(FADED_COLOR);
                 ssid.setTextColor(FADED_COLOR);
                 bssid.setTextColor(FADED_COLOR);
                 channel.setTextColor(FADED_COLOR);
                 dbm.setTextColor(FADED_COLOR);
-            } else if (wifiAP.bssid.equals(currentWifiConnectionBSSID)) {
+            } else if (wifiAP.getBssid().equals(currentWifiConnectionBSSID)) {
                 wifiTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
             }
 

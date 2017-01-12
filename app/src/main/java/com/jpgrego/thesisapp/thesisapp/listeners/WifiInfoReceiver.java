@@ -73,9 +73,8 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
                             final WifiAP tempAP;
 
                             tempAP = it.next();
-                            if (tempAP.getVisibilityCounter() > 0) {
-                                tempAP.decrementVisibilityCounter();
-                            } else if (tempAP.getVisibilityCounter() <= 0) {
+
+                            if(tempAP.getVisibilityCounter().decrementAndGet() <= 0) {
                                 it.remove();
                             }
                         }
@@ -83,7 +82,7 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
                         for (ScanResult scanResult : wifiScanList) {
                             final WifiAP tempAP;
 
-                            tempAP = new WifiAP(scanResult);
+                            tempAP = WifiAP.fromScanResult(scanResult);
                             wifiAPSet.remove(tempAP);
                             wifiAPSet.add(tempAP);
                         }

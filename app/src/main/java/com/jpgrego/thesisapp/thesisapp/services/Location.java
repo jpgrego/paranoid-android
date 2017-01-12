@@ -4,22 +4,23 @@ package com.jpgrego.thesisapp.thesisapp.services;
  * Created by jpgrego on 05/01/17.
  */
 
+@SuppressWarnings({"FieldCanBeLocal", "unused"})
 final class MozillaLocationResponse {
     private final Location location;
-    private final int accuracy;
+    private final float accuracy;
 
-    MozillaLocationResponse(final Location location, final int accuracy) {
+    MozillaLocationResponse(final Location location, final float accuracy) {
         this.location = location;
         this.accuracy = accuracy;
     }
 
-    private final class Location {
+    private static final class Location {
         private final float lat;
-        private final float lon;
+        private final float lng;
 
-        Location(final float lat, final float lon) {
+        Location(final float lat, final float lng) {
             this.lat = lat;
-            this.lon = lon;
+            this.lng = lng;
         }
     }
 }

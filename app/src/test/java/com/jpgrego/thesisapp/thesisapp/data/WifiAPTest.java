@@ -28,7 +28,7 @@ public class WifiAPTest {
         scanResult.BSSID = "00:11:22:33:44:55";
         scanResult.frequency = 2412;
         scanResult.level = -40;
-        testAP = new WifiAP(scanResult);
+        testAP = WifiAP.fromScanResult(scanResult);
 
         equalsScanResultTest.capabilities = "";
         equalsScanResultTest.SSID = "TEST AP";
@@ -40,44 +40,38 @@ public class WifiAPTest {
 
     @Test
     public void testWifiAPConstructorSSID() {
-        Assert.assertEquals(scanResult.SSID, testAP.ssid);
+        Assert.assertEquals(scanResult.SSID, testAP.getSsid());
     }
 
     @Test
     public void testWifiAPConstructorBSSID() {
-        Assert.assertEquals(scanResult.BSSID, testAP.bssid);
+        Assert.assertEquals(scanResult.BSSID, testAP.getBssid());
     }
 
     @Test
     public void testWifiAPConstructorFrequency() {
-        Assert.assertEquals(1, testAP.channel);
+        Assert.assertEquals(1, testAP.getChannel());
     }
 
     @Test
     public void testWifiAPConstructorLevel() {
-        Assert.assertEquals(scanResult.level, testAP.dbm);
+        Assert.assertEquals(scanResult.level, testAP.getDbm());
     }
 
     @Test
     public void testGetVisibilityCounter() {
-        Assert.assertEquals(testAP.getVisibilityCounter(), 3);
-    }
-
-    @Test
-    public void testDecrementVisibilityCounter() {
-        testAP.decrementVisibilityCounter();
-        Assert.assertEquals(testAP.getVisibilityCounter(), 2);
+        Assert.assertEquals(testAP.getVisibilityCounter().get(), 3);
     }
 
     @Test
     public void testEqualsTrue() {
-        final WifiAP equalsTestAP = new WifiAP(scanResult);
+        final WifiAP equalsTestAP = WifiAP.fromScanResult(scanResult);
         Assert.assertTrue(testAP.equals(equalsTestAP));
     }
 
     @Test
     public void testEqualsFalse() {
-        final WifiAP equalsTestAP = new WifiAP(equalsScanResultTest);
+        final WifiAP equalsTestAP = WifiAP.fromScanResult(equalsScanResultTest);
         Assert.assertFalse(testAP.equals(equalsTestAP));
     }
 
@@ -89,21 +83,21 @@ public class WifiAPTest {
     @Test
     public void testCompareToGreater() {
         compareScanResultTest.level = scanResult.level - 1;
-        final WifiAP compareGreaterTestAP = new WifiAP(compareScanResultTest);
+        final WifiAP compareGreaterTestAP = WifiAP.fromScanResult(compareScanResultTest);
         Assert.assertTrue(testAP.compareTo(compareGreaterTestAP) > 0);
     }
 
     @Test
     public void testCompareToLess() {
         compareScanResultTest.level = scanResult.level + 1;
-        final WifiAP compareLessTestAP = new WifiAP(compareScanResultTest);
+        final WifiAP compareLessTestAP = WifiAP.fromScanResult(compareScanResultTest);
         Assert.assertTrue(testAP.compareTo(compareLessTestAP) < 0);
     }
 
     @Test
     public void testCompareToEquals() {
         compareScanResultTest.level = scanResult.level;
-        final WifiAP compareEqualsTestAP = new WifiAP(compareScanResultTest);
+        final WifiAP compareEqualsTestAP = WifiAP.fromScanResult(compareScanResultTest);
         Assert.assertTrue(testAP.compareTo(compareEqualsTestAP) == 0);
     }
 

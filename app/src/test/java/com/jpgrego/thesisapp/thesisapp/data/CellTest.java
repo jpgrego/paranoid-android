@@ -4,6 +4,7 @@ import android.telephony.CellIdentityGsm;
 import android.telephony.CellInfoGsm;
 import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
+import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,8 +36,6 @@ public class CellTest {
     @Mock
     private NeighboringCellInfo neighboringCellInfo;
 
-    private Cell cell1, cell2, cell3;
-
     @Before
     public void setUp() {
         Mockito.when(cellInfoGsm.getCellIdentity()).thenReturn(cellIdentityGsm);
@@ -55,52 +54,57 @@ public class CellTest {
         Mockito.when(neighboringCellInfo.getLac()).thenReturn(TEST_LAC);
         Mockito.when(neighboringCellInfo.getPsc()).thenReturn(TEST_PSC);
         Mockito.when(neighboringCellInfo.getRssi()).thenReturn(TEST_DBM);
+        Mockito.when(neighboringCellInfo.getNetworkType()).thenReturn(
+                TelephonyManager.NETWORK_TYPE_UMTS);
 
-        cell1 = new Cell(TEST_NETWORK_TYPE, cellInfoGsm);
-        cell2 = new Cell(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, TEST_DBM, gsmCellLocation);
-        cell3 = new Cell(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, neighboringCellInfo);
     }
 
     @Test
-    public void testCellConstructor1_1() {
+    public void testFromCellInfoGsm1() {
+        final Cell cell = Cell.fromCellInfoGsm(TEST_NETWORK_TYPE, cellInfoGsm);
+
         final int[] array1 = {TEST_MCC, TEST_MNC, TEST_CID, TEST_LAC, TEST_PSC, TEST_DBM};
-        final int[] array2 = {cell1.mcc, cell1.mnc, cell1.cid, cell1.lac, cell1.psc, cell1.dbm};
+        final int[] array2 = {cell.getMcc(), cell.getMnc(), cell.getCid(), cell.getLac(),
+                cell.getPsc(), cell.getDbm()};
         Assert.assertArrayEquals(array1, array2);
     }
 
     @Test
-    public void testCellConstructor1_2() {
-        Assert.assertEquals("3G", cell1.generation);
+    public void testFromCellInfoGsm2() {
+        final Cell cell = Cell.fromCellInfoGsm(TEST_NETWORK_TYPE, cellInfoGsm);
+        Assert.assertEquals("3G", cell.getGeneration());
     }
 
     @Test
-    public void testCellConstructor2_1() {
+    public void testFromGsmCellLocation1() {
+        final Cell cell = Cell.fromGsmCellLocation(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, TEST_DBM,
+                gsmCellLocation);
         final int[] array1 = {TEST_MCC, TEST_MNC, TEST_CID, TEST_LAC, TEST_PSC, TEST_DBM};
-        final int[] array2 = {cell2.mcc, cell2.mnc, cell2.cid, cell2.lac, cell2.psc, cell2.dbm};
+        final int[] array2 = {cell.getMcc(), cell.getMnc(), cell.getCid(), cell.getLac(),
+                cell.getPsc(), cell.getDbm()};
         Assert.assertArrayEquals(array1, array2);
     }
 
     @Test
-    public void testCellConstructor2_2() {
-        Assert.assertEquals("3G", cell2.generation);
+    public void testFromGsmCellLocation2() {
+        final Cell cell = Cell.fromGsmCellLocation(TEST_NETWORK_TYPE, TEST_MCC, TEST_MNC, TEST_DBM,
+                gsmCellLocation);
+        Assert.assertEquals("3G", cell.getGeneration());
     }
 
     @Test
-    public void testCellConstructor3_1() {
+    public void testFromNeighboringCellInfo1() {
+        final Cell cell = Cell.fromNeighboringCellInfo(TEST_MCC, TEST_MNC, neighboringCellInfo);
+
         final int[] array1 = {TEST_MCC, TEST_MNC, TEST_CID, TEST_LAC, TEST_PSC, TEST_DBM};
-        final int[] array2 = {cell3.mcc, cell3.mnc, cell3.cid, cell3.lac, cell3.psc, cell3.dbm};
+        final int[] array2 = {cell.getMcc(), cell.getMnc(), cell.getCid(), cell.getLac(),
+                cell.getPsc(), cell.getDbm()};
         Assert.assertArrayEquals(array1, array2);
     }
 
     @Test
-    public void testCellConstructor3_2() {
-        Assert.assertEquals("3G", cell3.generation);
-    }
-
-    @Test
-    public void testSetRegisteredCell() {
-        final Cell testCell = new Cell(TEST_NETWORK_TYPE, cellInfoGsm);
-        testCell.setRegisteredCell();
-        Assert.assertTrue(testCell.isRegisteredCell());
+    public void testFromNeighboringCellInfo2() {
+        final Cell cell = Cell.fromNeighboringCellInfo(TEST_MCC, TEST_MNC, neighboringCellInfo);
+        Assert.assertEquals("3G", cell.getGeneration());
     }
 }
