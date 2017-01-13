@@ -1,5 +1,7 @@
 package com.jpgrego.thesisapp.thesisapp.fragments;
 
+import android.bluetooth.BluetoothClass;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -17,6 +20,7 @@ import android.widget.TextView;
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import com.jpgrego.thesisapp.thesisapp.data.WifiAP;
+import com.jpgrego.thesisapp.thesisapp.utils.BluetoothUtils;
 import com.jpgrego.thesisapp.thesisapp.utils.Constants;
 
 import java.util.ArrayList;
@@ -54,11 +58,13 @@ public final class WifiAndCellFragment extends Fragment {
     private final BroadcastReceiver bluetoothInfoReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println();
+            final ArrayList<BluetoothDevice> bluetoothDevices = intent.getParcelableArrayListExtra(
+                    Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME);
+            updateBluetoothTable(bluetoothDevices);
         }
     };
 
-    TableLayout cellsTable, wifiTable;
+    TableLayout cellsTable, wifiTable, bluetoothTable;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -70,6 +76,7 @@ public final class WifiAndCellFragment extends Fragment {
 
         cellsTable = (TableLayout) thisView.findViewById(R.id.cells_table);
         wifiTable = (TableLayout) thisView.findViewById(R.id.wifi_table);
+        bluetoothTable = (TableLayout) thisView.findViewById(R.id.bluetooth_table);
 
         return thisView;
     }
@@ -203,5 +210,47 @@ public final class WifiAndCellFragment extends Fragment {
             wifiTable.addView(wifiTableDataRow, new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
         }
+    }
+
+    void updateBluetoothTable(final List<BluetoothDevice> bluetoothDevices) {
+        final TableRow bluetoothTableTitleRow;
+
+        /*
+         * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
+         * fact that getActivity() returns null in case the fragment isn't added to the activity,
+         * which seems to happen occasionally
+         */
+        if (!isAdded()) {
+            return;
+        }
+
+        bluetoothTableTitleRow = (TableRow) View.inflate(getActivity(),
+                R.layout.bluetooth_table_title_row, null);
+
+        bluetoothTableTitleRow.removeAllViews();
+        bluetoothTable.addView(bluetoothTableTitleRow);
+
+        addBluetoothDevicesToTable(bluetoothDevices);
+    }
+
+    void addBluetoothDevicesToTable(final List<BluetoothDevice> bluetoothDevices) {
+        for(BluetoothDevice device : bluetoothDevices) {
+            final TableRow bluetoothTableDataRow;
+            final TextView name, address, type;
+
+            bluetoothTableDataRow = (TableRow) View.inflate(getActivity(),
+                    R.layout.bluetooth_table_data_row, null);
+            name = (TextView) bluetoothTableDataRow.findViewById(R.id.name);
+            address = (TextView) bluetoothTableDataRow.findViewById(R.id.address);
+            type = (TextView) bluetoothTableDataRow.findViewById(R.id.type);
+
+            name.setText(device.getName());
+            address.setText(device.getAddress());
+            type.setText(BluetoothUtils.getTypeStringFromInt(device.getType()));
+
+            bluetoothTable.addView(bluetoothTableDataRow, new TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+        }
+
     }
 }

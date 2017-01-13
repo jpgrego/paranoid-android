@@ -36,7 +36,6 @@
                 android:layout_height="wrap_content"
                 android:divider="?android:attr/listDivider"
                 android:showDividers="beginning|middle">
-
             </TableLayout>
 
         </LinearLayout>
@@ -60,7 +59,29 @@
                 android:layout_height="wrap_content"
                 android:divider="?android:attr/listDivider"
                 android:showDividers="beginning|middle">
+            </TableLayout>
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bluetooth_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/bluetooth_title"
+                style="@style/titleTextViewStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/bluetooth_title" />
+
+            <TableLayout
+                android:id="@+id/bluetooth_table"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="?android:attr/listDivider"
+                android:showDividers="beginning|middle">
             </TableLayout>
 
         </LinearLayout>

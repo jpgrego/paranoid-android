@@ -16,6 +16,7 @@
     <!-- cell / wifi strings -->
     <string name="cells_title">Cells</string>
     <string name="wifi_title">WiFi</string>
+    <string name="bluetooth_title">Bluetooth Devices</string>
     <string name="mcc_string">MCC</string>
     <string name="mnc_string">MNC</string>
     <string name="cid_string">CID</string>
@@ -24,6 +25,9 @@
     <string name="dbm_string">dBm</string>
     <string name="ssid_string">SSID</string>
     <string name="channel_string">Ch</string>
+    <string name="bluetooth_name_string">Name</string>
+    <string name="bluetooth_address_string">Address</string>
+    <string name="bluetooth_type_string">Type</string>
 
     <!-- sensor strings -->
     <string name="sensors_title">Sensors</string>
