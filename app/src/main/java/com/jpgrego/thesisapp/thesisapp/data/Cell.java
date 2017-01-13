@@ -9,6 +9,8 @@ import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.gsm.GsmCellLocation;
 
+import com.jpgrego.thesisapp.thesisapp.utils.CellUtils;
+
 /**
  * Created by jpgrego on 25-08-2016.
  */

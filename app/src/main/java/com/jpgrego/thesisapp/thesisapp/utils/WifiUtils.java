@@ -1,9 +1,9 @@
-package com.jpgrego.thesisapp.thesisapp.data;
+package com.jpgrego.thesisapp.thesisapp.utils;
 
 /**
  * Created by jgrego on 05-09-2016.
  */
-final class WifiUtils {
+public final class WifiUtils {
 
     // enforce noninstantiability
     private WifiUtils() { throw new AssertionError(); }
@@ -13,7 +13,7 @@ final class WifiUtils {
      * creating an array or an HashMap, though not sure if this is better in terms of performance!
      * (jpgrego)
      */
-     static int frequencyToChannel(int frequency) {
+     public static int frequencyToChannel(int frequency) {
         if (frequency >= 2412 && frequency <= 2472) {                             // 802.11 b/g/n (2.4 GHz)
             return frequency % 2412 / 5 + 1;
         } else if (frequency == 2484) {

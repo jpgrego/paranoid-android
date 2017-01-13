@@ -51,6 +51,13 @@ public final class WifiAndCellFragment extends Fragment {
         }
     };
 
+    private final BroadcastReceiver bluetoothInfoReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            System.out.println();
+        }
+    };
+
     TableLayout cellsTable, wifiTable;
 
     @Override
@@ -74,6 +81,8 @@ public final class WifiAndCellFragment extends Fragment {
                 new IntentFilter(Constants.CELL_INTENT_FILTER_NAME));
         getActivity().registerReceiver(wifiInfoReceiver,
                 new IntentFilter(Constants.WIFI_INTENT_FILTER_NAME));
+        getActivity().registerReceiver(bluetoothInfoReceiver,
+                new IntentFilter(Constants.BLUETOOTH_INTENT_FILTER_NAME));
     }
 
     @Override
@@ -81,6 +90,7 @@ public final class WifiAndCellFragment extends Fragment {
         super.onPause();
         getActivity().unregisterReceiver(cellInfoReceiver);
         getActivity().unregisterReceiver(wifiInfoReceiver);
+        getActivity().unregisterReceiver(bluetoothInfoReceiver);
     }
 
     void updateCellTable(final List<Cell> cellList) {

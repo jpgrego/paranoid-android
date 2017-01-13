@@ -7,6 +7,8 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import com.jpgrego.thesisapp.thesisapp.R;
+import com.jpgrego.thesisapp.thesisapp.utils.WifiUtils;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;

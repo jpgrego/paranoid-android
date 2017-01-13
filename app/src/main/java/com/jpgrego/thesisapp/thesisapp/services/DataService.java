@@ -1,6 +1,8 @@
 package com.jpgrego.thesisapp.thesisapp.services;
 import android.app.Notification;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -20,12 +22,12 @@ import com.jpgrego.thesisapp.thesisapp.data.MySensor;
 import com.jpgrego.thesisapp.thesisapp.data.WifiAP;
 import com.jpgrego.thesisapp.thesisapp.db.DatabaseContract;
 import com.jpgrego.thesisapp.thesisapp.db.DatabaseHelper;
+import com.jpgrego.thesisapp.thesisapp.listeners.BluetoothInfoReceiver;
 import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
 import com.jpgrego.thesisapp.thesisapp.utils.Constants;
 import java.util.ArrayList;
-
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -71,17 +73,25 @@ public final class DataService extends Service {
                 (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         final SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         final WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+
         final CellInfoListener cellInfoListener = new CellInfoListener(telephonyManager);
         final WifiInfoReceiver wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
+        final BluetoothInfoReceiver bluetoothInfoReceiver = new BluetoothInfoReceiver(btAdapter);
         final SensorInfoListener sensorInfoListener = new SensorInfoListener();
         final DatabaseHelper dbHelper = new DatabaseHelper(this);
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
 
+        final IntentFilter wifiIntentFilter = new IntentFilter();
+        wifiIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        wifiIntentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+
+        final IntentFilter bluetoothIntentFilter = new IntentFilter();
+        bluetoothIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+
         telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        registerReceiver(wifiInfoReceiver,
-                new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        registerReceiver(wifiInfoReceiver,
-                new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+        registerReceiver(wifiInfoReceiver, wifiIntentFilter);
+        registerReceiver(bluetoothInfoReceiver, bluetoothIntentFilter);
 
         for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
             sensorManager.registerListener(sensorInfoListener, sensor, 3000000);
@@ -93,6 +103,8 @@ public final class DataService extends Service {
                 final ArrayList<Cell> cellList = cellInfoListener.getSortedCellList();
                 final ArrayList<WifiAP> wifiAPList = wifiInfoReceiver.getOrderedWifiAPList();
                 final ArrayList<MySensor> sensorList = sensorInfoListener.getSensorList();
+                final ArrayList<BluetoothDevice> bluetoothDeviceList =
+                        bluetoothInfoReceiver.getBluetoothDevices();
 
                 final String networkOperator = telephonyManager.getNetworkOperator();
 
@@ -108,6 +120,7 @@ public final class DataService extends Service {
 
                 sendCellInfo(cellList);
                 sendWifiInfo(wifiAPList);
+                sendBluetoothInfo(bluetoothDeviceList);
                 sendSensorInfo(sensorList);
                 writeCellInfoToDB(cellList);
                 writeWifiAPInfoToDB(wifiAPList);
@@ -125,6 +138,12 @@ public final class DataService extends Service {
                 intent.putExtra(Constants.WIFI_INFO_LIST_INTENT_EXTRA_NAME, wifiAPList);
                 intent.putExtra(Constants.WIFI_CURRENT_BSSID_INTENT_EXTRA_NAME,
                         wifiInfoReceiver.getCurrentWifiConnectionBSSID());
+                sendBroadcast(intent);
+            }
+
+            private void sendBluetoothInfo(final ArrayList<BluetoothDevice> list) {
+                final Intent intent = new Intent(Constants.BLUETOOTH_INTENT_FILTER_NAME);
+                intent.putExtra(Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME, list);
                 sendBroadcast(intent);
             }
 

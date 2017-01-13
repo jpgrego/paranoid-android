@@ -21,8 +21,7 @@ import java.util.Set;
  */
 public final class WifiInfoReceiver extends BroadcastReceiver {
 
-    private static final int WIFI_SCAN_DELAY = 3000;
-
+    private static final int WIFI_SCAN_DELAY = 10000;
 
     private final Set<WifiAP> wifiAPSet = new HashSet<>();
     private final WifiManager wifiManager;

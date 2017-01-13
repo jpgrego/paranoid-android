@@ -1,6 +1,9 @@
-package com.jpgrego.thesisapp.thesisapp.data;
+package com.jpgrego.thesisapp.thesisapp.utils;
 
 import android.telephony.TelephonyManager;
+
+import com.jpgrego.thesisapp.thesisapp.utils.CellUtils;
+
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

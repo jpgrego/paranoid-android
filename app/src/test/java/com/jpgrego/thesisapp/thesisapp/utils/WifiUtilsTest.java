@@ -1,4 +1,6 @@
-package com.jpgrego.thesisapp.thesisapp.data;
+package com.jpgrego.thesisapp.thesisapp.utils;
+
+import com.jpgrego.thesisapp.thesisapp.utils.WifiUtils;
 
 import junit.framework.Assert;
 

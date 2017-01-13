@@ -1,11 +1,11 @@
-package com.jpgrego.thesisapp.thesisapp.data;
+package com.jpgrego.thesisapp.thesisapp.utils;
 
 import android.telephony.TelephonyManager;
 
 /**
  * Created by jpgrego on 03-09-2016.
  */
-final class CellUtils {
+public final class CellUtils {
 
     // enforce noninstantiability
     private CellUtils() {
@@ -15,7 +15,7 @@ final class CellUtils {
     /*
      * thanks SatStat!
      */
-    static int rssiToDbm(int networkType, int rssi) {
+    public static int rssiToDbm(int networkType, int rssi) {
         switch (networkType) {
             case TelephonyManager.NETWORK_TYPE_UMTS:
             case TelephonyManager.NETWORK_TYPE_HSDPA:
@@ -45,7 +45,7 @@ final class CellUtils {
     /*
      * Thanks SatStat!
      */
-    static String getGenerationFromNetworkType(int networkType) {
+    public static String getGenerationFromNetworkType(int networkType) {
         switch (networkType) {
             case TelephonyManager.NETWORK_TYPE_CDMA:
             case TelephonyManager.NETWORK_TYPE_EDGE:

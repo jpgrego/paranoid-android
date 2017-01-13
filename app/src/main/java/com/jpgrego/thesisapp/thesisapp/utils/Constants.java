@@ -5,6 +5,8 @@ package com.jpgrego.thesisapp.thesisapp.utils;
  */
 
 public class Constants {
+    public static final String BLUETOOTH_INTENT_FILTER_NAME = "BluetoothInfo";
+    public static final String BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME = "BluetoothInfoList";
     public static final String WIFI_INTENT_FILTER_NAME = "WifiInfo";
     public static final String WIFI_INFO_LIST_INTENT_EXTRA_NAME = "WifiInfoList";
     public static final String WIFI_CURRENT_BSSID_INTENT_EXTRA_NAME = "CurrentBSSID";
