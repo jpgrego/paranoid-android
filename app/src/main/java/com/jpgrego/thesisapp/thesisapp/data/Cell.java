@@ -2,14 +2,15 @@ package com.jpgrego.thesisapp.thesisapp.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellInfoGsm;
 import android.telephony.CellSignalStrengthGsm;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.gsm.GsmCellLocation;
-
 import com.jpgrego.thesisapp.thesisapp.utils.CellUtils;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jpgrego on 25-08-2016.
@@ -24,6 +25,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
     private final int mcc, mnc, cid, lac, psc, dbm;
     private final String generation;
     private final boolean isRegisteredCell;
+    private final long timestamp;
 
     private Cell(Parcel in) {
         this.mcc = in.readInt();
@@ -34,6 +36,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
         this.dbm = in.readInt();
         this.generation = in.readString();
         this.isRegisteredCell = in.readByte() != 0;
+        this.timestamp = in.readLong();
     }
 
     private Cell(final int networkType, final CellInfoGsm cellInfoGsm) {
@@ -52,6 +55,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
         this.dbm = cellSignalStrengthGsm.getDbm();
         this.generation = CellUtils.getGenerationFromNetworkType(networkType);
         this.isRegisteredCell = cellInfoGsm.isRegistered();
+        this.timestamp = TimeUnit.NANOSECONDS.toMillis(cellInfoGsm.getTimeStamp());
     }
 
     private Cell(final boolean isRegisteredCell, final int networkType, final int mcc,
@@ -64,6 +68,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
         this.dbm = dbm;
         this.isRegisteredCell = isRegisteredCell;
         this.generation = CellUtils.getGenerationFromNetworkType(networkType);
+        this.timestamp = SystemClock.elapsedRealtime();
     }
 
     private Cell(final boolean isRegisteredCell, final int mcc, final int mnc,
@@ -78,6 +83,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
         this.isRegisteredCell = isRegisteredCell;
         this.generation = CellUtils.getGenerationFromNetworkType(
                 neighboringCellInfo.getNetworkType());
+        this.timestamp = SystemClock.elapsedRealtime();
     }
 
     public static Cell fromGsmCellLocation(final int networkType, final int mcc, final int mnc,
@@ -127,6 +133,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
         parcel.writeInt(dbm);
         parcel.writeString(generation);
         parcel.writeByte((byte) (isRegisteredCell ? 1 : 0));
+        parcel.writeLong(timestamp);
     }
 
     public boolean isRegisteredCell() {
@@ -159,6 +166,10 @@ public final class Cell implements Comparable<Cell>, Parcelable {
 
     public String getGeneration() {
         return generation;
+    }
+
+    public long getTimeSinceLastSeen() {
+        return SystemClock.elapsedRealtime() - this.timestamp;
     }
 
 }

@@ -67,8 +67,9 @@ final class LocationHelperData {
     private static class CellTower {
 
         private final RadioType radioType;
-        private final int mobileCountryCode, mobileNetworkCode, locationAreaCode, cellId, age, psc,
+        private final int mobileCountryCode, mobileNetworkCode, locationAreaCode, cellId, psc,
                 signalStrength;
+        private final long age;
 
         private CellTower(final Cell cell) {
             this.radioType = RadioType.gsm;
@@ -76,7 +77,7 @@ final class LocationHelperData {
             this.mobileNetworkCode = cell.getMnc();
             this.locationAreaCode = cell.getLac();
             this.cellId = cell.getCid();
-            this.age = -1;
+            this.age = cell.getTimeSinceLastSeen();
             this.psc = cell.getPsc();
             this.signalStrength = cell.getDbm();
         }

@@ -4,7 +4,7 @@ package com.jpgrego.thesisapp.thesisapp.utils;
  * Created by jpgrego on 13/12/16.
  */
 
-public class Constants {
+public final class Constants {
     public static final String BLUETOOTH_INTENT_FILTER_NAME = "BluetoothInfo";
     public static final String BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME = "BluetoothInfoList";
     public static final String WIFI_INTENT_FILTER_NAME = "WifiInfo";
