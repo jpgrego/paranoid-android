@@ -1,6 +1,5 @@
 package com.jpgrego.thesisapp.thesisapp.fragments;
 
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,7 +11,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -78,6 +76,18 @@ public final class WifiAndCellFragment extends Fragment {
         wifiTable = (TableLayout) thisView.findViewById(R.id.wifi_table);
         bluetoothTable = (TableLayout) thisView.findViewById(R.id.bluetooth_table);
 
+        final TableRow cellTableTitleRow = (TableRow) View.inflate(getActivity(),
+                R.layout.cell_table_title_row, null);
+        cellsTable.addView(cellTableTitleRow);
+
+        final TableRow wifiTableTitleRow = (TableRow) View.inflate(getActivity(),
+                R.layout.wifi_table_title_row, null);
+        wifiTable.addView(wifiTableTitleRow);
+        
+        final TableRow bluetoothTitleRow = (TableRow) View.inflate(getActivity(),
+                R.layout.bluetooth_table_title_row, null);
+        bluetoothTable.addView(bluetoothTitleRow);
+
         return thisView;
     }
 
@@ -101,8 +111,6 @@ public final class WifiAndCellFragment extends Fragment {
     }
 
     void updateCellTable(final List<Cell> cellList) {
-        final TableRow cellTableTitleRow;
-
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
          * fact that getActivity() returns null in case the fragment isn't added to the activity,
@@ -112,12 +120,21 @@ public final class WifiAndCellFragment extends Fragment {
             return;
         }
 
-        cellTableTitleRow = (TableRow) View.inflate(getActivity(), R.layout.cell_table_title_row,
-                null);
+        final int cellsTableSize = cellsTable.getChildCount();
 
-        cellsTable.removeAllViews();
-        cellsTable.addView(cellTableTitleRow);
-        addCellsToTable(cellList);
+        if(cellsTableSize > 1) {
+            cellsTable.removeViews(1, cellsTableSize - 1);
+        }
+
+        if(cellList.size() == 0) {
+            final TableRow cellNoDataRow = (TableRow) View.inflate(getActivity(),
+                    R.layout.cell_table_no_data_row, null);
+            final TextView text = (TextView) cellNoDataRow.findViewById(R.id.text);
+            text.setTextColor(FADED_COLOR);
+            cellsTable.addView(cellNoDataRow);
+        } else {
+            addCellsToTable(cellList);
+        }
     }
 
     void addCellsToTable(List<Cell> cellList) {
@@ -153,8 +170,6 @@ public final class WifiAndCellFragment extends Fragment {
 
     void updateWifiTable(final List<WifiAP> wifiAPList,
                                  final String currentWifiConnectionBSSID) {
-        final TableRow wifiTableTitleRow;
-
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
          * fact that getActivity() returns null in case the fragment isn't added to the activity,
@@ -164,13 +179,21 @@ public final class WifiAndCellFragment extends Fragment {
             return;
         }
 
-        wifiTableTitleRow = (TableRow) View.inflate(getActivity(), R.layout.wifi_table_title_row,
-                null);
+        final int wifiTableSize = wifiTable.getChildCount();
 
-        wifiTable.removeAllViews();
-        wifiTable.addView(wifiTableTitleRow);
+        if(wifiTableSize > 1) {
+            wifiTable.removeViews(1, wifiTableSize - 1);
+        }
 
-        addWifiAPToTable(wifiAPList, currentWifiConnectionBSSID);
+        if(wifiAPList.size() == 0) {
+            final TableRow wifiNoDataRow = (TableRow) View.inflate(getActivity(),
+                    R.layout.wifi_table_no_data_row, null);
+            final TextView text = (TextView) wifiNoDataRow.findViewById(R.id.text);
+            text.setTextColor(FADED_COLOR);
+            wifiTable.addView(wifiNoDataRow);
+        } else {
+            addWifiAPToTable(wifiAPList, currentWifiConnectionBSSID);
+        }
     }
 
     void addWifiAPToTable(final List<WifiAP> wifiAPList, final String currentWifiConnectionBSSID) {
@@ -213,8 +236,6 @@ public final class WifiAndCellFragment extends Fragment {
     }
 
     void updateBluetoothTable(final List<BluetoothDevice> bluetoothDevices) {
-        final TableRow bluetoothTableTitleRow;
-
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
          * fact that getActivity() returns null in case the fragment isn't added to the activity,
@@ -224,13 +245,22 @@ public final class WifiAndCellFragment extends Fragment {
             return;
         }
 
-        bluetoothTableTitleRow = (TableRow) View.inflate(getActivity(),
-                R.layout.bluetooth_table_title_row, null);
+        final int bluetoothTableSize = bluetoothTable.getChildCount();
 
-        bluetoothTableTitleRow.removeAllViews();
-        bluetoothTable.addView(bluetoothTableTitleRow);
+        if(bluetoothTableSize > 1) {
+            bluetoothTable.removeViews(1, bluetoothTableSize - 1);
+        }
 
-        addBluetoothDevicesToTable(bluetoothDevices);
+        if(bluetoothDevices.size() == 0) {
+            final TableRow bluetoothNoDataRow = (TableRow) View.inflate(getActivity(),
+                    R.layout.bluetooth_table_no_data_row, null);
+            final TextView text = (TextView) bluetoothNoDataRow.findViewById(R.id.text);
+            text.setTextColor(FADED_COLOR);
+            bluetoothTable.addView(bluetoothNoDataRow);
+        } else {
+            addBluetoothDevicesToTable(bluetoothDevices);
+        }
+
     }
 
     void addBluetoothDevicesToTable(final List<BluetoothDevice> bluetoothDevices) {

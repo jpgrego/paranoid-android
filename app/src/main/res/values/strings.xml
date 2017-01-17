@@ -28,6 +28,9 @@
     <string name="bluetooth_name_string">Name</string>
     <string name="bluetooth_address_string">Address</string>
     <string name="bluetooth_type_string">Type</string>
+    <string name="bluetooth_no_data_string">No bluetooth device detected</string>
+    <string name="wifi_no_data_string">No WiFi access points detected</string>
+    <string name="cell_no_data_string">No cells detected</string>
 
     <!-- sensor strings -->
     <string name="sensors_title">Sensors</string>
