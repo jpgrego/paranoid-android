@@ -9,6 +9,7 @@ import android.util.Log;
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.utils.WifiUtils;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
@@ -83,7 +84,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         this.frequency = scanResult.frequency;
         this.dbm = scanResult.level;
         this.visibilityCounter = new AtomicInteger(3);
-        this.timestamp = new AtomicLong(scanResult.timestamp);
+        this.timestamp = new AtomicLong(TimeUnit.MICROSECONDS.toMillis(scanResult.timestamp));
     }
 
     public static WifiAP fromScanResult(final ScanResult scanResult) {
@@ -107,7 +108,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         if (this == o) return true;
         if(!(o instanceof WifiAP)) return false;
 
-        WifiAP wifiAP = (WifiAP) o;
+        final WifiAP wifiAP = (WifiAP) o;
 
         if (bssid != null && bssid.equals(wifiAP.bssid)) {
             visibilityCounter.set(3);
@@ -179,8 +180,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     }
 
     public long getTimeSinceLastSeen() {
-        return SystemClock.elapsedRealtime() * 1000 - this.timestamp.get();
+        return SystemClock.elapsedRealtime() - this.timestamp.get();
     }
-
 
 }

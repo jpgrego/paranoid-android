@@ -27,6 +27,7 @@
     <string name="channel_string">Ch</string>
     <string name="bluetooth_name_string">Name</string>
     <string name="bluetooth_address_string">Address</string>
+    <string name="bluetooth_rssi_string">RSSI</string>
     <string name="bluetooth_type_string">Type</string>
     <string name="bluetooth_no_data_string">No bluetooth device detected</string>
     <string name="wifi_no_data_string">No WiFi access points detected</string>

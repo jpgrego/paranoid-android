@@ -31,4 +31,13 @@
         android:text="@string/bluetooth_type_string"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/rssi"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:text="@string/bluetooth_rssi_string"
+        android:textStyle="bold" />
+
 </TableRow>

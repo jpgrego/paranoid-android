@@ -18,6 +18,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
+import com.jpgrego.thesisapp.thesisapp.data.MyBluetoothDevice;
 import com.jpgrego.thesisapp.thesisapp.data.MySensor;
 import com.jpgrego.thesisapp.thesisapp.data.WifiAP;
 import com.jpgrego.thesisapp.thesisapp.db.DatabaseContract;
@@ -46,8 +47,11 @@ public final class DataService extends Service {
     private static final int SEND_INFO_PERIOD = 3000;
     private static final Handler INFO_HANDLER = new Handler();
 
-    private final HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
-    private final OkHttpClient.Builder clientBuilder = new OkHttpClient().newBuilder().addInterceptor(loggingInterceptor);
+    // TODO: temporary, just for debugging. comment when not needed
+    private final HttpLoggingInterceptor loggingInterceptor =
+            new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
+    private final OkHttpClient.Builder clientBuilder =
+            new OkHttpClient().newBuilder().addInterceptor(loggingInterceptor);
 
     private final MozillaLocationService mozillaLocationService = new Retrofit.Builder()
             .baseUrl(MozillaLocationService.MOZILLA_LOCATION_SERVICE_URL)
@@ -103,7 +107,7 @@ public final class DataService extends Service {
                 final ArrayList<Cell> cellList = cellInfoListener.getSortedCellList();
                 final ArrayList<WifiAP> wifiAPList = wifiInfoReceiver.getOrderedWifiAPList();
                 final ArrayList<MySensor> sensorList = sensorInfoListener.getSensorList();
-                final ArrayList<BluetoothDevice> bluetoothDeviceList =
+                final ArrayList<MyBluetoothDevice> bluetoothDeviceList =
                         bluetoothInfoReceiver.getBluetoothDevices();
 
                 final String networkOperator = telephonyManager.getNetworkOperator();
@@ -113,7 +117,7 @@ public final class DataService extends Service {
 
                 final LocationHelperData locationHelperData = new LocationHelperData(
                         telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC, cellList,
-                        wifiAPList);
+                        wifiAPList, bluetoothDeviceList);
 
                 mozillaLocationService.geolocate(locationHelperData)
                         .enqueue(new LocationCallback());
@@ -142,7 +146,7 @@ public final class DataService extends Service {
                 sendBroadcast(intent);
             }
 
-            private void sendBluetoothInfo(final ArrayList<BluetoothDevice> list) {
+            private void sendBluetoothInfo(final ArrayList<MyBluetoothDevice> list) {
                 final Intent intent = new Intent(Constants.BLUETOOTH_INTENT_FILTER_NAME);
                 intent.putExtra(Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME, list);
                 sendBroadcast(intent);
@@ -189,10 +193,10 @@ public final class DataService extends Service {
             }
 
             private void writeBluetoothInfoToDB(
-                    final ArrayList<BluetoothDevice> bluetoothDeviceList) {
+                    final ArrayList<MyBluetoothDevice> bluetoothDeviceList) {
                 final ContentValues values = new ContentValues();
 
-                for(BluetoothDevice bluetoothDevice : bluetoothDeviceList) {
+                for(MyBluetoothDevice bluetoothDevice : bluetoothDeviceList) {
                     values.put(DatabaseContract.BluetoothEntry.NAME_COLUMN,
                             bluetoothDevice.getName());
                     values.put(DatabaseContract.BluetoothEntry.ADDRESS_COLUMN,

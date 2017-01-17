@@ -6,6 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
+
+import com.jpgrego.thesisapp.thesisapp.data.MyBluetoothDevice;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class BluetoothInfoReceiver extends BroadcastReceiver {
 
     private static final int BLUETOOTH_SCAN_DELAY = 3000;
-    private final Set<BluetoothDevice> bluetoothDeviceSet = new HashSet<>();
+    private final Set<MyBluetoothDevice> bluetoothDeviceSet = new HashSet<>();
     private final AtomicBoolean isDeviceConnected = new AtomicBoolean(false);
 
     public BluetoothInfoReceiver(final BluetoothAdapter bluetoothAdapter) {
@@ -48,7 +51,9 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
             case BluetoothDevice.ACTION_FOUND:
                 final BluetoothDevice device =
                         intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                bluetoothDeviceSet.add(device);
+                final short rssi =
+                        intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                bluetoothDeviceSet.add(MyBluetoothDevice.fromBluetoothDevice(device, rssi));
                 break;
             case BluetoothDevice.ACTION_ACL_CONNECTED:
                 isDeviceConnected.set(true);
@@ -60,7 +65,7 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
 
     }
 
-    public ArrayList<BluetoothDevice> getBluetoothDevices() {
+    public ArrayList<MyBluetoothDevice> getBluetoothDevices() {
         synchronized (bluetoothDeviceSet) {
             return new ArrayList<>(bluetoothDeviceSet);
         }
