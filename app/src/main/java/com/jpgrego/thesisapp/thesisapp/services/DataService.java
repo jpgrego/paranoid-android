@@ -124,6 +124,7 @@ public final class DataService extends Service {
                 sendSensorInfo(sensorList);
                 writeCellInfoToDB(cellList);
                 writeWifiAPInfoToDB(wifiAPList);
+                writeBluetoothInfoToDB(bluetoothDeviceList);
                 INFO_HANDLER.postDelayed(this, SEND_INFO_PERIOD);
             }
 
@@ -184,6 +185,25 @@ public final class DataService extends Service {
                 if (values.size() > 0) {
                     db.insertWithOnConflict(DatabaseContract.WifiAPEntry.TABLE_NAME, null, values,
                             SQLiteDatabase.CONFLICT_IGNORE);
+                }
+            }
+
+            private void writeBluetoothInfoToDB(
+                    final ArrayList<BluetoothDevice> bluetoothDeviceList) {
+                final ContentValues values = new ContentValues();
+
+                for(BluetoothDevice bluetoothDevice : bluetoothDeviceList) {
+                    values.put(DatabaseContract.BluetoothEntry.NAME_COLUMN,
+                            bluetoothDevice.getName());
+                    values.put(DatabaseContract.BluetoothEntry.ADDRESS_COLUMN,
+                            bluetoothDevice.getAddress());
+                    values.put(DatabaseContract.BluetoothEntry.TYPE_COLUMN,
+                            bluetoothDevice.getType());
+                }
+
+                if(values.size() > 0) {
+                    db.insertWithOnConflict(DatabaseContract.BluetoothEntry.TABLE_NAME, null,
+                            values, SQLiteDatabase.CONFLICT_IGNORE);
                 }
             }
         };

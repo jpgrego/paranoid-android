@@ -38,7 +38,6 @@ public final class DatabaseContract {
 
         static final String SQL_DELETE_TABLE =
                 "DROP TABLE IF EXISTS " + TABLE_NAME;
-
     }
 
     public static class WifiAPEntry implements BaseColumns {
@@ -55,6 +54,22 @@ public final class DatabaseContract {
                         SSID_COLUMN + TEXT_TYPE + COMMA_SEP +
                         CHANNEL_COLUMN + INTEGER_TYPE + COMMA_SEP +
                         SECURITY + TEXT_TYPE + " )";
+
+        static final String SQL_DELETE_TABLE =
+                "DROP TABLE IF EXISTS " + TABLE_NAME;
+    }
+
+    public static class BluetoothEntry implements BaseColumns {
+        public static final String TABLE_NAME = "bluetooth";
+        public static final String NAME_COLUMN = "name";
+        public static final String ADDRESS_COLUMN = "address";
+        public static final String TYPE_COLUMN = "type";
+
+        static final String SQL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
+                _ID + INTEGER_TYPE + PRIMARY_KEY_CONSTRAINT + COMMA_SEP +
+                ADDRESS_COLUMN + TEXT_TYPE + UNIQUE_CONSTRAINT + COMMA_SEP +
+                NAME_COLUMN + TEXT_TYPE + COMMA_SEP +
+                TYPE_COLUMN + INTEGER_TYPE + " )";
 
         static final String SQL_DELETE_TABLE =
                 "DROP TABLE IF EXISTS " + TABLE_NAME;

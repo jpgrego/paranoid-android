@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public final class DatabaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION    = 2;
+    private static final int DATABASE_VERSION    = 3;
     private static final String DATABASE_NAME    = "database.db";
 
     public DatabaseHelper(final Context context) {
@@ -20,12 +20,22 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(DatabaseContract.CellEntry.SQL_CREATE_TABLE);
         sqLiteDatabase.execSQL(DatabaseContract.WifiAPEntry.SQL_CREATE_TABLE);
+        sqLiteDatabase.execSQL(DatabaseContract.BluetoothEntry.SQL_CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL(DatabaseContract.CellEntry.SQL_DELETE_TABLE);
-        sqLiteDatabase.execSQL(DatabaseContract.WifiAPEntry.SQL_DELETE_TABLE);
-        onCreate(sqLiteDatabase);
+        switch(oldVersion) {
+            case 1:
+            case 2:
+                sqLiteDatabase.execSQL(DatabaseContract.BluetoothEntry.SQL_CREATE_TABLE);
+                break;
+            default:
+                sqLiteDatabase.execSQL(DatabaseContract.CellEntry.SQL_DELETE_TABLE);
+                sqLiteDatabase.execSQL(DatabaseContract.WifiAPEntry.SQL_DELETE_TABLE);
+                sqLiteDatabase.execSQL(DatabaseContract.BluetoothEntry.SQL_DELETE_TABLE);
+                onCreate(sqLiteDatabase);
+                break;
+        }
     }
 }
