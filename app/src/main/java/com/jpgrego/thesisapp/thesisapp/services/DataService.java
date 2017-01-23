@@ -1,21 +1,31 @@
 package com.jpgrego.thesisapp.thesisapp.services;
+
+import android.Manifest;
 import android.app.Notification;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.wifi.WifiManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.data.Cell;
 import com.jpgrego.thesisapp.thesisapp.data.MyBluetoothDevice;
@@ -28,7 +38,9 @@ import com.jpgrego.thesisapp.thesisapp.listeners.CellInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
 import com.jpgrego.thesisapp.thesisapp.utils.Constants;
+
 import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -39,7 +51,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by jpgrego on 13/12/16.
  */
 
-public final class DataService extends Service {
+public final class DataService extends Service implements LocationListener {
 
 
     private static final int SEND_INFO_PERIOD = 10000;
@@ -96,9 +108,16 @@ public final class DataService extends Service {
         telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         registerReceiver(wifiInfoReceiver, wifiIntentFilter);
         registerReceiver(bluetoothInfoReceiver, bluetoothIntentFilter);
-
         for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
             sensorManager.registerListener(sensorInfoListener, sensor, 3000000);
+        }
+
+        final LocationManager locationManager =
+                (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         }
 
         final Runnable sendInfoRunnable = new Runnable() {
@@ -119,8 +138,25 @@ public final class DataService extends Service {
                         telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC, cellList,
                         wifiAPList, bluetoothDeviceList);
 
-                mozillaLocationService.geolocate(locationHelperData)
-                        .enqueue(new LocationCallback());
+                final Location location;
+                if (ActivityCompat.checkSelfPermission(DataService.this,
+                        Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                } else {
+                    location = null;
+                }
+
+                if(location != null) {
+                    final LocationResponse locationResponse =
+                            LocationResponse.fromAndroidLocation(location);
+                    final Intent intent = new Intent(Constants.MAP_INTENT_FILTER_NAME);
+                    intent.putExtra(Constants.MAP_LOCATION_EXTRA_NAME, locationResponse);
+                    sendBroadcast(intent);
+                } else {
+                    mozillaLocationService.geolocate(locationHelperData)
+                            .enqueue(new LocationCallback());
+                }
 
                 sendCellInfo(cellList);
                 sendWifiInfo(wifiAPList);
@@ -224,18 +260,38 @@ public final class DataService extends Service {
         return notificationBuilder.build();
     }
 
-    private class LocationCallback implements Callback<MozillaLocationResponse> {
+    @Override
+    public void onLocationChanged(Location location) {
+        // do nothing
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+        // do nothing
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        // do nothing
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        // do nothing
+    }
+
+    private class LocationCallback implements Callback<LocationResponse> {
         @Override
-        public void onResponse(Call<MozillaLocationResponse> call,
-                               Response<MozillaLocationResponse> response) {
-            final MozillaLocationResponse resp = response.body();
+        public void onResponse(Call<LocationResponse> call,
+                               Response<LocationResponse> response) {
+            final LocationResponse resp = response.body();
             final Intent intent = new Intent(Constants.MAP_INTENT_FILTER_NAME);
             intent.putExtra(Constants.MAP_LOCATION_EXTRA_NAME, resp);
             sendBroadcast(intent);
         }
 
         @Override
-        public void onFailure(Call<MozillaLocationResponse> call, Throwable t) {
+        public void onFailure(Call<LocationResponse> call, Throwable t) {
 
         }
     }

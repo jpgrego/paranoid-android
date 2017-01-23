@@ -13,5 +13,5 @@ interface MozillaLocationService {
     String MOZILLA_LOCATION_SERVICE_URL = "https://location.services.mozilla.com/";
 
     @POST("v1/geolocate?key=" + MOZILLA_API_KEY)
-    Call<MozillaLocationResponse> geolocate(@Body final LocationHelperData locationHelperData);
+    Call<LocationResponse> geolocate(@Body final LocationHelperData locationHelperData);
 }

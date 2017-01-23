@@ -8,30 +8,37 @@ import android.os.Parcelable;
  */
 
 @SuppressWarnings({"FieldCanBeLocal", "unused"})
-public final class MozillaLocationResponse implements Parcelable {
+public final class LocationResponse implements Parcelable {
     private final Location location;
     private final float accuracy;
 
-    MozillaLocationResponse(final Location location, final float accuracy) {
+    private LocationResponse(final Location location, final float accuracy) {
         this.location = location;
         this.accuracy = accuracy;
     }
 
-    private MozillaLocationResponse(Parcel in) {
+    static LocationResponse fromAndroidLocation(
+            final android.location.Location location) {
+        final Location myLoc = new Location(location.getLatitude(), location.getLongitude());
+        final float accuracy = location.getAccuracy();
+        return new LocationResponse(myLoc, accuracy);
+    }
+
+    private LocationResponse(Parcel in) {
         location = in.readParcelable(Location.class.getClassLoader());
         accuracy = in.readFloat();
     }
 
-    public static final Creator<MozillaLocationResponse> CREATOR =
-            new Creator<MozillaLocationResponse>() {
+    public static final Creator<LocationResponse> CREATOR =
+            new Creator<LocationResponse>() {
         @Override
-        public MozillaLocationResponse createFromParcel(Parcel in) {
-            return new MozillaLocationResponse(in);
+        public LocationResponse createFromParcel(Parcel in) {
+            return new LocationResponse(in);
         }
 
         @Override
-        public MozillaLocationResponse[] newArray(int size) {
-            return new MozillaLocationResponse[size];
+        public LocationResponse[] newArray(int size) {
+            return new LocationResponse[size];
         }
     };
 
@@ -46,11 +53,11 @@ public final class MozillaLocationResponse implements Parcelable {
         dest.writeFloat(accuracy);
     }
 
-    public float getLatitude() {
+    public double getLatitude() {
         return location.lat;
     }
 
-    public float getLongitude() {
+    public double getLongitude() {
         return location.lng;
     }
 
@@ -59,17 +66,17 @@ public final class MozillaLocationResponse implements Parcelable {
     }
 
     private static final class Location implements Parcelable {
-        final float lat;
-        private final float lng;
+        private final double lat;
+        private final double lng;
 
-        Location(final float lat, final float lng) {
+        Location(final double lat, final double lng) {
             this.lat = lat;
             this.lng = lng;
         }
 
         private Location(final Parcel in) {
-            lat = in.readFloat();
-            lng = in.readFloat();
+            lat = in.readDouble();
+            lng = in.readDouble();
         }
 
         public static final Creator<Location> CREATOR = new Creator<Location>() {
@@ -91,8 +98,8 @@ public final class MozillaLocationResponse implements Parcelable {
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeFloat(lat);
-            dest.writeFloat(lng);
+            dest.writeDouble(lat);
+            dest.writeDouble(lng);
         }
     }
 }

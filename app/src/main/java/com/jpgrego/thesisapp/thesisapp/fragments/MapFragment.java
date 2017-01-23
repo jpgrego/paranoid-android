@@ -12,7 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.jpgrego.thesisapp.thesisapp.R;
-import com.jpgrego.thesisapp.thesisapp.services.MozillaLocationResponse;
+import com.jpgrego.thesisapp.thesisapp.services.LocationResponse;
 import com.jpgrego.thesisapp.thesisapp.utils.Constants;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.util.GeoPoint;
@@ -23,7 +23,10 @@ import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
+import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
+
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -42,10 +45,10 @@ public final class MapFragment extends Fragment {
     private final BroadcastReceiver locationInfoReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final MozillaLocationResponse location =
+            final LocationResponse location =
                     intent.getParcelableExtra(Constants.MAP_LOCATION_EXTRA_NAME);
-            final float latitude = location.getLatitude();
-            final float longitude = location.getLongitude();
+            final double latitude = location.getLatitude();
+            final double longitude = location.getLongitude();
             final float accuracy = location.getAccuracy();
             final GeoPoint point = new GeoPoint(latitude, longitude);
 
@@ -53,6 +56,7 @@ public final class MapFragment extends Fragment {
                 final List<Overlay> overlays = mapView.getOverlays();
 
                 if(currentLocationMarker != null) {
+                    currentLocationMarker.closeInfoWindow();
                     overlays.remove(currentLocationMarker);
                 }
 
@@ -66,7 +70,14 @@ public final class MapFragment extends Fragment {
                         .getDrawable(R.drawable.marker_default_focused_base));
                 currentLocationMarker.setPosition(point);
                 currentLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                currentLocationMarker.setTitle(getResources().getString(R.string.my_location));
+                currentLocationMarker.setTitle(
+                        String.format(Locale.US, "%f\n%f", latitude,
+                                longitude));
+                currentLocationMarker.setSubDescription(
+                        String.format(Locale.US, "+-%fm", accuracy));
+                currentLocationMarker.setInfoWindow(new MarkerInfoWindow(R.layout.bonuspack_bubble,
+                        mapView));
+                currentLocationMarker.showInfoWindow();
                 overlays.add(currentLocationMarker);
 
                 currentLocationRadius = new Polygon();
