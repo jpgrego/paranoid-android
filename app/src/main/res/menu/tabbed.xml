@@ -6,5 +6,8 @@
     <item android:id="@+id/action_sensors" android:title=""
         android:icon="@drawable/wifi_security_open"
         app:showAsAction="ifRoom" />
+    <item android:id="@+id/action_map" android:title=""
+        android:icon="@drawable/wifi_security_adhoc"
+        app:showAsAction="ifRoom" />
 
 </menu>

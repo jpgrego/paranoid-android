@@ -2,6 +2,7 @@ package com.jpgrego.thesisapp.thesisapp.activities;
 
 import android.content.Intent;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
@@ -10,9 +11,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import com.jpgrego.thesisapp.thesisapp.R;
+import com.jpgrego.thesisapp.thesisapp.fragments.MapFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.SensorsFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
 import com.jpgrego.thesisapp.thesisapp.services.DataService;
+
+import org.osmdroid.config.Configuration;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -67,6 +72,9 @@ public final class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_sensors:
                 fragment = new SensorsFragment();
+                break;
+            case R.id.action_map:
+                fragment = new MapFragment();
                 break;
             default:
                 fragment = null;

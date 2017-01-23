@@ -29,8 +29,6 @@ import com.jpgrego.thesisapp.thesisapp.listeners.SensorInfoListener;
 import com.jpgrego.thesisapp.thesisapp.listeners.WifiInfoReceiver;
 import com.jpgrego.thesisapp.thesisapp.utils.Constants;
 import java.util.ArrayList;
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -44,18 +42,20 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class DataService extends Service {
 
 
-    private static final int SEND_INFO_PERIOD = 3000;
+    private static final int SEND_INFO_PERIOD = 10000;
     private static final Handler INFO_HANDLER = new Handler();
 
     // TODO: temporary, just for debugging. comment when not needed
+    /*
     private final HttpLoggingInterceptor loggingInterceptor =
             new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
     private final OkHttpClient.Builder clientBuilder =
             new OkHttpClient().newBuilder().addInterceptor(loggingInterceptor);
+    */
 
     private final MozillaLocationService mozillaLocationService = new Retrofit.Builder()
             .baseUrl(MozillaLocationService.MOZILLA_LOCATION_SERVICE_URL)
-            .client(clientBuilder.build())
+            //.client(clientBuilder.build())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(MozillaLocationService.class);
@@ -224,12 +224,14 @@ public final class DataService extends Service {
         return notificationBuilder.build();
     }
 
-    private static class LocationCallback implements Callback<MozillaLocationResponse> {
+    private class LocationCallback implements Callback<MozillaLocationResponse> {
         @Override
         public void onResponse(Call<MozillaLocationResponse> call,
                                Response<MozillaLocationResponse> response) {
             final MozillaLocationResponse resp = response.body();
-            System.out.println("success!");
+            final Intent intent = new Intent(Constants.MAP_INTENT_FILTER_NAME);
+            intent.putExtra(Constants.MAP_LOCATION_EXTRA_NAME, resp);
+            sendBroadcast(intent);
         }
 
         @Override
