@@ -54,8 +54,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class DataService extends Service implements LocationListener {
 
 
-    private static final int SEND_INFO_PERIOD = 10000;
+    private static final int SEND_INFO_PERIOD = 1000;
     private static final Handler INFO_HANDLER = new Handler();
+    private static int periodCounter = 0;
 
     // TODO: temporary, just for debugging. comment when not needed
     /*
@@ -134,37 +135,41 @@ public final class DataService extends Service implements LocationListener {
                 final int homeMCC = Integer.parseInt(networkOperator.substring(0, 3));
                 final int homeMNC = Integer.parseInt(networkOperator.substring(3));
 
-                final LocationHelperData locationHelperData = new LocationHelperData(
-                        telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC, cellList,
-                        wifiAPList, bluetoothDeviceList);
+                if(periodCounter >= 10) {
+                    final Location location;
+                    if (ActivityCompat.checkSelfPermission(DataService.this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        location =
+                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    } else {
+                        location = null;
+                    }
 
-                final Location location;
-                if (ActivityCompat.checkSelfPermission(DataService.this,
-                        Manifest.permission.ACCESS_FINE_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED) {
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                } else {
-                    location = null;
-                }
+                    if (location != null) {
+                        final LocationResponse locationResponse =
+                                LocationResponse.fromAndroidLocation(location);
+                        final Intent intent = new Intent(Constants.MAP_INTENT_FILTER_NAME);
+                        intent.putExtra(Constants.MAP_LOCATION_EXTRA_NAME, locationResponse);
+                        sendBroadcast(intent);
+                    } else {
+                        final LocationHelperData locationHelperData = new LocationHelperData(
+                                telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC,
+                                cellList, wifiAPList, bluetoothDeviceList);
+                        mozillaLocationService.geolocate(locationHelperData)
+                                .enqueue(new LocationCallback());
+                    }
 
-                if(location != null) {
-                    final LocationResponse locationResponse =
-                            LocationResponse.fromAndroidLocation(location);
-                    final Intent intent = new Intent(Constants.MAP_INTENT_FILTER_NAME);
-                    intent.putExtra(Constants.MAP_LOCATION_EXTRA_NAME, locationResponse);
-                    sendBroadcast(intent);
-                } else {
-                    mozillaLocationService.geolocate(locationHelperData)
-                            .enqueue(new LocationCallback());
+                    writeCellInfoToDB(cellList);
+                    writeWifiAPInfoToDB(wifiAPList);
+                    writeBluetoothInfoToDB(bluetoothDeviceList);
+                    periodCounter = 0;
                 }
 
                 sendCellInfo(cellList);
                 sendWifiInfo(wifiAPList);
                 sendBluetoothInfo(bluetoothDeviceList);
                 sendSensorInfo(sensorList);
-                writeCellInfoToDB(cellList);
-                writeWifiAPInfoToDB(wifiAPList);
-                writeBluetoothInfoToDB(bluetoothDeviceList);
                 INFO_HANDLER.postDelayed(this, SEND_INFO_PERIOD);
             }
 

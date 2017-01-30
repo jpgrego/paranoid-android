@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:layout_weight="1" >
+
+    <ImageButton
+        android:id="@+id/action_radio"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/network"
+        android:layout_weight="1"
+        android:onClick="actionBarButtonClicked"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/action_traffic"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/traffic"
+        android:layout_weight="1"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/action_sensors"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/sensors"
+        android:layout_weight="1"
+        android:onClick="actionBarButtonClicked"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/action_location"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/location"
+        android:layout_weight="1"
+        android:onClick="actionBarButtonClicked"
+        tools:ignore="ContentDescription" />
+
+</LinearLayout>

@@ -184,8 +184,8 @@ public class CellInfoListenerTest {
         Mockito.when(cellSignalStrengthMock2.getDbm()).thenReturn(-30);
 
         inputList = new ArrayList<>();
-        testCell1 = Cell.fromCellInfoGsm(TEST_NETWORK_TYPE, cellInfoGsmMock1);
-        testCell2 = Cell.fromCellInfoGsm(TEST_NETWORK_TYPE, cellInfoGsmMock2);
+        testCell1 = Cell.fromCellInfo(TEST_NETWORK_TYPE, cellInfoGsmMock1);
+        testCell2 = Cell.fromCellInfo(TEST_NETWORK_TYPE, cellInfoGsmMock2);
 
         inputList.add(testCell1);
         inputList.add(testCell2);

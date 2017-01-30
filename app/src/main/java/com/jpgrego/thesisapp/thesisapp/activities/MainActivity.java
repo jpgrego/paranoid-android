@@ -2,22 +2,21 @@ package com.jpgrego.thesisapp.thesisapp.activities;
 
 import android.content.Intent;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import com.jpgrego.thesisapp.thesisapp.R;
 import com.jpgrego.thesisapp.thesisapp.fragments.MapFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.SensorsFragment;
 import com.jpgrego.thesisapp.thesisapp.fragments.WifiAndCellFragment;
 import com.jpgrego.thesisapp.thesisapp.services.DataService;
-
-import org.osmdroid.config.Configuration;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -50,30 +49,37 @@ public final class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.tabbed, menu);
-        return true;
+        final LayoutInflater inflator = getLayoutInflater();
+        final ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(false);
+
+            actionBar.setDisplayShowHomeEnabled(false);
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+
+            final View customView = inflator.inflate(R.layout.tabbed_menu, null);
+            actionBar.setCustomView(customView, new ActionBar.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        final int menuItemID;
-        final FragmentManager fragmentManager;
+    public void actionBarButtonClicked(View view) {
+        final int id = view.getId();
         final Fragment fragment;
+        final FragmentManager fragmentManager = getSupportFragmentManager();
 
-        menuItemID = item.getItemId();
-        fragmentManager = getSupportFragmentManager();
-
-        switch (menuItemID) {
+        switch(id) {
             case R.id.action_radio:
                 fragment = new WifiAndCellFragment();
                 break;
             case R.id.action_sensors:
                 fragment = new SensorsFragment();
                 break;
-            case R.id.action_map:
+            case R.id.action_location:
                 fragment = new MapFragment();
                 break;
             default:
@@ -83,10 +89,9 @@ public final class MainActivity extends AppCompatActivity {
         if (fragment != null) {
             fragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit();
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
+    @SuppressWarnings("unused")
     private class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {

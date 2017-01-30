@@ -75,7 +75,7 @@ public class WifiAndCellFragmentIT {
         final List<Cell> cellList;
         final Cell cell;
 
-        cell = Cell.fromCellInfoGsm(TEST_NETWORK_TYPE, cellInfoGsmMock);
+        cell = Cell.fromCellInfo(TEST_NETWORK_TYPE, cellInfoGsmMock);
         cellList = new ArrayList<>();
 
         cellList.add(cell);

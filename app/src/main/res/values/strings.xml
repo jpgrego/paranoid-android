@@ -40,4 +40,10 @@
     <string name="sensors_ycoord">Y Axis</string>
     <string name="sensors_zcoord">Z Axis</string>
 
+    <!-- action bar buttons -->
+    <string name="action_radio">Radio</string>
+    <string name="action_traffic">Traffic</string>
+    <string name="action_sensors">Sensors</string>
+    <string name="action_map">Location</string>
+
 </resources>

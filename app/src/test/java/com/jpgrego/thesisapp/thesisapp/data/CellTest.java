@@ -61,7 +61,7 @@ public class CellTest {
 
     @Test
     public void testFromCellInfoGsm1() {
-        final Cell cell = Cell.fromCellInfoGsm(TEST_NETWORK_TYPE, cellInfoGsm);
+        final Cell cell = Cell.fromCellInfo(TEST_NETWORK_TYPE, cellInfoGsm);
 
         final int[] array1 = {TEST_MCC, TEST_MNC, TEST_CID, TEST_LAC, TEST_PSC, TEST_DBM};
         final int[] array2 = {cell.getMcc(), cell.getMnc(), cell.getCid(), cell.getLac(),
@@ -71,7 +71,7 @@ public class CellTest {
 
     @Test
     public void testFromCellInfoGsm2() {
-        final Cell cell = Cell.fromCellInfoGsm(TEST_NETWORK_TYPE, cellInfoGsm);
+        final Cell cell = Cell.fromCellInfo(TEST_NETWORK_TYPE, cellInfoGsm);
         Assert.assertEquals("3G", cell.getGeneration());
     }
 
