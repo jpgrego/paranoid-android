@@ -99,6 +99,8 @@ public final class DataService extends Service implements LocationListener {
         final DatabaseHelper dbHelper = new DatabaseHelper(this);
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
 
+        AppTrafficAcquisition.getAppTrafficData(getPackageManager());
+
         final IntentFilter wifiIntentFilter = new IntentFilter();
         wifiIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         wifiIntentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
