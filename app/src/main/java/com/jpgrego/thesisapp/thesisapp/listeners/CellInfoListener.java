@@ -1,7 +1,6 @@
 package com.jpgrego.thesisapp.thesisapp.listeners;
 
 import android.telephony.CellInfo;
-import android.telephony.CellInfoGsm;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -80,11 +79,7 @@ public final class CellInfoListener extends PhoneStateListener {
             Log.i(this.getClass().getName(), "Obtaining cell info through getAllCellInfo() has " +
                     "been successful");
             for (final CellInfo cellInfo : cellInfoList) {
-                final CellInfoGsm cellInfoGsm;
-                if (cellInfo instanceof CellInfoGsm) {
-                    cellInfoGsm = (CellInfoGsm) cellInfo;
-                    cellList.add(Cell.fromCellInfoGsm(this.networkType, cellInfoGsm));
-                }
+                cellList.add(Cell.fromCellInfo(this.networkType, cellInfo));
             }
             return true;
         } else {

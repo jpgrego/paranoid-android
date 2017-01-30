@@ -66,14 +66,14 @@ final class LocationHelperData {
 
     private static class CellTower {
 
-        private final RadioType radioType;
+        private final Cell.RadioType radioType;
         private final int mobileCountryCode, mobileNetworkCode, locationAreaCode, cellId, psc,
                 signalStrength;
         private final long age;
 
         // TODO: GSM only for now. Try to change this in the future.
         private CellTower(final Cell cell) {
-            this.radioType = RadioType.gsm;
+            this.radioType = cell.getRadioType();
             this.mobileCountryCode = cell.getMcc();
             this.mobileNetworkCode = cell.getMnc();
             this.locationAreaCode = cell.getLac();
@@ -106,11 +106,5 @@ final class LocationHelperData {
             return new WifiAccessPoint(wifiAP);
         }
 
-    }
-
-    private enum RadioType {
-        gsm,
-        wcdma,
-        lte
     }
 }

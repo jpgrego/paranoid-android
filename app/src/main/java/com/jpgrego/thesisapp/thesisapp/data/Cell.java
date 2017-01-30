@@ -5,8 +5,15 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.telephony.CellIdentityGsm;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellIdentityWcdma;
+import android.telephony.CellInfo;
 import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
 import android.telephony.CellSignalStrengthGsm;
+import android.telephony.CellSignalStrengthLte;
+import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.gsm.GsmCellLocation;
 import com.jpgrego.thesisapp.thesisapp.utils.CellUtils;
@@ -22,12 +29,20 @@ import java.util.concurrent.TimeUnit;
  */
 public final class Cell implements Comparable<Cell>, Parcelable {
 
+    public enum RadioType {
+        gsm,
+        wcdma,
+        lte
+    }
+
+    private final RadioType radioType;
     private final int mcc, mnc, cid, lac, psc, dbm;
     private final String generation;
     private final boolean isRegisteredCell;
     private final long timestamp;
 
     private Cell(Parcel in) {
+        this.radioType = RadioType.valueOf(in.readString());
         this.mcc = in.readInt();
         this.mnc = in.readInt();
         this.cid = in.readInt();
@@ -46,20 +61,72 @@ public final class Cell implements Comparable<Cell>, Parcelable {
         cellIdentityGsm = cellInfoGsm.getCellIdentity();
         cellSignalStrengthGsm = cellInfoGsm.getCellSignalStrength();
 
-        this.mcc = cellIdentityGsm.getMcc();
-        this.mnc = cellIdentityGsm.getMnc();
-        this.cid = cellIdentityGsm.getCid();
-        this.lac = cellIdentityGsm.getLac();
+        final int mcc = cellIdentityGsm.getMcc();
+        final int mnc = cellIdentityGsm.getMnc();
+        final int cid = cellIdentityGsm.getCid();
+        final int lac = cellIdentityGsm.getLac();
+
+        this.radioType = RadioType.gsm;
+        this.mcc = mcc != Integer.MAX_VALUE ? mcc : -1;
+        this.mnc = mnc != Integer.MAX_VALUE ? mnc : -1;
+        this.cid = cid != Integer.MAX_VALUE ? cid : -1;
+        this.lac = lac != Integer.MAX_VALUE ? lac : -1;
         //noinspection deprecation
-        this.psc = cellIdentityGsm.getPsc();
+        this.psc = -1;  // undefined for GSM
         this.dbm = cellSignalStrengthGsm.getDbm();
         this.generation = CellUtils.getGenerationFromNetworkType(networkType);
         this.isRegisteredCell = cellInfoGsm.isRegistered();
         this.timestamp = TimeUnit.NANOSECONDS.toMillis(cellInfoGsm.getTimeStamp());
     }
 
+    private Cell(final int networkType, final CellInfoLte cellInfoLte) {
+        final CellIdentityLte cellIdentityLte = cellInfoLte.getCellIdentity();
+        final CellSignalStrengthLte cellSignalStrengthLte = cellInfoLte.getCellSignalStrength();
+
+        this.radioType = RadioType.lte;
+        final int mcc = cellIdentityLte.getMcc();
+        final int mnc = cellIdentityLte.getMnc();
+        final int cid = cellIdentityLte.getCi();
+
+        this.mcc = mcc != Integer.MAX_VALUE ? mcc : -1;
+        this.mnc = mnc != Integer.MAX_VALUE ? mnc : -1;
+        this.cid = cid != Integer.MAX_VALUE ? cid : -1;
+        //this.lac = cellIdentityLte.getTac();
+        this.lac = -1;
+        //this.psc = cellIdentityLte.getPci();
+        this.psc = -1;
+        this.dbm = cellSignalStrengthLte.getDbm();
+        this.generation = CellUtils.getGenerationFromNetworkType(networkType);
+        this.isRegisteredCell = cellInfoLte.isRegistered();
+        this.timestamp = TimeUnit.NANOSECONDS.toMillis(cellInfoLte.getTimeStamp());
+    }
+
+    private Cell(final int networkType, final CellInfoWcdma cellInfoWcdma) {
+        final CellIdentityWcdma cellIdentityWcdma = cellInfoWcdma.getCellIdentity();
+        final CellSignalStrengthWcdma cellSignalStrengthWcdma =
+                cellInfoWcdma.getCellSignalStrength();
+
+        final int mcc = cellIdentityWcdma.getMcc();
+        final int mnc = cellIdentityWcdma.getMnc();
+        final int cid = cellIdentityWcdma.getCid();
+        final int lac = cellIdentityWcdma.getLac();
+        final int psc = cellIdentityWcdma.getPsc();
+
+        this.radioType = RadioType.wcdma;
+        this.mcc = mcc != Integer.MAX_VALUE ? mcc : -1;
+        this.mnc = mnc != Integer.MAX_VALUE ? mnc : -1;
+        this.cid = cid != Integer.MAX_VALUE ? cid : -1;
+        this.lac = lac != Integer.MAX_VALUE ? lac : -1;
+        this.psc = psc != Integer.MAX_VALUE ? psc : -1;
+        this.dbm = cellSignalStrengthWcdma.getDbm();
+        this.generation = CellUtils.getGenerationFromNetworkType(networkType);
+        this.isRegisteredCell = cellInfoWcdma.isRegistered();
+        this.timestamp = TimeUnit.NANOSECONDS.toMillis(cellInfoWcdma.getTimeStamp());
+    }
+
     private Cell(final boolean isRegisteredCell, final int networkType, final int mcc,
                  final int mnc, final int dbm, final GsmCellLocation cellLocation) {
+        this.radioType = RadioType.gsm;
         this.mcc = mcc;
         this.mnc = mnc;
         this.cid = cellLocation.getCid();
@@ -73,6 +140,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
 
     private Cell(final boolean isRegisteredCell, final int mcc, final int mnc,
                  final NeighboringCellInfo neighboringCellInfo) {
+        this.radioType = RadioType.gsm;
         this.mcc = mcc;
         this.mnc = mnc;
         this.cid = neighboringCellInfo.getCid();
@@ -97,8 +165,16 @@ public final class Cell implements Comparable<Cell>, Parcelable {
         return new Cell(false, mcc, mnc, neighboringCellInfo);
     }
 
-    public static Cell fromCellInfoGsm(final int networkType, final CellInfoGsm cellInfoGsm) {
-        return new Cell(networkType, cellInfoGsm);
+    public static Cell fromCellInfo(final int networkType, final CellInfo cellInfo) {
+        if(cellInfo instanceof CellInfoGsm) {
+            return new Cell(networkType, (CellInfoGsm) cellInfo);
+        } else if(cellInfo instanceof CellInfoLte) {
+            return new Cell(networkType, (CellInfoLte) cellInfo);
+        } else if(cellInfo instanceof CellInfoWcdma) {
+            return new Cell(networkType, (CellInfoWcdma) cellInfo);
+        } else {
+            return null;
+        }
     }
 
     public static final Creator<Cell> CREATOR = new Creator<Cell>() {
@@ -125,6 +201,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(radioType.name());
         parcel.writeInt(mcc);
         parcel.writeInt(mnc);
         parcel.writeInt(cid);
@@ -138,6 +215,10 @@ public final class Cell implements Comparable<Cell>, Parcelable {
 
     public boolean isRegisteredCell() {
         return isRegisteredCell;
+    }
+
+    public RadioType getRadioType() {
+        return radioType;
     }
 
     public int getMcc() {

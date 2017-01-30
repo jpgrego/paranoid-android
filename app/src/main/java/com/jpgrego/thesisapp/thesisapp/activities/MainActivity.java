@@ -36,7 +36,7 @@ public final class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         startService(new Intent(this, DataService.class));
-        Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
+        //Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
         setContentView(R.layout.activity_main);
 
         if(savedInstanceState == null) {
@@ -116,7 +116,7 @@ public final class MainActivity extends AppCompatActivity {
                 }
 
                 if (!logFile.exists()) {
-                    if (logFile.createNewFile()) {
+                    if (!logFile.createNewFile()) {
                         throw new IOException("Unable to create log file");
                     }
                 } else if (!logFile.isFile()) {
