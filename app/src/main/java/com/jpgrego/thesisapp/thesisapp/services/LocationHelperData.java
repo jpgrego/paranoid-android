@@ -71,7 +71,6 @@ final class LocationHelperData {
                 signalStrength;
         private final long age;
 
-        // TODO: GSM only for now. Try to change this in the future.
         private CellTower(final Cell cell) {
             this.radioType = cell.getRadioType();
             this.mobileCountryCode = cell.getMcc();
