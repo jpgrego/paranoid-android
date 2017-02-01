@@ -27,9 +27,11 @@ public final class SensorInfoListener implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        final MySensor mySensor = new MySensor(event);
-        sensorSet.remove(mySensor);
-        sensorSet.add(mySensor);
+        synchronized (sensorSet) {
+            final MySensor mySensor = new MySensor(event);
+            sensorSet.remove(mySensor);
+            sensorSet.add(mySensor);
+        }
     }
 
     @Override

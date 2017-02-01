@@ -14,6 +14,8 @@ public final class Constants {
     public static final String CELL_INFO_LIST_INTENT_EXTRA_NAME = "CellInfoList";
     public static final String SENSOR_INTENT_FILTER_NAME = "SensorInfo";
     public static final String SENSOR_INFO_LIST_INTENT_EXTRA_NAME = "SensorInfoList";
+    public static final String APP_TRAFFIC_INTENT_FILTER_NAME = "AppTrafficInfo";
+    public static final String APP_TRAFFIC_LIST_INTENT_EXTRA_NAME = "AppTrafficInfoList";
     public static final String MAP_INTENT_FILTER_NAME = "LocationInfo";
     public static final String MAP_LOCATION_EXTRA_NAME = "LocationInfo";
 }

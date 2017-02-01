@@ -2,53 +2,77 @@ package com.jpgrego.watchtower.data;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.net.TrafficStats;
-
-import com.jpgrego.watchtower.services.AppTrafficAcquisition;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Created by jpgrego on 1/30/17.
  */
 
-public final class AppTrafficData {
+public final class AppTrafficData implements Parcelable, Comparable<AppTrafficData> {
 
-    private final String appName;
-    private final int iconID;
+    private final String appName, appPackageName;
+    private final int uid;
     private final long transmittedBytes, receivedBytes, transmittedPackages, receivedPackages;
-    private final int uid, mobileTransmittedPercentage, mobileReceivedPercentage,
-            totalTransmittedPercentage, totalReceivedPercentage;
 
-    private AppTrafficData(final int uid, final int iconID, final String appName) {
+    private volatile int hashCode;
+
+    private AppTrafficData(final int uid, final String appName, final String appPackageName) {
         this.uid = uid;
         this.appName = appName;
-        this.iconID = iconID;
+        this.appPackageName = appPackageName;
         this.transmittedBytes = TrafficStats.getUidTxBytes(uid);
         this.receivedBytes = TrafficStats.getUidRxBytes(uid);
         this.transmittedPackages = TrafficStats.getUidTxPackets(uid);
         this.receivedPackages = TrafficStats.getUidRxPackets(uid);
-        this.mobileTransmittedPercentage =
-                (int) (this.transmittedBytes / AppTrafficAcquisition.getMobileTransmittedBytes());
-        this.mobileReceivedPercentage =
-                (int) (this.receivedBytes / AppTrafficAcquisition.getMobileReceivedBytes());
-        this.totalTransmittedPercentage =
-                (int) (this.transmittedBytes / AppTrafficAcquisition.getTotalTransmittedBytes());
-        this.totalReceivedPercentage =
-                (int) (this.receivedBytes / AppTrafficAcquisition.getTotalReceivedBytes());
     }
+
+    private AppTrafficData(final Parcel in) {
+        appName = in.readString();
+        appPackageName = in.readString();
+        uid = in.readInt();
+        transmittedBytes = in.readLong();
+        receivedBytes = in.readLong();
+        transmittedPackages = in.readLong();
+        receivedPackages = in.readLong();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(appName);
+        dest.writeString(appPackageName);
+        dest.writeInt(uid);
+        dest.writeLong(transmittedBytes);
+        dest.writeLong(receivedBytes);
+        dest.writeLong(transmittedPackages);
+        dest.writeLong(receivedPackages);
+    }
+
+    public static final Creator<AppTrafficData> CREATOR = new Creator<AppTrafficData>() {
+        @Override
+        public AppTrafficData createFromParcel(Parcel in) {
+            return new AppTrafficData(in);
+        }
+
+        @Override
+        public AppTrafficData[] newArray(int size) {
+            return new AppTrafficData[size];
+        }
+    };
 
     public static AppTrafficData fromApplicationInfo(final ApplicationInfo appInfo,
                                                      final PackageManager pm) {
         final String name = appInfo.loadLabel(pm).toString();
-        return new AppTrafficData(appInfo.uid, appInfo.icon, name);
+        return new AppTrafficData(appInfo.uid, name, appInfo.packageName);
     }
 
     public String getAppName() {
         return appName;
     }
 
-    public int getIconID() {
-        return iconID;
+    public String getAppPackageName() {
+        return appPackageName;
     }
 
     public long getTransmittedBytes() {
@@ -71,19 +95,40 @@ public final class AppTrafficData {
         return uid;
     }
 
-    public int getMobileTransmittedPercentage() {
-        return mobileTransmittedPercentage;
+    public boolean hasNetworkActivity() {
+        return transmittedBytes > 0 || receivedBytes > 0;
     }
 
-    public int getMobileReceivedPercentage() {
-        return mobileReceivedPercentage;
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public int getTotalTransmittedPercentage() {
-        return totalTransmittedPercentage;
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(!(o instanceof AppTrafficData)) return false;
+
+        final AppTrafficData appTrafficData = (AppTrafficData) o;
+
+        return appTrafficData.uid == this.uid;
     }
 
-    public int getTotalReceivedPercentage() {
-        return totalReceivedPercentage;
+    @Override
+    public int hashCode() {
+        int result = hashCode;
+
+        if(result == 0) {
+            result = 17;
+            result *= 31 + uid;
+            hashCode = result;
+        }
+
+        return result;
+    }
+
+    @Override
+    public int compareTo(AppTrafficData another) {
+        return Long.compare(another.transmittedBytes, this.transmittedBytes);
     }
 }

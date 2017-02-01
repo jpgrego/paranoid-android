@@ -49,11 +49,13 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
 
         switch(intent.getAction()) {
             case BluetoothDevice.ACTION_FOUND:
-                final BluetoothDevice device =
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                final short rssi =
-                        intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
-                bluetoothDeviceSet.add(MyBluetoothDevice.fromBluetoothDevice(device, rssi));
+                synchronized (bluetoothDeviceSet) {
+                    final BluetoothDevice device =
+                            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    final short rssi =
+                            intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                    bluetoothDeviceSet.add(MyBluetoothDevice.fromBluetoothDevice(device, rssi));
+                }
                 break;
             case BluetoothDevice.ACTION_ACL_CONNECTED:
                 isDeviceConnected.set(true);

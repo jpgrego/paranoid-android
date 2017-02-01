@@ -40,6 +40,9 @@
     <string name="sensors_ycoord">Y Axis</string>
     <string name="sensors_zcoord">Z Axis</string>
 
+    <!-- app traffic info strings -->
+    <string name="app_traffic_title">Application traffic</string>
+
     <!-- action bar buttons -->
     <string name="action_radio">Radio</string>
     <string name="action_traffic">Traffic</string>

@@ -27,6 +27,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 
 import com.jpgrego.watchtower.R;
+import com.jpgrego.watchtower.data.AppTrafficData;
 import com.jpgrego.watchtower.data.Cell;
 import com.jpgrego.watchtower.data.MyBluetoothDevice;
 import com.jpgrego.watchtower.data.MySensor;
@@ -96,10 +97,9 @@ public final class DataService extends Service implements LocationListener {
         final WifiInfoReceiver wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
         final BluetoothInfoReceiver bluetoothInfoReceiver = new BluetoothInfoReceiver(btAdapter);
         final SensorInfoListener sensorInfoListener = new SensorInfoListener();
+        final AppTraffic appTraffic = new AppTraffic(getPackageManager());
         final DatabaseHelper dbHelper = new DatabaseHelper(this);
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        AppTrafficAcquisition.getAppTrafficData(getPackageManager());
 
         final IntentFilter wifiIntentFilter = new IntentFilter();
         wifiIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -131,6 +131,8 @@ public final class DataService extends Service implements LocationListener {
                 final ArrayList<MySensor> sensorList = sensorInfoListener.getSensorList();
                 final ArrayList<MyBluetoothDevice> bluetoothDeviceList =
                         bluetoothInfoReceiver.getBluetoothDevices();
+                final ArrayList<AppTrafficData> appTrafficArrayList =
+                        appTraffic.getAppTrafficDataList();
 
                 final String networkOperator = telephonyManager.getNetworkOperator();
 
@@ -172,6 +174,7 @@ public final class DataService extends Service implements LocationListener {
                 sendWifiInfo(wifiAPList);
                 sendBluetoothInfo(bluetoothDeviceList);
                 sendSensorInfo(sensorList);
+                sendAppInfo(appTrafficArrayList);
                 INFO_HANDLER.postDelayed(this, SEND_INFO_PERIOD);
             }
 
@@ -198,6 +201,13 @@ public final class DataService extends Service implements LocationListener {
             private void sendSensorInfo(final ArrayList<MySensor> sensorList) {
                 final Intent intent = new Intent(Constants.SENSOR_INTENT_FILTER_NAME);
                 intent.putExtra(Constants.SENSOR_INFO_LIST_INTENT_EXTRA_NAME, sensorList);
+                sendBroadcast(intent);
+            }
+
+            private void sendAppInfo(final ArrayList<AppTrafficData> appTrafficDataArrayList) {
+                final Intent intent = new Intent(Constants.APP_TRAFFIC_INTENT_FILTER_NAME);
+                intent.putExtra(Constants.APP_TRAFFIC_LIST_INTENT_EXTRA_NAME,
+                        appTrafficDataArrayList);
                 sendBroadcast(intent);
             }
 

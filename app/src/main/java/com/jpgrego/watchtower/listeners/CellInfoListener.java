@@ -63,10 +63,12 @@ public final class CellInfoListener extends PhoneStateListener {
     }
 
     private void getCellInfo() {
-        cellList.clear();
-        if (!getAllCellInfo()) {
-            getRegisteredCellInfo();
-            getNeighboringCellsInfo();
+        synchronized (cellList) {
+            cellList.clear();
+            if (!getAllCellInfo()) {
+                getRegisteredCellInfo();
+                getNeighboringCellsInfo();
+            }
         }
     }
 

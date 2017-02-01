@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/traffic"
         android:layout_weight="1"
+        android:onClick="actionBarButtonClicked"
         tools:ignore="ContentDescription" />
 
     <ImageButton

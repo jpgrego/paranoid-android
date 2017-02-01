@@ -1,5 +1,6 @@
 package com.jpgrego.watchtower.activities;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -12,7 +13,10 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
 import com.jpgrego.watchtower.R;
+import com.jpgrego.watchtower.fragments.AppTrafficFragment;
 import com.jpgrego.watchtower.fragments.MapFragment;
 import com.jpgrego.watchtower.fragments.SensorsFragment;
 import com.jpgrego.watchtower.fragments.WifiAndCellFragment;
@@ -76,6 +80,9 @@ public final class MainActivity extends AppCompatActivity {
             case R.id.action_radio:
                 fragment = new WifiAndCellFragment();
                 break;
+            case R.id.action_traffic:
+                fragment = new AppTrafficFragment();
+                break;
             case R.id.action_sensors:
                 fragment = new SensorsFragment();
                 break;
@@ -89,6 +96,14 @@ public final class MainActivity extends AppCompatActivity {
         if (fragment != null) {
             fragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit();
         }
+    }
+
+    public void appTrafficRowClick(View view) {
+        final Dialog dialog = new Dialog(this);
+        final TextView appUidView = (TextView) view.findViewById(R.id.app_uid);
+        final int appUidVal = Integer.parseInt(appUidView.getText().toString());
+        dialog.setTitle("Test");
+        dialog.show();
     }
 
     @SuppressWarnings("unused")
