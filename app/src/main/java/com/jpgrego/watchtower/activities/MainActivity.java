@@ -2,6 +2,7 @@ package com.jpgrego.watchtower.activities;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.jpgrego.watchtower.R;
@@ -21,6 +23,9 @@ import com.jpgrego.watchtower.fragments.MapFragment;
 import com.jpgrego.watchtower.fragments.SensorsFragment;
 import com.jpgrego.watchtower.fragments.WifiAndCellFragment;
 import com.jpgrego.watchtower.services.DataService;
+
+import org.w3c.dom.Text;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -101,8 +106,26 @@ public final class MainActivity extends AppCompatActivity {
     public void appTrafficRowClick(View view) {
         final Dialog dialog = new Dialog(this);
         final TextView appUidView = (TextView) view.findViewById(R.id.app_uid);
+        final TextView appNameView = (TextView) view.findViewById(R.id.app_name);
+        final TextView appPackageNameView = (TextView) view.findViewById(R.id.app_package_name);
+        final View detailsView = View.inflate(this, R.layout.app_traffic_details, null);
+
         final int appUidVal = Integer.parseInt(appUidView.getText().toString());
-        dialog.setTitle("Test");
+        final String appPackageName = appPackageNameView.getText().toString();
+
+        try {
+            final ImageView icon = (ImageView) detailsView.findViewById(R.id.app_icon);
+            icon.setImageDrawable(getPackageManager().getApplicationIcon(appPackageName));
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        final TextView detailsPackageName =
+                (TextView) detailsView.findViewById(R.id.app_package_name);
+        detailsPackageName.setText(appPackageName);
+
+        dialog.setTitle(appNameView.getText().toString());
+        dialog.setContentView(detailsView);
         dialog.show();
     }
 

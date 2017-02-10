@@ -33,7 +33,9 @@ public final class AppTrafficFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             final ArrayList<AppTrafficData> appTrafficList = intent.getParcelableArrayListExtra(
                     Constants.APP_TRAFFIC_LIST_INTENT_EXTRA_NAME);
-            updateAppTrafficTable(appTrafficList);
+            if(appTrafficList != null) {
+                updateAppTrafficTable(appTrafficList);
+            }
         }
     };
 
@@ -57,7 +59,10 @@ public final class AppTrafficFragment extends Fragment {
     public void onResume() {
         super.onResume();
         getActivity().registerReceiver(appTrafficInfoReceiver,
-                new IntentFilter(Constants.APP_TRAFFIC_INTENT_FILTER_NAME));
+                new IntentFilter(Constants.APP_TRAFFIC_RESPONSE_INTENT_FILTER_NAME));
+
+        final Intent requestInfo = new Intent(Constants.APP_TRAFFIC_REQUEST_INTENT_FILTER_NAME);
+        getActivity().sendBroadcast(requestInfo);
     }
 
     @Override
@@ -89,11 +94,11 @@ public final class AppTrafficFragment extends Fragment {
             final ImageView appIcon =
                     (ImageView) appTrafficTableDataRow.findViewById(R.id.app_icon);
             final TextView appUid = (TextView) appTrafficTableDataRow.findViewById(R.id.app_uid);
+            final TextView appPackageName =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.app_package_name);
             final TextView appName = (TextView) appTrafficTableDataRow.findViewById(R.id.app_name);
-            final TextView appTransmittedMB =
-                    (TextView) appTrafficTableDataRow.findViewById(R.id.app_transmitted_mBytes);
-            final TextView appReceivedMB =
-                    (TextView) appTrafficTableDataRow.findViewById(R.id.app_received_mBytes);
+            final TextView appCount =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.app_count);
 
             try {
                 appIcon.setImageDrawable(getActivity().getPackageManager()
@@ -105,10 +110,10 @@ public final class AppTrafficFragment extends Fragment {
             final double transmittedMB = appTrafficData.getTransmittedBytes() / 1048576.0;
             final double receivedMB = appTrafficData.getReceivedBytes() / 1048576.0;
 
-            appUid.setText(appTrafficData.getUid());
+            appUid.setText(String.format(Locale.US, "%d", appTrafficData.getUid()));
+            appPackageName.setText(appTrafficData.getAppPackageName());
             appName.setText(appTrafficData.getAppName());
-            appTransmittedMB.setText(String.format(Locale.US, "%.3f MBytes", transmittedMB));
-            appReceivedMB.setText(String.format(Locale.US, "%.3f MBytes", receivedMB));
+            appCount.setText(String.format(Locale.US, "%.1f MB", transmittedMB + receivedMB));
 
             appTrafficTable.addView(appTrafficTableDataRow, new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));

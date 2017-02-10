@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.net.TrafficStats;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 /**
  * Created by jpgrego on 1/30/17.
@@ -128,7 +129,8 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
     }
 
     @Override
-    public int compareTo(AppTrafficData another) {
-        return Long.compare(another.transmittedBytes, this.transmittedBytes);
+    public int compareTo(@NonNull AppTrafficData another) {
+        return Long.compare(another.transmittedBytes + another.receivedBytes,
+                this.transmittedBytes + this.receivedBytes);
     }
 }

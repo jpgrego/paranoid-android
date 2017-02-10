@@ -8,7 +8,7 @@
 
     <ImageView
         android:id="@+id/app_icon"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="1"
@@ -16,7 +16,15 @@
 
     <TextView
         android:id="@+id/app_uid"
-        android:layout_width="8dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/app_package_name"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="1"
@@ -24,21 +32,14 @@
 
     <TextView
         android:id="@+id/app_name"
-        android:layout_width="8dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="1" />
 
     <TextView
-        android:id="@+id/app_transmitted_mBytes"
-        android:layout_width="8dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="1" />
-
-    <TextView
-        android:id="@+id/app_received_mBytes"
-        android:layout_width="8dp"
+        android:id="@+id/app_count"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="1" />
