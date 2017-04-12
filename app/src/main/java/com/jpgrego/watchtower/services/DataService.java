@@ -18,7 +18,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -39,6 +38,10 @@ import com.jpgrego.watchtower.listeners.SensorInfoListener;
 import com.jpgrego.watchtower.listeners.WifiInfoReceiver;
 import com.jpgrego.watchtower.utils.Constants;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -52,9 +55,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class DataService extends Service implements LocationListener {
 
 
-    private static final int SEND_INFO_PERIOD = 1000;
-    private static final Handler INFO_HANDLER = new Handler();
-    private static int periodCounter = 0;
+    private static final int SEND_INFO_PERIOD_SECONDS = 1;
+    private static final int WRITE_DB_PERIOD_SECONDS = 10;
+    private static final ScheduledExecutorService SINGLE_THREAD_EXECUTOR =
+            Executors.newSingleThreadScheduledExecutor();
 
     // TODO: temporary, just for debugging. comment when not needed
     /*
@@ -95,8 +99,6 @@ public final class DataService extends Service implements LocationListener {
         final BluetoothInfoReceiver bluetoothInfoReceiver = new BluetoothInfoReceiver(btAdapter);
         final SensorInfoListener sensorInfoListener = new SensorInfoListener();
         final AppTrafficReceiver appTraffic = new AppTrafficReceiver(getPackageManager());
-        final DatabaseHelper dbHelper = new DatabaseHelper(this);
-        final SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         final IntentFilter wifiIntentFilter = new IntentFilter();
         wifiIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -123,140 +125,10 @@ public final class DataService extends Service implements LocationListener {
         registerReceiver(appTraffic,
                 new IntentFilter(Constants.APP_TRAFFIC_REQUEST_INTENT_FILTER_NAME));
 
-        final Runnable sendInfoRunnable = new Runnable() {
-            @Override
-            public void run() {
-                final ArrayList<Cell> cellList = cellInfoListener.getSortedCellList();
-                final ArrayList<WifiAP> wifiAPList = wifiInfoReceiver.getOrderedWifiAPList();
-                final ArrayList<MySensor> sensorList = sensorInfoListener.getSensorList();
-                final ArrayList<MyBluetoothDevice> bluetoothDeviceList =
-                        bluetoothInfoReceiver.getBluetoothDevices();
-
-                final String networkOperator = telephonyManager.getNetworkOperator();
-
-                final int homeMCC = Integer.parseInt(networkOperator.substring(0, 3));
-                final int homeMNC = Integer.parseInt(networkOperator.substring(3));
-
-                if(periodCounter >= 10) {
-                    final Location location;
-                    if (ActivityCompat.checkSelfPermission(DataService.this,
-                            Manifest.permission.ACCESS_FINE_LOCATION)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        location =
-                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    } else {
-                        location = null;
-                    }
-
-                    if (location != null) {
-                        final LocationResponse locationResponse =
-                                LocationResponse.fromAndroidLocation(location);
-                        final Intent intent = new Intent(Constants.MAP_INTENT_FILTER_NAME);
-                        intent.putExtra(Constants.MAP_LOCATION_EXTRA_NAME, locationResponse);
-                        sendBroadcast(intent);
-                    } else {
-                        final LocationHelperData locationHelperData = new LocationHelperData(
-                                telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC,
-                                cellList, wifiAPList, bluetoothDeviceList);
-                        mozillaLocationService.geolocate(locationHelperData)
-                                .enqueue(new LocationCallback());
-                    }
-
-                    writeCellInfoToDB(cellList);
-                    writeWifiAPInfoToDB(wifiAPList);
-                    writeBluetoothInfoToDB(bluetoothDeviceList);
-                    periodCounter = 0;
-                }
-
-                sendCellInfo(cellList);
-                sendWifiInfo(wifiAPList);
-                sendBluetoothInfo(bluetoothDeviceList);
-                sendSensorInfo(sensorList);
-
-                periodCounter++;
-                INFO_HANDLER.postDelayed(this, SEND_INFO_PERIOD);
-            }
-
-            private void sendCellInfo(final ArrayList<Cell> cellList) {
-                final Intent intent = new Intent(Constants.CELL_INTENT_FILTER_NAME);
-                intent.putExtra(Constants.CELL_INFO_LIST_INTENT_EXTRA_NAME, cellList);
-                sendBroadcast(intent);
-            }
-
-            private void sendWifiInfo(final ArrayList<WifiAP> wifiAPList) {
-                final Intent intent = new Intent(Constants.WIFI_INTENT_FILTER_NAME);
-                intent.putExtra(Constants.WIFI_INFO_LIST_INTENT_EXTRA_NAME, wifiAPList);
-                intent.putExtra(Constants.WIFI_CURRENT_BSSID_INTENT_EXTRA_NAME,
-                        wifiInfoReceiver.getCurrentWifiConnectionBSSID());
-                sendBroadcast(intent);
-            }
-
-            private void sendBluetoothInfo(final ArrayList<MyBluetoothDevice> list) {
-                final Intent intent = new Intent(Constants.BLUETOOTH_INTENT_FILTER_NAME);
-                intent.putExtra(Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME, list);
-                sendBroadcast(intent);
-            }
-
-            private void sendSensorInfo(final ArrayList<MySensor> sensorList) {
-                final Intent intent = new Intent(Constants.SENSOR_INTENT_FILTER_NAME);
-                intent.putExtra(Constants.SENSOR_INFO_LIST_INTENT_EXTRA_NAME, sensorList);
-                sendBroadcast(intent);
-            }
-
-            private void writeCellInfoToDB(final ArrayList<Cell> cellList) {
-                final ContentValues values = new ContentValues();
-
-                for (Cell cell : cellList) {
-                    if (cell.getCid() == -1) {
-                        continue;
-                    }
-                    values.put(DatabaseContract.CellEntry.CID_COLUMN, cell.getCid());
-                    values.put(DatabaseContract.CellEntry.MCC_COLUMN, cell.getMcc());
-                    values.put(DatabaseContract.CellEntry.MNC_COLUMN, cell.getMnc());
-                    values.put(DatabaseContract.CellEntry.LAC_COLUMN, cell.getLac());
-                    values.put(DatabaseContract.CellEntry.PSC_COLUMN, cell.getPsc());
-                }
-                if (values.size() > 0) {
-                    db.insertWithOnConflict(DatabaseContract.CellEntry.TABLE_NAME, null, values,
-                            SQLiteDatabase.CONFLICT_IGNORE);
-                }
-            }
-
-            private void writeWifiAPInfoToDB(final ArrayList<WifiAP> wifiAPList) {
-                final ContentValues values = new ContentValues();
-
-                for (WifiAP wifiAP : wifiAPList) {
-                    values.put(DatabaseContract.WifiAPEntry.BSSID_COLUMN, wifiAP.getBssid());
-                    values.put(DatabaseContract.WifiAPEntry.SSID_COLUMN, wifiAP.getSsid());
-                    values.put(DatabaseContract.WifiAPEntry.CHANNEL_COLUMN, wifiAP.getChannel());
-                    values.put(DatabaseContract.WifiAPEntry.SECURITY, wifiAP.getSecurityLabel());
-                }
-                if (values.size() > 0) {
-                    db.insertWithOnConflict(DatabaseContract.WifiAPEntry.TABLE_NAME, null, values,
-                            SQLiteDatabase.CONFLICT_IGNORE);
-                }
-            }
-
-            private void writeBluetoothInfoToDB(
-                    final ArrayList<MyBluetoothDevice> bluetoothDeviceList) {
-                final ContentValues values = new ContentValues();
-
-                for(MyBluetoothDevice bluetoothDevice : bluetoothDeviceList) {
-                    values.put(DatabaseContract.BluetoothEntry.NAME_COLUMN,
-                            bluetoothDevice.getName());
-                    values.put(DatabaseContract.BluetoothEntry.ADDRESS_COLUMN,
-                            bluetoothDevice.getAddress());
-                    values.put(DatabaseContract.BluetoothEntry.TYPE_COLUMN,
-                            bluetoothDevice.getType());
-                }
-
-                if(values.size() > 0) {
-                    db.insertWithOnConflict(DatabaseContract.BluetoothEntry.TABLE_NAME, null,
-                            values, SQLiteDatabase.CONFLICT_IGNORE);
-                }
-            }
-        };
-        INFO_HANDLER.post(sendInfoRunnable);
+        SINGLE_THREAD_EXECUTOR.scheduleWithFixedDelay(sendInfoRunnable, 0, SEND_INFO_PERIOD_SECONDS,
+                TimeUnit.SECONDS);
+        SINGLE_THREAD_EXECUTOR.scheduleWithFixedDelay(new WriteDBRunnable(),
+                WRITE_DB_PERIOD_SECONDS, WRITE_DB_PERIOD_SECONDS, TimeUnit.SECONDS);
         //super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
@@ -303,6 +175,167 @@ public final class DataService extends Service implements LocationListener {
         public void onFailure(Call<LocationResponse> call, Throwable t) {
 
         }
+    }
+
+    private class SendInfoRunnable implements Runnable {
+        private final CellInfoListener cellInfoListener =
+                new CellInfoListener((TelephonyManager)
+                        DataService.this.getSystemService(TELEPHONY_SERVICE));
+        private final WifiInfoReceiver wifiInfoReceiver =
+                new WifiInfoReceiver((WifiManager) DataService.this.getSystemService(WIFI_SERVICE));
+        private final BluetoothInfoReceiver bluetoothInfoReceiver =
+                new BluetoothInfoReceiver(BluetoothAdapter.getDefaultAdapter());
+        private final SensorInfoListener sensorInfoListener = new SensorInfoListener();
+
+        @Override
+        public void run() {
+            final ArrayList<Cell> cellList = cellInfoListener.getSortedCellList();
+            final ArrayList<WifiAP> wifiAPList = wifiInfoReceiver.getOrderedWifiAPList();
+            final ArrayList<MySensor> sensorList = sensorInfoListener.getSensorList();
+            final ArrayList<MyBluetoothDevice> bluetoothDeviceList =
+                    bluetoothInfoReceiver.getBluetoothDevices();
+
+            sendCellInfo(cellList);
+            sendWifiInfo(wifiAPList);
+            sendBluetoothInfo(bluetoothDeviceList);
+            sendSensorInfo(sensorList);
+        }
+
+        private void sendCellInfo(final ArrayList<Cell> cellList) {
+            final Intent intent = new Intent(Constants.CELL_INTENT_FILTER_NAME);
+            intent.putExtra(Constants.CELL_INFO_LIST_INTENT_EXTRA_NAME, cellList);
+            sendBroadcast(intent);
+        }
+
+        private void sendWifiInfo(final ArrayList<WifiAP> wifiAPList) {
+            final Intent intent = new Intent(Constants.WIFI_INTENT_FILTER_NAME);
+            intent.putExtra(Constants.WIFI_INFO_LIST_INTENT_EXTRA_NAME, wifiAPList);
+            intent.putExtra(Constants.WIFI_CURRENT_BSSID_INTENT_EXTRA_NAME,
+                    wifiInfoReceiver.getCurrentWifiConnectionBSSID());
+            sendBroadcast(intent);
+        }
+
+        private void sendBluetoothInfo(final ArrayList<MyBluetoothDevice> list) {
+            final Intent intent = new Intent(Constants.BLUETOOTH_INTENT_FILTER_NAME);
+            intent.putExtra(Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME, list);
+            sendBroadcast(intent);
+        }
+
+        private void sendSensorInfo(final ArrayList<MySensor> sensorList) {
+            final Intent intent = new Intent(Constants.SENSOR_INTENT_FILTER_NAME);
+            intent.putExtra(Constants.SENSOR_INFO_LIST_INTENT_EXTRA_NAME, sensorList);
+            sendBroadcast(intent);
+        }
+    }
+
+    private class WriteDBRunnable implements Runnable {
+
+        private final TelephonyManager telephonyManager =
+                (TelephonyManager) DataService.this.getSystemService(TELEPHONY_SERVICE);
+        private final LocationManager locationManager =
+                (LocationManager) DataService.this.getSystemService(LOCATION_SERVICE);
+        private final SQLiteDatabase db =
+                new DatabaseHelper(DataService.this).getWritableDatabase();
+        private final CellInfoListener cellInfoListener = new CellInfoListener(telephonyManager);
+        private final WifiInfoReceiver wifiInfoReceiver =
+                new WifiInfoReceiver((WifiManager) DataService.this.getSystemService(WIFI_SERVICE));
+        private final BluetoothInfoReceiver bluetoothInfoReceiver =
+                new BluetoothInfoReceiver(BluetoothAdapter.getDefaultAdapter());
+
+        @Override
+        public void run() {
+            final String networkOperator = telephonyManager.getNetworkOperator();
+
+            final int homeMCC = Integer.parseInt(networkOperator.substring(0, 3));
+            final int homeMNC = Integer.parseInt(networkOperator.substring(3));
+
+            final Location location;
+            if (ActivityCompat.checkSelfPermission(DataService.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                location =
+                        locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            } else {
+                location = null;
+            }
+
+            final ArrayList<Cell> cellList = cellInfoListener.getSortedCellList();
+            final ArrayList<WifiAP> wifiAPList = wifiInfoReceiver.getOrderedWifiAPList();
+            final ArrayList<MyBluetoothDevice> bluetoothDeviceList =
+                    bluetoothInfoReceiver.getBluetoothDevices();
+
+            if (location != null) {
+                final LocationResponse locationResponse =
+                        LocationResponse.fromAndroidLocation(location);
+                final Intent intent = new Intent(Constants.MAP_INTENT_FILTER_NAME);
+                intent.putExtra(Constants.MAP_LOCATION_EXTRA_NAME, locationResponse);
+                sendBroadcast(intent);
+            } else {
+                final LocationHelperData locationHelperData = new LocationHelperData(
+                        telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC,
+                        cellList, wifiAPList, bluetoothDeviceList);
+                mozillaLocationService.geolocate(locationHelperData)
+                        .enqueue(new LocationCallback());
+            }
+
+            writeCellInfoToDB(cellList);
+            writeWifiAPInfoToDB(wifiAPList);
+            writeBluetoothInfoToDB(bluetoothDeviceList);
+        }
+
+        private void writeCellInfoToDB(final ArrayList<Cell> cellList) {
+            final ContentValues values = new ContentValues();
+
+            for (Cell cell : cellList) {
+                if (cell.getCid() == -1) {
+                    continue;
+                }
+                values.put(DatabaseContract.CellEntry.CID_COLUMN, cell.getCid());
+                values.put(DatabaseContract.CellEntry.MCC_COLUMN, cell.getMcc());
+                values.put(DatabaseContract.CellEntry.MNC_COLUMN, cell.getMnc());
+                values.put(DatabaseContract.CellEntry.LAC_COLUMN, cell.getLac());
+                values.put(DatabaseContract.CellEntry.PSC_COLUMN, cell.getPsc());
+            }
+            if (values.size() > 0) {
+                db.insertWithOnConflict(DatabaseContract.CellEntry.TABLE_NAME, null, values,
+                        SQLiteDatabase.CONFLICT_IGNORE);
+            }
+        }
+
+        private void writeWifiAPInfoToDB(final ArrayList<WifiAP> wifiAPList) {
+            final ContentValues values = new ContentValues();
+
+            for (WifiAP wifiAP : wifiAPList) {
+                values.put(DatabaseContract.WifiAPEntry.BSSID_COLUMN, wifiAP.getBssid());
+                values.put(DatabaseContract.WifiAPEntry.SSID_COLUMN, wifiAP.getSsid());
+                values.put(DatabaseContract.WifiAPEntry.CHANNEL_COLUMN, wifiAP.getChannel());
+                values.put(DatabaseContract.WifiAPEntry.SECURITY, wifiAP.getSecurityLabel());
+            }
+            if (values.size() > 0) {
+                db.insertWithOnConflict(DatabaseContract.WifiAPEntry.TABLE_NAME, null, values,
+                        SQLiteDatabase.CONFLICT_IGNORE);
+            }
+        }
+
+        private void writeBluetoothInfoToDB(
+                final ArrayList<MyBluetoothDevice> bluetoothDeviceList) {
+            final ContentValues values = new ContentValues();
+
+            for(MyBluetoothDevice bluetoothDevice : bluetoothDeviceList) {
+                values.put(DatabaseContract.BluetoothEntry.NAME_COLUMN,
+                        bluetoothDevice.getName());
+                values.put(DatabaseContract.BluetoothEntry.ADDRESS_COLUMN,
+                        bluetoothDevice.getAddress());
+                values.put(DatabaseContract.BluetoothEntry.TYPE_COLUMN,
+                        bluetoothDevice.getType());
+            }
+
+            if(values.size() > 0) {
+                db.insertWithOnConflict(DatabaseContract.BluetoothEntry.TABLE_NAME, null,
+                        values, SQLiteDatabase.CONFLICT_IGNORE);
+            }
+        }
+
     }
 }
 

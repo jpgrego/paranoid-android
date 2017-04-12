@@ -24,8 +24,6 @@ import com.jpgrego.watchtower.fragments.SensorsFragment;
 import com.jpgrego.watchtower.fragments.WifiAndCellFragment;
 import com.jpgrego.watchtower.services.DataService;
 
-import org.w3c.dom.Text;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
