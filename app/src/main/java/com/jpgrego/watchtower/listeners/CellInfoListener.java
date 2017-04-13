@@ -1,5 +1,6 @@
 package com.jpgrego.watchtower.listeners;
 
+import android.content.Context;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
@@ -26,16 +27,15 @@ public final class CellInfoListener extends PhoneStateListener {
     private int networkType;
     private int registedCellSignalStrength = -1;
 
-    public CellInfoListener(final TelephonyManager telephonyManager) {
-        this.telephonyManager = telephonyManager;
+    public CellInfoListener(final Context context) {
+        telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager.listen(this, LISTEN_SIGNAL_STRENGTHS);
         onSignalStrengthsChanged(null);
     }
 
     @Override
     public void onSignalStrengthsChanged(SignalStrength signalStrength) {
-        final String networkOperatorString;
-
-        networkOperatorString = telephonyManager.getNetworkOperator();
+        final String networkOperatorString = telephonyManager.getNetworkOperator();
         this.networkType = telephonyManager.getNetworkType();
 
         if(signalStrength != null) {
@@ -60,6 +60,18 @@ public final class CellInfoListener extends PhoneStateListener {
             Collections.sort(cellList);
             return cellList;
         }
+    }
+
+    public int getMcc() {
+        return mcc;
+    }
+
+    public int getMnc() {
+        return mnc;
+    }
+
+    public String getNetworkOperatorName() {
+        return telephonyManager.getNetworkOperatorName();
     }
 
     private void getCellInfo() {

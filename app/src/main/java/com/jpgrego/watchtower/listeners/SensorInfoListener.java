@@ -1,8 +1,11 @@
 package com.jpgrego.watchtower.listeners;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
 import com.jpgrego.watchtower.data.MySensor;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,8 +18,13 @@ public final class SensorInfoListener implements SensorEventListener {
 
     private final Set<MySensor> sensorSet = new HashSet<>();
 
-    public SensorInfoListener() {
-
+    public SensorInfoListener(final Context context) {
+        final SensorManager sensorManager =
+                (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
+            //sensorManager.registerListener(this, sensor, 3000000);
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     public ArrayList<MySensor> getSensorList() {

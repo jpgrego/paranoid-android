@@ -3,27 +3,19 @@ package com.jpgrego.watchtower.services;
 import android.Manifest;
 import android.app.Notification;
 import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 import com.jpgrego.watchtower.R;
 import com.jpgrego.watchtower.data.Cell;
 import com.jpgrego.watchtower.data.MyBluetoothDevice;
@@ -54,11 +46,15 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public final class DataService extends Service implements LocationListener {
 
-
+    public static final ScheduledExecutorService SCHEDULED_EXECUTOR =
+            Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
     private static final int SEND_INFO_PERIOD_SECONDS = 1;
     private static final int WRITE_DB_PERIOD_SECONDS = 10;
-    private static final ScheduledExecutorService SINGLE_THREAD_EXECUTOR =
-            Executors.newSingleThreadScheduledExecutor();
+
+    private CellInfoListener cellInfoListener;
+    private WifiInfoReceiver wifiInfoReceiver;
+    private SensorInfoListener sensorInfoListener;
+    private BluetoothInfoReceiver bluetoothInfoReceiver;
 
     // TODO: temporary, just for debugging. comment when not needed
     /*
@@ -88,31 +84,11 @@ public final class DataService extends Service implements LocationListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final TelephonyManager telephonyManager =
-                (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        final SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        final WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-        final BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        final CellInfoListener cellInfoListener = new CellInfoListener(telephonyManager);
-        final WifiInfoReceiver wifiInfoReceiver = new WifiInfoReceiver(wifiManager);
-        final BluetoothInfoReceiver bluetoothInfoReceiver = new BluetoothInfoReceiver(btAdapter);
-        final SensorInfoListener sensorInfoListener = new SensorInfoListener();
-        final AppTrafficReceiver appTraffic = new AppTrafficReceiver(getPackageManager());
-
-        final IntentFilter wifiIntentFilter = new IntentFilter();
-        wifiIntentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        wifiIntentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-
-        final IntentFilter bluetoothIntentFilter = new IntentFilter();
-        bluetoothIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-
-        telephonyManager.listen(cellInfoListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        registerReceiver(wifiInfoReceiver, wifiIntentFilter);
-        registerReceiver(bluetoothInfoReceiver, bluetoothIntentFilter);
-        for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
-            sensorManager.registerListener(sensorInfoListener, sensor, 3000000);
-        }
+        cellInfoListener = new CellInfoListener(this);
+        wifiInfoReceiver = new WifiInfoReceiver(this);
+        sensorInfoListener = new SensorInfoListener(this);
+        bluetoothInfoReceiver = new BluetoothInfoReceiver(this);
+        new AppTrafficReceiver(this);
 
         final LocationManager locationManager =
                 (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -122,12 +98,9 @@ public final class DataService extends Service implements LocationListener {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         }
 
-        registerReceiver(appTraffic,
-                new IntentFilter(Constants.APP_TRAFFIC_REQUEST_INTENT_FILTER_NAME));
-
-        SINGLE_THREAD_EXECUTOR.scheduleWithFixedDelay(sendInfoRunnable, 0, SEND_INFO_PERIOD_SECONDS,
-                TimeUnit.SECONDS);
-        SINGLE_THREAD_EXECUTOR.scheduleWithFixedDelay(new WriteDBRunnable(),
+        SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new SendInfoRunnable(), 0,
+                SEND_INFO_PERIOD_SECONDS, TimeUnit.SECONDS);
+        SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new WriteDBRunnable(),
                 WRITE_DB_PERIOD_SECONDS, WRITE_DB_PERIOD_SECONDS, TimeUnit.SECONDS);
         //super.onStartCommand(intent, flags, startId);
         return START_STICKY;
@@ -178,15 +151,6 @@ public final class DataService extends Service implements LocationListener {
     }
 
     private class SendInfoRunnable implements Runnable {
-        private final CellInfoListener cellInfoListener =
-                new CellInfoListener((TelephonyManager)
-                        DataService.this.getSystemService(TELEPHONY_SERVICE));
-        private final WifiInfoReceiver wifiInfoReceiver =
-                new WifiInfoReceiver((WifiManager) DataService.this.getSystemService(WIFI_SERVICE));
-        private final BluetoothInfoReceiver bluetoothInfoReceiver =
-                new BluetoothInfoReceiver(BluetoothAdapter.getDefaultAdapter());
-        private final SensorInfoListener sensorInfoListener = new SensorInfoListener();
-
         @Override
         public void run() {
             final ArrayList<Cell> cellList = cellInfoListener.getSortedCellList();
@@ -229,30 +193,17 @@ public final class DataService extends Service implements LocationListener {
     }
 
     private class WriteDBRunnable implements Runnable {
-
-        private final TelephonyManager telephonyManager =
-                (TelephonyManager) DataService.this.getSystemService(TELEPHONY_SERVICE);
-        private final LocationManager locationManager =
-                (LocationManager) DataService.this.getSystemService(LOCATION_SERVICE);
         private final SQLiteDatabase db =
                 new DatabaseHelper(DataService.this).getWritableDatabase();
-        private final CellInfoListener cellInfoListener = new CellInfoListener(telephonyManager);
-        private final WifiInfoReceiver wifiInfoReceiver =
-                new WifiInfoReceiver((WifiManager) DataService.this.getSystemService(WIFI_SERVICE));
-        private final BluetoothInfoReceiver bluetoothInfoReceiver =
-                new BluetoothInfoReceiver(BluetoothAdapter.getDefaultAdapter());
 
         @Override
         public void run() {
-            final String networkOperator = telephonyManager.getNetworkOperator();
-
-            final int homeMCC = Integer.parseInt(networkOperator.substring(0, 3));
-            final int homeMNC = Integer.parseInt(networkOperator.substring(3));
-
             final Location location;
             if (ActivityCompat.checkSelfPermission(DataService.this,
                     Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
+                final LocationManager locationManager =
+                        (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 location =
                         locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             } else {
@@ -272,8 +223,8 @@ public final class DataService extends Service implements LocationListener {
                 sendBroadcast(intent);
             } else {
                 final LocationHelperData locationHelperData = new LocationHelperData(
-                        telephonyManager.getNetworkOperatorName(), homeMCC, homeMNC,
-                        cellList, wifiAPList, bluetoothDeviceList);
+                        cellInfoListener.getNetworkOperatorName(), cellInfoListener.getMcc(),
+                        cellInfoListener.getMnc(), cellList, wifiAPList, bluetoothDeviceList);
                 mozillaLocationService.geolocate(locationHelperData)
                         .enqueue(new LocationCallback());
             }

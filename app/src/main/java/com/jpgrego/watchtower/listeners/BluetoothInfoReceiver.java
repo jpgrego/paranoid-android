@@ -5,13 +5,15 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
+import android.content.IntentFilter;
 
 import com.jpgrego.watchtower.data.MyBluetoothDevice;
+import com.jpgrego.watchtower.services.DataService;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -20,14 +22,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class BluetoothInfoReceiver extends BroadcastReceiver {
 
-    private static final int BLUETOOTH_SCAN_DELAY = 3000;
+    private static final int BLUETOOTH_SCAN_DELAY_SECONDS = 3;
     private final Set<MyBluetoothDevice> bluetoothDeviceSet = new HashSet<>();
     private final AtomicBoolean isDeviceConnected = new AtomicBoolean(false);
 
-    public BluetoothInfoReceiver(final BluetoothAdapter bluetoothAdapter) {
-        final Handler bluetoothScanHandler = new Handler();
+    public BluetoothInfoReceiver(final Context context) {
+        final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        new Runnable() {
+        DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 final boolean discover =
@@ -39,9 +41,13 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
                 if(discover) {
                     bluetoothAdapter.startDiscovery();
                 }
-                bluetoothScanHandler.postDelayed(this, BLUETOOTH_SCAN_DELAY);
             }
-        }.run();
+        }, 0, BLUETOOTH_SCAN_DELAY_SECONDS, TimeUnit.SECONDS);
+
+        final IntentFilter bluetoothIntentFilter = new IntentFilter();
+        bluetoothIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+
+        context.registerReceiver(this, bluetoothIntentFilter);
     }
 
     @Override
