@@ -24,6 +24,8 @@ import com.jpgrego.watchtower.fragments.SensorsFragment;
 import com.jpgrego.watchtower.fragments.WifiAndCellFragment;
 import com.jpgrego.watchtower.services.DataService;
 
+import org.w3c.dom.Text;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -31,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Process;
 import java.util.Arrays;
+import java.util.Locale;
 
 
 public final class MainActivity extends AppCompatActivity {
@@ -106,10 +109,17 @@ public final class MainActivity extends AppCompatActivity {
         final TextView appUidView = (TextView) view.findViewById(R.id.app_uid);
         final TextView appNameView = (TextView) view.findViewById(R.id.app_name);
         final TextView appPackageNameView = (TextView) view.findViewById(R.id.app_package_name);
+        final TextView transmittedBytesView = (TextView) view.findViewById(R.id.transmitted_bytes);
+        final TextView receivedBytesView = (TextView) view.findViewById(R.id.received_bytes);
+        final TextView transmittedPackagesView =
+                (TextView) view.findViewById(R.id.transmitted_packages);
+        final TextView receivedPackagesView = (TextView) view.findViewById(R.id.received_packages);
+
         final View detailsView = View.inflate(this, R.layout.app_traffic_details, null);
 
         final int appUidVal = Integer.parseInt(appUidView.getText().toString());
         final String appPackageName = appPackageNameView.getText().toString();
+        final long transmittedBytes = Long.parseLong(transmittedBytesView.getText().toString());
 
         try {
             final ImageView icon = (ImageView) detailsView.findViewById(R.id.app_icon);
@@ -119,8 +129,10 @@ public final class MainActivity extends AppCompatActivity {
         }
 
         final TextView detailsPackageName =
-                (TextView) detailsView.findViewById(R.id.app_package_name);
+                (TextView) detailsView.findViewById(R.id.package_name_value);
+        final TextView detailsUid = (TextView) detailsView.findViewById(R.id.uid_value);
         detailsPackageName.setText(appPackageName);
+        detailsUid.setText(appUidView.getText());
 
         dialog.setTitle(appNameView.getText().toString());
         dialog.setContentView(detailsView);

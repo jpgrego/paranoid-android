@@ -99,6 +99,14 @@ public final class AppTrafficFragment extends Fragment {
             final TextView appName = (TextView) appTrafficTableDataRow.findViewById(R.id.app_name);
             final TextView appCount =
                     (TextView) appTrafficTableDataRow.findViewById(R.id.app_count);
+            final TextView transmittedBytes =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.transmitted_bytes);
+            final TextView receivedBytes =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.received_bytes);
+            final TextView transmittedPackages =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.transmitted_packages);
+            final TextView receivedPackages =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.received_packages);
 
             try {
                 appIcon.setImageDrawable(getActivity().getPackageManager()
@@ -114,6 +122,15 @@ public final class AppTrafficFragment extends Fragment {
             appPackageName.setText(appTrafficData.getAppPackageName());
             appName.setText(appTrafficData.getAppName());
             appCount.setText(String.format(Locale.US, "%.1f MB", transmittedMB + receivedMB));
+            transmittedBytes.setText(
+                    String.format(Locale.US, "%d", appTrafficData.getTransmittedBytes()));
+            receivedBytes.setText(String.format(Locale.US, "%d",
+                    appTrafficData.getReceivedBytes()));
+            transmittedPackages.setText(
+                    String.format(Locale.US, "%d", appTrafficData.getTransmittedPackages()));
+            receivedPackages.setText(String.format(Locale.US, "%d",
+                    appTrafficData.getReceivedPackages()));
+
 
             appTrafficTable.addView(appTrafficTableDataRow, new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));

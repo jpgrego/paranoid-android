@@ -13,20 +13,52 @@
         android:layout_centerHorizontal="true"
         tools:ignore="ContentDescription" />
 
-    <TextView
-        android:id="@+id/app_package_name"
+    <RelativeLayout
+        android:id="@+id/package_name_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/app_icon"
         android:layout_gravity="center"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/app_icon"/>
+        android:layout_centerHorizontal="true" >
+        <TextView
+            android:id="@+id/package_name_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_detail_pkg_name"
+            android:textStyle="bold"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp" />
+        <TextView
+            android:id="@+id/package_name_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/package_name_label"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"/>
+        </RelativeLayout>
 
-    <!--TableLayout
-        android:id="@+id/app_name_table"
-        android:layout_width="match_parent"
+    <RelativeLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:divider="?android:attr/listDivider"
-        android:showDividers=""
-        android:layout_below="@id/app_icon"-->
+        android:layout_below="@id/package_name_layout"
+        android:layout_gravity="center"
+        android:layout_centerHorizontal="true" >
+        <TextView
+            android:id="@+id/uid_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_detail_uid"
+            android:textStyle="bold"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"/>
+        <TextView
+            android:id="@+id/uid_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/uid_label"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"/>
+    </RelativeLayout>
+
 
 </RelativeLayout>
