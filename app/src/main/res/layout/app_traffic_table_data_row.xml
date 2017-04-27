@@ -32,11 +32,11 @@
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/transmitted_bytes"
+        android:id="@+id/transmitted_mbytes"
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/received_bytes"
+        android:id="@+id/received_mbytes"
         android:visibility="gone" />
 
     <TextView

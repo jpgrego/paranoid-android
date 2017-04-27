@@ -99,10 +99,10 @@ public final class AppTrafficFragment extends Fragment {
             final TextView appName = (TextView) appTrafficTableDataRow.findViewById(R.id.app_name);
             final TextView appCount =
                     (TextView) appTrafficTableDataRow.findViewById(R.id.app_count);
-            final TextView transmittedBytes =
-                    (TextView) appTrafficTableDataRow.findViewById(R.id.transmitted_bytes);
-            final TextView receivedBytes =
-                    (TextView) appTrafficTableDataRow.findViewById(R.id.received_bytes);
+            final TextView transmittedMBytes =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.transmitted_mbytes);
+            final TextView receivedMBytes =
+                    (TextView) appTrafficTableDataRow.findViewById(R.id.received_mbytes);
             final TextView transmittedPackages =
                     (TextView) appTrafficTableDataRow.findViewById(R.id.transmitted_packages);
             final TextView receivedPackages =
@@ -122,10 +122,9 @@ public final class AppTrafficFragment extends Fragment {
             appPackageName.setText(appTrafficData.getAppPackageName());
             appName.setText(appTrafficData.getAppName());
             appCount.setText(String.format(Locale.US, "%.1f MB", transmittedMB + receivedMB));
-            transmittedBytes.setText(
-                    String.format(Locale.US, "%d", appTrafficData.getTransmittedBytes()));
-            receivedBytes.setText(String.format(Locale.US, "%d",
-                    appTrafficData.getReceivedBytes()));
+            transmittedMBytes.setText(
+                    String.format(Locale.US, "%.3f", transmittedMB));
+            receivedMBytes.setText(String.format(Locale.US, "%.3f", receivedMB));
             transmittedPackages.setText(
                     String.format(Locale.US, "%d", appTrafficData.getTransmittedPackages()));
             receivedPackages.setText(String.format(Locale.US, "%d",

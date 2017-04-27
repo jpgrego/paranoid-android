@@ -46,8 +46,8 @@
     <!-- app traffic details dialog -->
     <string name="app_detail_pkg_name">Package name</string>
     <string name="app_detail_uid">UID</string>
-    <string name="app_detail_transmitted_mbytes">TX MB</string>
-    <string name="app_detail_received_mbytes">RX MB</string>
+    <string name="app_detail_transmitted_mbytes">Transmited bytes</string>
+    <string name="app_detail_received_mbytes">Received bytes</string>
     <string name="app_detail_transmitted_packages">TX Packages</string>
     <string name="app_detail_received_packages">RX Packages</string>
 

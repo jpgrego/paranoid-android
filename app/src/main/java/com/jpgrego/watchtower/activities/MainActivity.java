@@ -24,8 +24,6 @@ import com.jpgrego.watchtower.fragments.SensorsFragment;
 import com.jpgrego.watchtower.fragments.WifiAndCellFragment;
 import com.jpgrego.watchtower.services.DataService;
 
-import org.w3c.dom.Text;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -33,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Process;
 import java.util.Arrays;
-import java.util.Locale;
 
 
 public final class MainActivity extends AppCompatActivity {
@@ -109,21 +106,24 @@ public final class MainActivity extends AppCompatActivity {
         final TextView appUidView = (TextView) view.findViewById(R.id.app_uid);
         final TextView appNameView = (TextView) view.findViewById(R.id.app_name);
         final TextView appPackageNameView = (TextView) view.findViewById(R.id.app_package_name);
-        final TextView transmittedBytesView = (TextView) view.findViewById(R.id.transmitted_bytes);
-        final TextView receivedBytesView = (TextView) view.findViewById(R.id.received_bytes);
+        final TextView transmittedBytesView = (TextView) view.findViewById(R.id.transmitted_mbytes);
+        final TextView receivedBytesView = (TextView) view.findViewById(R.id.received_mbytes);
         final TextView transmittedPackagesView =
                 (TextView) view.findViewById(R.id.transmitted_packages);
         final TextView receivedPackagesView = (TextView) view.findViewById(R.id.received_packages);
 
         final View detailsView = View.inflate(this, R.layout.app_traffic_details, null);
 
-        final int appUidVal = Integer.parseInt(appUidView.getText().toString());
-        final String appPackageName = appPackageNameView.getText().toString();
-        final long transmittedBytes = Long.parseLong(transmittedBytesView.getText().toString());
+        final CharSequence packageName = appPackageNameView.getText();
+        final CharSequence uid = appUidView.getText();
+        final CharSequence transmittedBytes = transmittedBytesView.getText();
+        final CharSequence receivedBytes = receivedBytesView.getText();
+        final CharSequence transmittedPackages = transmittedPackagesView.getText();
+        final CharSequence receivedPackages = receivedPackagesView.getText();
 
         try {
             final ImageView icon = (ImageView) detailsView.findViewById(R.id.app_icon);
-            icon.setImageDrawable(getPackageManager().getApplicationIcon(appPackageName));
+            icon.setImageDrawable(getPackageManager().getApplicationIcon(packageName.toString()));
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -131,8 +131,17 @@ public final class MainActivity extends AppCompatActivity {
         final TextView detailsPackageName =
                 (TextView) detailsView.findViewById(R.id.package_name_value);
         final TextView detailsUid = (TextView) detailsView.findViewById(R.id.uid_value);
-        detailsPackageName.setText(appPackageName);
-        detailsUid.setText(appUidView.getText());
+        final TextView detailsTxMBytes = (TextView) detailsView.findViewById(R.id.txmbytes_value);
+        final TextView detailsRxMBytes = (TextView) detailsView.findViewById(R.id.rxmbytes_value);
+        final TextView detailsTxPkgs = (TextView) detailsView.findViewById(R.id.txpkg_value);
+        final TextView detailsRxPkgs = (TextView) detailsView.findViewById(R.id.rxpkg_value);
+
+        detailsPackageName.setText(packageName);
+        detailsUid.setText(uid);
+        detailsTxMBytes.setText(String.format("%s MB", transmittedBytes));
+        detailsRxMBytes.setText(String.format("%s MB", receivedBytes));
+        detailsTxPkgs.setText(transmittedPackages);
+        detailsRxPkgs.setText(receivedPackages);
 
         dialog.setTitle(appNameView.getText().toString());
         dialog.setContentView(detailsView);
