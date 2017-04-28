@@ -48,6 +48,8 @@ public final class DataService extends Service implements LocationListener {
 
     public static final ScheduledExecutorService SCHEDULED_EXECUTOR =
             Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
+
+    private static final int SERVICE_ID = 100;
     private static final int SEND_INFO_PERIOD_SECONDS = 1;
     private static final int WRITE_DB_PERIOD_SECONDS = 10;
 
@@ -79,7 +81,7 @@ public final class DataService extends Service implements LocationListener {
 
     @Override
     public void onCreate() {
-        startForeground(1337, generateNotification());
+        startForeground(SERVICE_ID, generateNotification());
     }
 
     @Override

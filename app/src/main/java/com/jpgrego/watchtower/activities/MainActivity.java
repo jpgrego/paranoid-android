@@ -1,8 +1,13 @@
 package com.jpgrego.watchtower.activities;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,6 +27,7 @@ import com.jpgrego.watchtower.fragments.AppTrafficFragment;
 import com.jpgrego.watchtower.fragments.MapFragment;
 import com.jpgrego.watchtower.fragments.SensorsFragment;
 import com.jpgrego.watchtower.fragments.WifiAndCellFragment;
+import com.jpgrego.watchtower.listeners.USBEventsReceiver;
 import com.jpgrego.watchtower.services.DataService;
 
 import java.io.BufferedWriter;
@@ -31,7 +37,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Process;
 import java.util.Arrays;
-
+import java.util.Map;
 
 public final class MainActivity extends AppCompatActivity {
 
@@ -44,6 +50,7 @@ public final class MainActivity extends AppCompatActivity {
         startService(new Intent(this, DataService.class));
         //Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
         setContentView(R.layout.activity_main);
+        new USBEventsReceiver(this);
 
         if(savedInstanceState == null) {
             final Fragment wifiAndCellFragment = new WifiAndCellFragment();
