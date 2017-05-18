@@ -7,6 +7,7 @@ package com.jpgrego.watchtower.utils;
 public final class Constants {
     public static final String BLUETOOTH_INTENT_FILTER_NAME = "BluetoothInfo";
     public static final String BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME = "BluetoothInfoList";
+    public static final String BLUETOOTH_CURRENT_UUID_INTENT_EXTRA_NAME = "CurrentUUID";
     public static final String WIFI_INTENT_FILTER_NAME = "WifiInfo";
     public static final String WIFI_INFO_LIST_INTENT_EXTRA_NAME = "WifiInfoList";
     public static final String WIFI_CURRENT_BSSID_INTENT_EXTRA_NAME = "CurrentBSSID";

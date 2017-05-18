@@ -184,6 +184,8 @@ public final class DataService extends Service implements LocationListener {
         private void sendBluetoothInfo(final ArrayList<MyBluetoothDevice> list) {
             final Intent intent = new Intent(Constants.BLUETOOTH_INTENT_FILTER_NAME);
             intent.putExtra(Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME, list);
+            intent.putExtra(Constants.BLUETOOTH_CURRENT_UUID_INTENT_EXTRA_NAME,
+                    bluetoothInfoReceiver.getCurrentUUID());
             sendBroadcast(intent);
         }
 

@@ -25,6 +25,7 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
     private static final int BLUETOOTH_SCAN_DELAY_SECONDS = 3;
     private final Set<MyBluetoothDevice> bluetoothDeviceSet = new HashSet<>();
     private final AtomicBoolean isDeviceConnected = new AtomicBoolean(false);
+    private String currentUUID = "";
 
     public BluetoothInfoReceiver(final Context context) {
         final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -36,11 +37,9 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
                         bluetoothAdapter != null
                         && bluetoothAdapter.isEnabled()
                         && !bluetoothAdapter.isDiscovering()
-                        && isDeviceConnected.get();
+                        && !isDeviceConnected.get();
 
-                if(discover) {
-                    bluetoothAdapter.startDiscovery();
-                }
+                if(discover) bluetoothAdapter.startDiscovery();
             }
         }, 0, BLUETOOTH_SCAN_DELAY_SECONDS, TimeUnit.SECONDS);
 
@@ -64,9 +63,11 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
                 }
                 break;
             case BluetoothDevice.ACTION_ACL_CONNECTED:
+                currentUUID = BluetoothDevice.EXTRA_UUID;
                 isDeviceConnected.set(true);
                 break;
             case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                currentUUID = "";
                 isDeviceConnected.set(false);
                 break;
         }
@@ -77,5 +78,9 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver {
         synchronized (bluetoothDeviceSet) {
             return new ArrayList<>(bluetoothDeviceSet);
         }
+    }
+
+    public String getCurrentUUID() {
+        return currentUUID;
     }
 }

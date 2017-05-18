@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -17,6 +18,7 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
     private final String name, address;
     private final int rssi, type;
     private final AtomicLong timestamp;
+    private final AtomicInteger visibilityCounter;
 
     private MyBluetoothDevice(final BluetoothDevice bluetoothDevice, final short rssi) {
         this.name = bluetoothDevice.getName();
@@ -24,6 +26,7 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
         this.type = bluetoothDevice.getType();
         this.rssi = rssi;
         this.timestamp = new AtomicLong(SystemClock.elapsedRealtime());
+        this.visibilityCounter = new AtomicInteger(3);
     }
 
     private MyBluetoothDevice(final Parcel in) {
@@ -32,6 +35,7 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
         type = in.readInt();
         rssi = in.readInt();
         timestamp = new AtomicLong(in.readLong());
+        visibilityCounter = new AtomicInteger(in.readInt());
     }
 
     public static final Creator<MyBluetoothDevice> CREATOR = new Creator<MyBluetoothDevice>() {
@@ -59,6 +63,7 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
         final MyBluetoothDevice myBluetoothDevice = (MyBluetoothDevice) o;
 
         if(address != null && address.equals(myBluetoothDevice.address)) {
+            visibilityCounter.set(3);
             timestamp.set(SystemClock.elapsedRealtime());
             return true;
         } else {
@@ -92,6 +97,10 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
         return type;
     }
 
+    public AtomicInteger getVisibilityCounter() {
+        return visibilityCounter;
+    }
+
     public long getTimeSinceLastSeen() {
         return SystemClock.elapsedRealtime() - this.timestamp.get();
     }
@@ -108,5 +117,6 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
         parcel.writeInt(type);
         parcel.writeInt(rssi);
         parcel.writeLong(timestamp.get());
+        parcel.writeInt(visibilityCounter.get());
     }
 }

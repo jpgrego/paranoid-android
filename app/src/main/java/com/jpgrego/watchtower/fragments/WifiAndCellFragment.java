@@ -56,9 +56,12 @@ public final class WifiAndCellFragment extends Fragment {
     private final BroadcastReceiver bluetoothInfoReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final ArrayList<MyBluetoothDevice> bluetoothDevices = intent.getParcelableArrayListExtra(
-                    Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME);
-            updateBluetoothTable(bluetoothDevices);
+            final ArrayList<MyBluetoothDevice> bluetoothDevices =
+                    intent.getParcelableArrayListExtra(
+                            Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME);
+            final String currentUUID =
+                    intent.getStringExtra(Constants.BLUETOOTH_CURRENT_UUID_INTENT_EXTRA_NAME);
+            updateBluetoothTable(bluetoothDevices, currentUUID);
         }
     };
 
@@ -235,7 +238,8 @@ public final class WifiAndCellFragment extends Fragment {
         }
     }
 
-    void updateBluetoothTable(final List<MyBluetoothDevice> bluetoothDevices) {
+    void updateBluetoothTable(final List<MyBluetoothDevice> bluetoothDevices,
+                              final String currentUUID) {
         /*
          * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
          * fact that getActivity() returns null in case the fragment isn't added to the activity,
@@ -258,12 +262,13 @@ public final class WifiAndCellFragment extends Fragment {
             text.setTextColor(FADED_COLOR);
             bluetoothTable.addView(bluetoothNoDataRow);
         } else {
-            addBluetoothDevicesToTable(bluetoothDevices);
+            addBluetoothDevicesToTable(bluetoothDevices, currentUUID);
         }
 
     }
 
-    void addBluetoothDevicesToTable(final List<MyBluetoothDevice> bluetoothDevices) {
+    void addBluetoothDevicesToTable(final List<MyBluetoothDevice> bluetoothDevices,
+                                    final String currentUUID) {
         for(MyBluetoothDevice device : bluetoothDevices) {
             final TableRow bluetoothTableDataRow;
             final TextView name, address, rssi, type;
@@ -278,7 +283,16 @@ public final class WifiAndCellFragment extends Fragment {
             name.setText(device.getName());
             address.setText(device.getAddress());
             type.setText(BluetoothUtils.getTypeStringFromInt(device.getType()));
-            rssi.setText(device.getRssi());
+            rssi.setText(String.format(Locale.US, "%d", device.getRssi()));
+
+            if(device.getVisibilityCounter().get() < 3) {
+                name.setTextColor(FADED_COLOR);
+                address.setTextColor(FADED_COLOR);
+                type.setTextColor(FADED_COLOR);
+                rssi.setTextColor(FADED_COLOR);
+            } else if(device.getAddress().equals(currentUUID))  {
+                bluetoothTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
+            }
 
             bluetoothTable.addView(bluetoothTableDataRow, new TableLayout.LayoutParams(
                     TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
