@@ -26,7 +26,7 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
         this.type = bluetoothDevice.getType();
         this.rssi = rssi;
         this.timestamp = new AtomicLong(SystemClock.elapsedRealtime());
-        this.visibilityCounter = new AtomicInteger(3);
+        this.visibilityCounter = new AtomicInteger(2);
     }
 
     private MyBluetoothDevice(final Parcel in) {
@@ -63,7 +63,7 @@ public final class MyBluetoothDevice implements Comparable<MyBluetoothDevice>, P
         final MyBluetoothDevice myBluetoothDevice = (MyBluetoothDevice) o;
 
         if(address != null && address.equals(myBluetoothDevice.address)) {
-            visibilityCounter.set(3);
+            visibilityCounter.set(2);
             timestamp.set(SystemClock.elapsedRealtime());
             return true;
         } else {

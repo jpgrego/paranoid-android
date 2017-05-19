@@ -21,7 +21,7 @@ import java.util.Map;
  * Created by jpgrego on 4/28/17.
  */
 
-public class USBEventsReceiver extends BroadcastReceiver {
+public final class USBEventsReceiver extends BroadcastReceiver {
 
     private final SharedPreferences sharedPreferences;
     private final AlertDialog.Builder alertDialogBuilder;

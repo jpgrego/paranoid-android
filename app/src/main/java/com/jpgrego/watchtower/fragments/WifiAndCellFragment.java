@@ -285,7 +285,7 @@ public final class WifiAndCellFragment extends Fragment {
             type.setText(BluetoothUtils.getTypeStringFromInt(device.getType()));
             rssi.setText(String.format(Locale.US, "%d", device.getRssi()));
 
-            if(device.getVisibilityCounter().get() < 3) {
+            if(device.getVisibilityCounter().get() <= 0) {
                 name.setTextColor(FADED_COLOR);
                 address.setTextColor(FADED_COLOR);
                 type.setTextColor(FADED_COLOR);
