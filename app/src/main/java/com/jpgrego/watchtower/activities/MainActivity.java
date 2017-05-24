@@ -35,14 +35,14 @@ import java.util.Arrays;
 
 public final class MainActivity extends AppCompatActivity {
 
-    private static final String THESIS_DIR_NAME = "ThesisApp";
-    private static final String LOG_FILE_NAME = "THESIS_APP_LOG.TXT";
+    private static final String THESIS_DIR_NAME = "Watchtower";
+    private static final String LOG_FILE_NAME = "CRASH_LOG.TXT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         startService(new Intent(this, DataService.class));
-        //Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
+        Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
         setContentView(R.layout.activity_main);
         new USBEventsReceiver(this);
 
@@ -150,7 +150,7 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     @SuppressWarnings("unused")
-    private class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
+    private static class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {
             final File thesisAppDir, logFile;

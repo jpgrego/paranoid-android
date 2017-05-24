@@ -58,13 +58,24 @@
     <string name="action_map">Location</string>
 
     <!-- usb events -->
-    <string name="device_connected">%1$s (%2$d:%3$d) was connected. Do you wish to trust this device?</string>
-    <string name="device_disconnected">%1$s (%2$d:%3$d) was disconnected.</string>
-    <string name="device_untrusted">%1$s (%2$d:%3$d) wasn\'t on the trusted list. It is now disconnected.</string>
+    <string name="device_connected_title">Device connected</string>
+    <string name="device_connected">Device with ID %1$d:%2$d was connected. Do you wish to trust this device?</string>
+    <string name="device_disconnected_title">Device disconnected</string>
+    <string name="device_disconnected">Device with ID %1$d:%2$d was disconnected.</string>
+    <string name="accessory_connected_title">Accessory connected</string>
     <string name="accessory_connected">Accessory %1$s with serial number %2$s was connected.</string>
+    <string name="accessory_disconnected_title">Accessory disconnected</string>
     <string name="accessory_disconnected">Accessory %1$s with serial number %2$s was disconnected.</string>
+    <string name="device_untrusted">Currently connected device %1$d:%2$d isn\'t on the trusted list.</string>
+    <string name="accessory_untrusted">Currently connected accessory %1$s with serial number %2$s isn\'t on the trusted list.</string>
 
     <!-- buttons -->
     <string name="yes_button">Yes</string>
     <string name="no_button">No</string>
+    <string name="ok_button">OK</string>
+
+    <!-- error messages -->
+    <string name="warning_title">WARNING</string>
+    <string name="crash_title">ERROR</string>
+    <string name="crash_message">An error has occurred. Watchtower will now close.</string>
 </resources>

@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
 
@@ -21,10 +20,12 @@ import java.util.Map;
  * Created by jpgrego on 4/28/17.
  */
 
+//TODO: detect connection to computer
+//TODO: save on db instead of sharedpreferences
+//TODO: notifications
 public final class USBEventsReceiver extends BroadcastReceiver {
 
     private final SharedPreferences sharedPreferences;
-    private final AlertDialog.Builder alertDialogBuilder;
     private final UsbManager usbManager;
 
     public USBEventsReceiver(final Context context) {
@@ -35,7 +36,6 @@ public final class USBEventsReceiver extends BroadcastReceiver {
         intentFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
         context.registerReceiver(this, intentFilter);
         context.registerReceiver(this, new IntentFilter("android.hardware.usb.action.USB_STATE"));
-        this.alertDialogBuilder = new AlertDialog.Builder(context);
         this.usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         this.sharedPreferences =
                 context.getSharedPreferences("PERMITTED_DEVICES", Context.MODE_PRIVATE);
@@ -50,12 +50,12 @@ public final class USBEventsReceiver extends BroadcastReceiver {
         switch(intent.getAction()) {
             case UsbManager.ACTION_USB_DEVICE_ATTACHED: {
                 final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-                final UsbDeviceConnection connection = usbManager.openDevice(device);
-                connection.close();
-                Log.i("", device.getDeviceName() + " (" + device.getVendorId() + ":" +
+                Log.i("", device.toString() + " (" + device.getVendorId() + ":" +
                         device.getProductId() + ") was connected.");
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle(R.string.device_connected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.device_connected,
-                        device.getDeviceName(), device.getVendorId(), device.getProductId()));
+                        device.getVendorId(), device.getProductId()));
                 alertDialogBuilder.setPositiveButton(R.string.yes_button,
                         new DialogInterface.OnClickListener() {
                             @Override
@@ -72,16 +72,21 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 Log.i("", device.getDeviceName() + " (" + device.getVendorId() + ":" +
                         device.getProductId() + ") was disconnected.");
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle(R.string.device_disconnected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.device_disconnected,
-                        device.getDeviceName(), device.getVendorId(), device.getProductId()));
+                        device.getVendorId(), device.getProductId()));
                 alertDialogBuilder.show();
                 break;
             }
+            // TODO: trusted list on accessories
             case UsbManager.ACTION_USB_ACCESSORY_ATTACHED: {
                 final UsbAccessory accessory =
                         intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
                 Log.i("", "Accessory " + accessory.getModel() + " with serial number "
                         + accessory.getSerial() + " was connected.");
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle(R.string.accessory_connected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.accessory_connected,
                         accessory.getModel(), accessory.getSerial()));
                 alertDialogBuilder.show();
@@ -92,6 +97,8 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                         intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
                 Log.i("", "Accessory " + accessory.getModel() + " with serial number "
                         + accessory.getSerial() + " was disconnected.");
+                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder.setTitle(R.string.accessory_disconnected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.accessory_disconnected,
                         accessory.getModel(), accessory.getSerial()));
                 alertDialogBuilder.show();
@@ -103,13 +110,31 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 for (Map.Entry<String, UsbDevice> entry : connectedDevices.entrySet()) {
                     final UsbDevice device = entry.getValue();
                     if (!sharedPreferences.contains(device.toString())) {
-                        usbManager.openDevice(device).close();
+                        final AlertDialog.Builder alertDialogBuilder =
+                                new AlertDialog.Builder(context);
+                        alertDialogBuilder.setTitle(R.string.warning_title);
                         alertDialogBuilder.setMessage(context.getString(R.string.device_untrusted,
-                                device.getDeviceName(), device.getVendorId(),
-                                device.getProductId()));
+                                device.getVendorId(), device.getProductId()));
                         alertDialogBuilder.show();
                     }
                 }
+
+                final UsbAccessory[] accessoriesArray = usbManager.getAccessoryList();
+
+                if(accessoriesArray != null) {
+                    for (UsbAccessory accessory : accessoriesArray) {
+                        if (!sharedPreferences.contains(accessory.getSerial())) {
+                            final AlertDialog.Builder alertDialogBuilder =
+                                    new AlertDialog.Builder(context);
+                            alertDialogBuilder.setTitle(R.string.warning_title);
+                            alertDialogBuilder.setMessage(context.getString(
+                                    R.string.accessory_untrusted, accessory.getModel(),
+                                    accessory.getSerial()));
+                            alertDialogBuilder.show();
+                        }
+                    }
+                }
+
                 break;
             }
             default:
