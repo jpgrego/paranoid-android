@@ -35,7 +35,6 @@ import java.util.Arrays;
 
 public final class MainActivity extends AppCompatActivity {
 
-    private static final String THESIS_DIR_NAME = "Watchtower";
     private static final String LOG_FILE_NAME = "CRASH_LOG.TXT";
 
     @Override
@@ -150,7 +149,7 @@ public final class MainActivity extends AppCompatActivity {
     }
 
     @SuppressWarnings("unused")
-    private static class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
+    private class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {
             final File thesisAppDir, logFile;
@@ -166,7 +165,7 @@ public final class MainActivity extends AppCompatActivity {
                 Log.e(thread.getName(), Arrays.toString(ex.getStackTrace()));
 
                 thesisAppDir = new File(Environment.getExternalStorageDirectory()
-                        + "/" + THESIS_DIR_NAME + "/");
+                        + "/" + getResources().getString(R.string.app_name) + "/");
                 logFile = new File(thesisAppDir + "/" + LOG_FILE_NAME);
 
 

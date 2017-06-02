@@ -86,7 +86,7 @@ public class CellInfoListenerTest {
         Mockito.when(telephonyManagerMock.getNetworkOperator()).thenReturn(TEST_NETWORK_OPERATOR);
         Mockito.when(telephonyManagerMock.getNetworkType()).thenReturn(TEST_NETWORK_TYPE);
 
-        cellInfoListenerTest = new CellInfoListener(telephonyManagerMock);
+        //cellInfoListenerTest = new CellInfoListener(telephonyManagerMock);
     }
 
     @Test

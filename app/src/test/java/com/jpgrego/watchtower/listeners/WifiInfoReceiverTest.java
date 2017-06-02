@@ -58,7 +58,7 @@ public class WifiInfoReceiverTest {
 
     @Before
     public void setUp() {
-        wifiInfoReceiverTest = new WifiInfoReceiver(wifiManagerMock);
+        //wifiInfoReceiverTest = new WifiInfoReceiver(wifiManagerMock);
     }
 
     @Test

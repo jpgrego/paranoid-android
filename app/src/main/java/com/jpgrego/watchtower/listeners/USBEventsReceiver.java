@@ -1,6 +1,9 @@
 package com.jpgrego.watchtower.listeners;
 
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,9 +13,11 @@ import android.content.SharedPreferences;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.jpgrego.watchtower.R;
+import com.jpgrego.watchtower.activities.MainActivity;
 
 import java.util.Map;
 
@@ -25,8 +30,10 @@ import java.util.Map;
 //TODO: notifications
 public final class USBEventsReceiver extends BroadcastReceiver {
 
+    private static final int USB_NOTIFICATION_ID = 1000;
     private final SharedPreferences sharedPreferences;
     private final UsbManager usbManager;
+    private final Context context;
 
     public USBEventsReceiver(final Context context) {
         final IntentFilter intentFilter = new IntentFilter();
@@ -39,33 +46,35 @@ public final class USBEventsReceiver extends BroadcastReceiver {
         this.usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         this.sharedPreferences =
                 context.getSharedPreferences("PERMITTED_DEVICES", Context.MODE_PRIVATE);
+        this.context = context;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        //alertDialogBuilder.setMessage("Something happened!");
-        //alertDialogBuilder.show();
-        //final ParcelFileDescriptor accessoryDescriptor = usbManager.openAccessory(accessory);
-
         switch(intent.getAction()) {
             case UsbManager.ACTION_USB_DEVICE_ATTACHED: {
                 final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                final String vendorID = Integer.toHexString(device.getVendorId());
+                final String productID = Integer.toHexString(device.getProductId());
                 Log.i("", device.toString() + " (" + device.getVendorId() + ":" +
                         device.getProductId() + ") was connected.");
                 final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
                 alertDialogBuilder.setTitle(R.string.device_connected_title);
-                alertDialogBuilder.setMessage(context.getString(R.string.device_connected,
-                        device.getVendorId(), device.getProductId()));
+                alertDialogBuilder.setMessage(context.getString(R.string.device_connected, vendorID,
+                        productID));
                 alertDialogBuilder.setPositiveButton(R.string.yes_button,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                usbManager.openDevice(device);
+                                //usbManager.openDevice(device);
                                 //sharedPreferences.edit().putBoolean(device.toString(), true).apply();
                             }
                         });
                 alertDialogBuilder.setNegativeButton(R.string.no_button, null);
+                alertDialogBuilder.setCancelable(false);
                 alertDialogBuilder.show();
+
+                unknownDeviceConnectedNotification(vendorID, productID);
                 break;
             }
             case UsbManager.ACTION_USB_DEVICE_DETACHED: {
@@ -75,7 +84,8 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
                 alertDialogBuilder.setTitle(R.string.device_disconnected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.device_disconnected,
-                        device.getVendorId(), device.getProductId()));
+                        Integer.toHexString(device.getVendorId()),
+                        Integer.toHexString(device.getProductId())));
                 alertDialogBuilder.show();
                 break;
             }
@@ -114,7 +124,8 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                                 new AlertDialog.Builder(context);
                         alertDialogBuilder.setTitle(R.string.warning_title);
                         alertDialogBuilder.setMessage(context.getString(R.string.device_untrusted,
-                                device.getVendorId(), device.getProductId()));
+                                Integer.toHexString(device.getVendorId()),
+                                Integer.toHexString(device.getProductId())));
                         alertDialogBuilder.show();
                     }
                 }
@@ -140,5 +151,26 @@ public final class USBEventsReceiver extends BroadcastReceiver {
             default:
                 break;
         }
+    }
+
+    private void unknownDeviceConnectedNotification(final String vendorID, final String productID) {
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.mipmap.usb)
+                .setContentTitle(context.getResources().getString(R.string.app_name))
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(true);
+        final Intent resultIntent = new Intent(context, MainActivity.class);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+        builder.setContentIntent(PendingIntent.getActivity(context, USB_NOTIFICATION_ID,
+                resultIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+
+        final NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        final Notification notification = new NotificationCompat.BigTextStyle(builder).bigText(
+                context.getString(R.string.untrusted_usb_device, vendorID, productID)).build();
+        notificationManager.notify(USB_NOTIFICATION_ID, notification);
+
     }
 }

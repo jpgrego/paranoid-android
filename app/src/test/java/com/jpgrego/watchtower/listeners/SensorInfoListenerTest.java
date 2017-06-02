@@ -17,7 +17,7 @@ public class SensorInfoListenerTest {
 
     @Before
     public void setUp() {
-        sensorInfoListenerTest = new SensorInfoListener();
+        //sensorInfoListenerTest = new SensorInfoListener();
     }
 
     @Test

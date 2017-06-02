@@ -112,7 +112,7 @@ public final class DataService extends Service implements LocationListener {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
         notificationBuilder.setSmallIcon(R.drawable.watchtower_notification);
         notificationBuilder.setContentTitle(getResources().getString(R.string.app_name));
-        notificationBuilder.setContentText("Monitoring!");
+        notificationBuilder.setContentText(getString(R.string.currently_monitoring));
         return notificationBuilder.build();
     }
 
