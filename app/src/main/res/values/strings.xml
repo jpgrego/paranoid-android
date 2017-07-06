@@ -58,7 +58,7 @@
     <string name="action_map">Location</string>
 
     <!-- usb events -->
-    <string name="device_connected_title">Unknown device connected</string>
+    <string name="device_connected_title">Device connected</string>
     <string name="device_connected">Device with ID %1$s:%2$s was connected. Do you wish to trust this device?</string>
     <string name="device_disconnected_title">Device disconnected</string>
     <string name="device_disconnected">Device with ID %1$s:%2$s was disconnected.</string>
@@ -81,6 +81,8 @@
 
     <!-- notifications messages -->
     <string name="currently_monitoring">Monitoring!</string>
+    <string name="trusted_usb_device">A trusted USB device has been connected! (%1$s:%2$s)</string>
+    <string name="trusted_usb_accessory">A trusted USB accessory has been connected! (%1$s)</string>
     <string name="untrusted_usb_device">An untrusted or unknown USB device has been connected! (%1$s:%2$s)</string>
     <string name="untrusted_usb_accessory">An untrusted or unknown USB accessory has been connected! (%1$s)</string>
 

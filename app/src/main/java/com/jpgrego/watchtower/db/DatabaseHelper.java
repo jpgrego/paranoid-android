@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public final class DatabaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION    = 4;
+    private static final int DATABASE_VERSION    = 5;
     private static final String DATABASE_NAME    = "database.db";
 
     public DatabaseHelper(final Context context) {
@@ -33,6 +33,11 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
                 sqLiteDatabase.execSQL(DatabaseContract.BluetoothEntry.SQL_CREATE_TABLE);
             case 3:
                 sqLiteDatabase.execSQL(DatabaseContract.TrustedUSBDeviceEntry.SQL_CREATE_TABLE);
+                sqLiteDatabase.execSQL(
+                        DatabaseContract.TrustedAccessoryDeviceEntry.SQL_CREATE_TABLE);
+            case 4:
+                sqLiteDatabase.execSQL(
+                        DatabaseContract.TrustedAccessoryDeviceEntry.SQL_DELETE_TABLE);
                 sqLiteDatabase.execSQL(
                         DatabaseContract.TrustedAccessoryDeviceEntry.SQL_CREATE_TABLE);
                 break;

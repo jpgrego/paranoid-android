@@ -91,13 +91,11 @@ public final class DatabaseContract {
 
     public static class TrustedAccessoryDeviceEntry implements BaseColumns {
         public static final String TABLE_NAME = "trustedUSBaccessories";
-        public static final String VENDORID_COLUMN = "vendorID";
-        public static final String PRODUCTID_COLUMN = "productID";
+        public static final String SERIAL_COLUMN = "serial";
 
         static final String SQL_CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
                 _ID + INTEGER_TYPE + PRIMARY_KEY_CONSTRAINT + COMMA_SEP +
-                VENDORID_COLUMN + TEXT_TYPE + COMMA_SEP +
-                PRODUCTID_COLUMN + TEXT_TYPE + " )";
+                SERIAL_COLUMN + TEXT_TYPE + " )";
 
         static final String SQL_DELETE_TABLE =
                 "DROP TABLE IF EXISTS " + TABLE_NAME;
