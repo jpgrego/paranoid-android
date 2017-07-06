@@ -4,11 +4,14 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
@@ -17,6 +20,8 @@ import android.util.Log;
 
 import com.jpgrego.watchtower.R;
 import com.jpgrego.watchtower.activities.MainActivity;
+import com.jpgrego.watchtower.db.DatabaseContract;
+import com.jpgrego.watchtower.db.DatabaseHelper;
 
 import java.util.Map;
 
@@ -53,7 +58,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         switch(intent.getAction()) {
             case UsbManager.ACTION_USB_DEVICE_ATTACHED: {
                 final UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -61,6 +66,11 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 final String productID = toHexString(device.getProductId());
                 Log.i("", device.toString() + " (" + vendorID + ":" + productID
                         + ") was connected.");
+
+                final SQLiteDatabase readableDB = new DatabaseHelper(context).getReadableDatabase();
+                final Cursor results = readableDB.query()
+
+
                 final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
                 alertDialogBuilder.setTitle(R.string.device_connected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.device_connected, vendorID,
@@ -69,8 +79,17 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                //usbManager.openDevice(device);
-                                //sharedPreferences.edit().putBoolean(device.toString(), true).apply();
+                                final ContentValues values = new ContentValues();
+                                values.put(DatabaseContract.TrustedUSBDeviceEntry.VENDORID_COLUMN,
+                                        vendorID);
+                                values.put(DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN,
+                                        productID);
+                                final SQLiteDatabase db = new DatabaseHelper(context)
+                                        .getWritableDatabase();
+                                db.insertWithOnConflict(
+                                        DatabaseContract.TrustedUSBDeviceEntry.TABLE_NAME, null,
+                                        values, SQLiteDatabase.CONFLICT_IGNORE);
+                                db.close();
                             }
                         });
                 alertDialogBuilder.setNegativeButton(R.string.no_button, null);
