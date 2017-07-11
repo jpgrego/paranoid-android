@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.hardware.usb.UsbAccessory;
@@ -27,12 +26,10 @@ import java.util.Map;
  * Created by jpgrego on 4/28/17.
  */
 
-//TODO: detect connection to computer
-//TODO: save on db instead of sharedpreferences
+//TODO: detect connection to computer and obtain RSA key
 public final class USBEventsReceiver extends BroadcastReceiver {
 
     private static final int USB_NOTIFICATION_ID = 1000;
-    private final SharedPreferences sharedPreferences;
     private final UsbManager usbManager;
     private final Context context;
     private final NotificationCompat.Builder unknownNotificationBuilder;
@@ -46,8 +43,6 @@ public final class USBEventsReceiver extends BroadcastReceiver {
         context.registerReceiver(this, intentFilter);
         context.registerReceiver(this, new IntentFilter("android.hardware.usb.action.USB_STATE"));
         this.usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
-        this.sharedPreferences =
-                context.getSharedPreferences("PERMITTED_DEVICES", Context.MODE_PRIVATE);
         this.context = context;
         this.unknownNotificationBuilder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.usb)
@@ -65,63 +60,36 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 Log.i("", device.toString() + " (" + vendorID + ":" + productID
                         + ") was connected.");
 
-                final SQLiteDatabase readableDB = new DatabaseHelper(context).getReadableDatabase();
-                final String[] columns = new String[] {
-                        DatabaseContract.TrustedUSBDeviceEntry.VENDORID_COLUMN,
-                        DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN
-                };
-                final Cursor results = readableDB.query(
-                        DatabaseContract.TrustedUSBDeviceEntry.TABLE_NAME, columns, null, null,
-                        null, null, null);
+                if(!isUSBDeviceInDB(vendorID, productID)) {
+                    final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                    alertDialogBuilder.setTitle(R.string.device_connected_title);
+                    alertDialogBuilder.setMessage(context.getString(R.string.device_connected,
+                            vendorID, productID));
+                    alertDialogBuilder.setPositiveButton(R.string.yes_button,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    final ContentValues values = new ContentValues();
+                                    values.put(
+                                            DatabaseContract.TrustedUSBDeviceEntry.VENDORID_COLUMN,
+                                            vendorID);
+                                    values.put(
+                                            DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN,
+                                            productID);
+                                    final SQLiteDatabase db = new DatabaseHelper(context)
+                                            .getWritableDatabase();
+                                    db.insertWithOnConflict(
+                                            DatabaseContract.TrustedUSBDeviceEntry.TABLE_NAME, null,
+                                            values, SQLiteDatabase.CONFLICT_IGNORE);
+                                    db.close();
+                                }
+                            });
+                    alertDialogBuilder.setNegativeButton(R.string.no_button, null);
+                    alertDialogBuilder.setCancelable(false);
+                    alertDialogBuilder.show();
 
-                if(results.moveToFirst()) {
-                    do {
-                        final String resultVendorID = results.getString(
-                                results.getColumnIndex(
-                                        DatabaseContract.TrustedUSBDeviceEntry.VENDORID_COLUMN));
-                        final String resultProductID = results.getString(
-                                results.getColumnIndex(
-                                        DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN));
-
-                        if(resultVendorID.equalsIgnoreCase(vendorID)
-                                && resultProductID.equalsIgnoreCase(productID)) {
-                            results.close();
-                            readableDB.close();
-                            trustedConnectedNotification(vendorID, productID);
-                            return;
-                        }
-                    } while(results.moveToNext());
+                    unknownConnectedNotification(vendorID, productID);
                 }
-
-                results.close();
-                readableDB.close();
-
-                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-                alertDialogBuilder.setTitle(R.string.device_connected_title);
-                alertDialogBuilder.setMessage(context.getString(R.string.device_connected, vendorID,
-                        productID));
-                alertDialogBuilder.setPositiveButton(R.string.yes_button,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                final ContentValues values = new ContentValues();
-                                values.put(DatabaseContract.TrustedUSBDeviceEntry.VENDORID_COLUMN,
-                                        vendorID);
-                                values.put(DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN,
-                                        productID);
-                                final SQLiteDatabase db = new DatabaseHelper(context)
-                                        .getWritableDatabase();
-                                db.insertWithOnConflict(
-                                        DatabaseContract.TrustedUSBDeviceEntry.TABLE_NAME, null,
-                                        values, SQLiteDatabase.CONFLICT_IGNORE);
-                                db.close();
-                            }
-                        });
-                alertDialogBuilder.setNegativeButton(R.string.no_button, null);
-                alertDialogBuilder.setCancelable(false);
-                alertDialogBuilder.show();
-
-                unknownConnectedNotification(vendorID, productID);
                 break;
             }
             case UsbManager.ACTION_USB_DEVICE_DETACHED: {
@@ -143,37 +111,15 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 Log.i("", "Accessory " + accessory.getModel() + " with serial number "
                         + accessory.getSerial() + " was connected.");
 
-                final SQLiteDatabase readableDB = new DatabaseHelper(context).getReadableDatabase();
-                final String[] columns = new String[] {
-                        DatabaseContract.TrustedAccessoryDeviceEntry.SERIAL_COLUMN
-                };
-                final Cursor results = readableDB.query(
-                        DatabaseContract.TrustedAccessoryDeviceEntry.TABLE_NAME, columns, null,
-                        null, null, null, null);
+                if(!isUSBAccessoryInDB(accessory.getSerial())) {
+                    final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                    alertDialogBuilder.setTitle(R.string.accessory_connected_title);
+                    alertDialogBuilder.setMessage(context.getString(R.string.accessory_connected,
+                            accessory.getModel(), accessory.getSerial()));
+                    alertDialogBuilder.show();
 
-                if(results.moveToFirst()) {
-                    do {
-                        final String resultSerial = results.getString(
-                                results.getColumnIndex(
-                                        DatabaseContract.TrustedAccessoryDeviceEntry.SERIAL_COLUMN)
-                        );
-
-                        if(resultSerial.equalsIgnoreCase(accessory.getSerial())) {
-                            results.close();
-                            readableDB.close();
-                            trustedConnectedNotification(accessory.getSerial());
-                            return;
-                        }
-                    } while(results.moveToNext());
+                    unknownConnectedNotification(accessory.getSerial());
                 }
-
-                final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-                alertDialogBuilder.setTitle(R.string.accessory_connected_title);
-                alertDialogBuilder.setMessage(context.getString(R.string.accessory_connected,
-                        accessory.getModel(), accessory.getSerial()));
-                alertDialogBuilder.show();
-
-                unknownConnectedNotification(accessory.getSerial());
                 break;
             }
             case UsbManager.ACTION_USB_ACCESSORY_DETACHED: {
@@ -189,11 +135,16 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 break;
             }
             case "android.hardware.usb.action.USB_STATE": {
+
+                if(!intent.getBooleanExtra("connected", false)) return;
+
                 final Map<String, UsbDevice> connectedDevices = usbManager.getDeviceList();
 
                 for (Map.Entry<String, UsbDevice> entry : connectedDevices.entrySet()) {
                     final UsbDevice device = entry.getValue();
-                    if (!sharedPreferences.contains(device.toString())) {
+                    final String vendorID = GeneralUtils.toHexString(device.getVendorId());
+                    final String productID = GeneralUtils.toHexString(device.getProductId());
+                    if (!isUSBDeviceInDB(vendorID, productID)) {
                         final AlertDialog.Builder alertDialogBuilder =
                                 new AlertDialog.Builder(context);
                         alertDialogBuilder.setTitle(R.string.warning_title);
@@ -201,6 +152,8 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                                 Integer.toHexString(device.getVendorId()),
                                 Integer.toHexString(device.getProductId())));
                         alertDialogBuilder.show();
+
+                        unknownConnectedNotification(vendorID, productID);
                     }
                 }
 
@@ -208,7 +161,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
 
                 if(accessoriesArray != null) {
                     for (UsbAccessory accessory : accessoriesArray) {
-                        if (!sharedPreferences.contains(accessory.getSerial())) {
+                        if (!isUSBAccessoryInDB(accessory.getSerial())) {
                             final AlertDialog.Builder alertDialogBuilder =
                                     new AlertDialog.Builder(context);
                             alertDialogBuilder.setTitle(R.string.warning_title);
@@ -216,8 +169,15 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                                     R.string.accessory_untrusted, accessory.getModel(),
                                     accessory.getSerial()));
                             alertDialogBuilder.show();
+
+                            unknownConnectedNotification(accessory.getSerial());
                         }
                     }
+                }
+
+                if(!intent.getBooleanExtra("USB_HW_DISCONNECTED", true) &&
+                        !intent.getBooleanExtra("USB_IS_PC_KNOW_ME", false)) {
+                    untrustedPCConnectedNotification();
                 }
 
                 break;
@@ -225,6 +185,78 @@ public final class USBEventsReceiver extends BroadcastReceiver {
             default:
                 break;
         }
+    }
+
+    private boolean isUSBDeviceInDB(final String vendorID, final String productID) {
+        final SQLiteDatabase readableDB = new DatabaseHelper(context).getReadableDatabase();
+        final String[] columns = new String[] {
+                DatabaseContract.TrustedUSBDeviceEntry.VENDORID_COLUMN,
+                DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN
+        };
+        final Cursor results = readableDB.query(
+                DatabaseContract.TrustedUSBDeviceEntry.TABLE_NAME, columns, null, null,
+                null, null, null);
+
+        if(results.moveToFirst()) {
+            do {
+                final String resultVendorID = results.getString(
+                        results.getColumnIndex(
+                                DatabaseContract.TrustedUSBDeviceEntry.VENDORID_COLUMN));
+                final String resultProductID = results.getString(
+                        results.getColumnIndex(
+                                DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN));
+
+                if(resultVendorID.equalsIgnoreCase(vendorID)
+                        && resultProductID.equalsIgnoreCase(productID)) {
+                    results.close();
+                    readableDB.close();
+                    trustedConnectedNotification(vendorID, productID);
+                    return true;
+                }
+            } while(results.moveToNext());
+        }
+
+        results.close();
+        readableDB.close();
+        return false;
+    }
+
+    private boolean isUSBAccessoryInDB(final String serial) {
+        final SQLiteDatabase readableDB = new DatabaseHelper(context).getReadableDatabase();
+        final String[] columns = new String[] {
+                DatabaseContract.TrustedAccessoryDeviceEntry.SERIAL_COLUMN
+        };
+        final Cursor results = readableDB.query(
+                DatabaseContract.TrustedAccessoryDeviceEntry.TABLE_NAME, columns, null,
+                null, null, null, null);
+
+        if(results.moveToFirst()) {
+            do {
+                final String resultSerial = results.getString(
+                        results.getColumnIndex(
+                                DatabaseContract.TrustedAccessoryDeviceEntry.SERIAL_COLUMN)
+                );
+
+                if(resultSerial.equalsIgnoreCase(serial)) {
+                    results.close();
+                    readableDB.close();
+                    trustedConnectedNotification(serial);
+                    return true;
+                }
+            } while(results.moveToNext());
+        }
+
+        results.close();
+        readableDB.close();
+        return false;
+    }
+
+    private void untrustedPCConnectedNotification() {
+        final String notificationDesc =
+                context.getString(R.string.untrusted_pc);
+        final String notificationTicker = context.getString(R.string.device_connected_title);
+        GeneralUtils.generateBigTextNotification(context, unknownNotificationBuilder,
+                USB_NOTIFICATION_ID, notificationTicker, notificationDesc);
     }
 
     private void trustedConnectedNotification(final String vendorID, final String productID) {
