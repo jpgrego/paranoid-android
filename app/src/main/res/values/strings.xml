@@ -85,6 +85,5 @@
     <string name="trusted_usb_accessory">A trusted USB accessory has been connected! (%1$s)</string>
     <string name="untrusted_usb_device">An untrusted or unknown USB device has been connected! (%1$s:%2$s)</string>
     <string name="untrusted_usb_accessory">An untrusted or unknown USB accessory has been connected! (%1$s)</string>
-    <string name="untrusted_pc">An untrusted or unknown PC has been connected!</string>
 
 </resources>

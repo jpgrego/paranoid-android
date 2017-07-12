@@ -26,7 +26,6 @@ import java.util.Map;
  * Created by jpgrego on 4/28/17.
  */
 
-//TODO: detect connection to computer and obtain RSA key
 public final class USBEventsReceiver extends BroadcastReceiver {
 
     private static final int USB_NOTIFICATION_ID = 1000;
@@ -175,11 +174,6 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                     }
                 }
 
-                if(!intent.getBooleanExtra("USB_HW_DISCONNECTED", true) &&
-                        !intent.getBooleanExtra("USB_IS_PC_KNOW_ME", false)) {
-                    untrustedPCConnectedNotification();
-                }
-
                 break;
             }
             default:
@@ -249,14 +243,6 @@ public final class USBEventsReceiver extends BroadcastReceiver {
         results.close();
         readableDB.close();
         return false;
-    }
-
-    private void untrustedPCConnectedNotification() {
-        final String notificationDesc =
-                context.getString(R.string.untrusted_pc);
-        final String notificationTicker = context.getString(R.string.device_connected_title);
-        GeneralUtils.generateBigTextNotification(context, unknownNotificationBuilder,
-                USB_NOTIFICATION_ID, notificationTicker, notificationDesc);
     }
 
     private void trustedConnectedNotification(final String vendorID, final String productID) {
