@@ -1,4 +1,4 @@
-package com.jpgrego.watchtower.fragments;
+package com.jpgrego.watchtower.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
+import android.os.PersistableBundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -26,7 +24,7 @@ import java.util.Locale;
  * Created by jpgrego on 1/31/17.
  */
 
-public final class AppTrafficFragment extends Fragment {
+public final class AppTrafficActivity extends BaseActivity {
 
     private final BroadcastReceiver appTrafficInfoReceiver = new BroadcastReceiver() {
         @Override
@@ -44,31 +42,32 @@ public final class AppTrafficFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.app_traffic_activity_title);
+        setContentView(R.layout.activity_app_traffic);
+        appTrafficTable = (TableLayout) findViewById(R.id.app_traffic_table);
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        final View thisView = inflater.inflate(R.layout.fragment_app_traffic, container, false);
-        appTrafficTable = (TableLayout) thisView.findViewById(R.id.app_traffic_table);
-        return thisView;
-    }
 
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(appTrafficInfoReceiver,
+        registerReceiver(appTrafficInfoReceiver,
                 new IntentFilter(Constants.APP_TRAFFIC_RESPONSE_INTENT_FILTER_NAME));
 
         final Intent requestInfo = new Intent(Constants.APP_TRAFFIC_REQUEST_INTENT_FILTER_NAME);
-        getActivity().sendBroadcast(requestInfo);
+        sendBroadcast(requestInfo);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(appTrafficInfoReceiver);
+        unregisterReceiver(appTrafficInfoReceiver);
+    }
+
+    //TODO: implement this
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
     }
 
     private void updateAppTrafficTable(List<AppTrafficData> appTrafficList) {
@@ -77,9 +76,11 @@ public final class AppTrafficFragment extends Fragment {
          * fact that getActivity() returns null in case the fragment isn't added to the activity,
          * which seems to happen occasionally
          */
+        /*
         if (!isAdded()) {
             return;
         }
+        */
 
         //final TableRow sensorTableTitleRow =
         //        (TableRow) View.inflate(getActivity(), R.layout.sensors_table_title_row, null);
@@ -89,7 +90,7 @@ public final class AppTrafficFragment extends Fragment {
 
         for (AppTrafficData appTrafficData : appTrafficList) {
             final TableRow appTrafficTableDataRow =
-                    (TableRow) View.inflate(getActivity(),
+                    (TableRow) View.inflate(this,
                             R.layout.app_traffic_table_data_row, null);
             final ImageView appIcon =
                     (ImageView) appTrafficTableDataRow.findViewById(R.id.app_icon);
@@ -109,7 +110,7 @@ public final class AppTrafficFragment extends Fragment {
                     (TextView) appTrafficTableDataRow.findViewById(R.id.received_packages);
 
             try {
-                appIcon.setImageDrawable(getActivity().getPackageManager()
+                appIcon.setImageDrawable(getPackageManager()
                         .getApplicationIcon(appTrafficData.getAppPackageName()));
             } catch (PackageManager.NameNotFoundException ex) {
                 // do nothing

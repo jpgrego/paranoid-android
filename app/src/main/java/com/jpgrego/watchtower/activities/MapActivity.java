@@ -1,4 +1,4 @@
-package com.jpgrego.watchtower.fragments;
+package com.jpgrego.watchtower.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,11 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.os.PersistableBundle;
 import android.util.DisplayMetrics;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import com.jpgrego.watchtower.R;
 import com.jpgrego.watchtower.services.LocationResponse;
 import com.jpgrego.watchtower.utils.Constants;
@@ -33,9 +30,10 @@ import java.util.Locale;
  * Created by jpgrego on 28/11/16.
  */
 
-public final class MapFragment extends Fragment {
+public final class MapActivity extends BaseActivity {
 
-    private static final int RADIUS_BORDER_COLOR = Color.argb(70, 72, 133, 237);
+    private static final int RADIUS_BORDER_COLOR =
+            Color.argb(70, 72, 133, 237);
     private static final int RADIUS_FILL_COLOR = Color.argb(30, 72, 133, 237);
     private static Marker currentLocationMarker;
     private static Polygon currentLocationRadius;
@@ -100,51 +98,52 @@ public final class MapFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
+        setContentView(R.layout.activity_map);
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        final View thisView = inflater.inflate(R.layout.fragment_map, container, false);
-        mapView = (MapView) thisView.findViewById(R.id.map);
-        mapView.setBuiltInZoomControls(true);
-        mapView.setMultiTouchControls(true);
+        mapView = (MapView) findViewById(R.id.map);
+        if(mapView != null) {
+            mapView.setBuiltInZoomControls(true);
+            mapView.setMultiTouchControls(true);
 
-        // default view point
-        mapController = mapView.getController();
-        final GeoPoint defaultPoint = new GeoPoint(48.8583, 2.2944);
-        mapController.setZoom(6);
-        mapController.setCenter(defaultPoint);
+            // default view point
+            mapController = mapView.getController();
+            final GeoPoint defaultPoint = new GeoPoint(48.8583, 2.2944);
+            mapController.setZoom(6);
+            mapController.setCenter(defaultPoint);
 
-        // add compass
-        final CompassOverlay compassOverlay = new CompassOverlay(getContext(),
-                new InternalCompassOrientationProvider(getContext()), mapView);
-        compassOverlay.enableCompass();
-        mapView.getOverlays().add(compassOverlay);
+            // add compass
+            final CompassOverlay compassOverlay = new CompassOverlay(this,
+                    new InternalCompassOrientationProvider(this), mapView);
+            compassOverlay.enableCompass();
+            mapView.getOverlays().add(compassOverlay);
 
-        // add mapView scale
-        final ScaleBarOverlay scaleBarOverlay = new ScaleBarOverlay(mapView);
-        scaleBarOverlay.setCentred(true);
-        final DisplayMetrics metrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        scaleBarOverlay.setScaleBarOffset(metrics.widthPixels / 2, 10);
-        mapView.getOverlays().add(scaleBarOverlay);
+            // add mapView scale
+            final ScaleBarOverlay scaleBarOverlay = new ScaleBarOverlay(mapView);
+            scaleBarOverlay.setCentred(true);
+            final DisplayMetrics metrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            scaleBarOverlay.setScaleBarOffset(metrics.widthPixels / 2, 10);
+            mapView.getOverlays().add(scaleBarOverlay);
+        }
 
-        return thisView;
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(locationInfoReceiver,
-                new IntentFilter(Constants.MAP_INTENT_FILTER_NAME));
+        registerReceiver(locationInfoReceiver, new IntentFilter(Constants.MAP_INTENT_FILTER_NAME));
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(locationInfoReceiver);
+        unregisterReceiver(locationInfoReceiver);
     }
 
+    //TODO: implement this
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
 }

@@ -1,4 +1,4 @@
-package com.jpgrego.watchtower.fragments;
+package com.jpgrego.watchtower.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
+import android.os.PersistableBundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -24,7 +22,7 @@ import java.util.Locale;
  * Created by jpgrego on 28/11/16.
  */
 
-public final class SensorsFragment extends Fragment {
+public final class SensorsActivity extends BaseActivity {
 
     private final BroadcastReceiver sensorInfoReceiver = new BroadcastReceiver() {
         @Override
@@ -40,49 +38,40 @@ public final class SensorsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
-        final View thisView = inflater.inflate(R.layout.fragment_sensors, container, false);
-        sensorsTable = (TableLayout) thisView.findViewById(R.id.sensors_table);
-        return thisView;
+        setContentView(R.layout.activity_sensors);
+        sensorsTable = (TableLayout) findViewById(R.id.sensors_table);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getActivity().registerReceiver(sensorInfoReceiver,
-                new IntentFilter(Constants.SENSOR_INTENT_FILTER_NAME));
+        registerReceiver(sensorInfoReceiver, new IntentFilter(Constants.SENSOR_INTENT_FILTER_NAME));
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(sensorInfoReceiver);
+        unregisterReceiver(sensorInfoReceiver);
+    }
+
+    //TODO: implement this
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
     }
 
     private void updateSensorsTable(List<MySensor> sensorList) {
-        /*
-         * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
-         * fact that getActivity() returns null in case the fragment isn't added to the activity,
-         * which seems to happen occasionally
-         */
-        if (!isAdded()) {
-            return;
-        }
 
         final TableRow sensorTableTitleRow =
-                (TableRow) View.inflate(getActivity(), R.layout.sensors_table_title_row, null);
+                (TableRow) View.inflate(this, R.layout.sensors_table_title_row, null);
 
         sensorsTable.removeAllViews();
         sensorsTable.addView(sensorTableTitleRow);
 
         for (MySensor sensor : sensorList) {
             final TableRow sensorsTableDataRow =
-                    (TableRow) View.inflate(getActivity(), R.layout.sensors_table_data_row, null);
+                    (TableRow) View.inflate(this, R.layout.sensors_table_data_row,
+                            null);
             final TextView sensorName = (TextView) sensorsTableDataRow.findViewById(R.id.name);
             final TextView sensorXAxisVal =
                     (TextView) sensorsTableDataRow.findViewById(R.id.x_axis);

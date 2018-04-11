@@ -27,6 +27,7 @@ import com.jpgrego.watchtower.listeners.AppTrafficReceiver;
 import com.jpgrego.watchtower.listeners.BluetoothInfoReceiver;
 import com.jpgrego.watchtower.listeners.CellInfoListener;
 import com.jpgrego.watchtower.listeners.SensorInfoListener;
+import com.jpgrego.watchtower.listeners.USBEventsReceiver;
 import com.jpgrego.watchtower.listeners.WifiInfoReceiver;
 import com.jpgrego.watchtower.utils.Constants;
 import java.util.ArrayList;
@@ -58,7 +59,6 @@ public final class DataService extends Service implements LocationListener {
     private SensorInfoListener sensorInfoListener;
     private BluetoothInfoReceiver bluetoothInfoReceiver;
 
-    // TODO: temporary, just for debugging. comment when not needed
     /*
     private final HttpLoggingInterceptor loggingInterceptor =
             new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -91,6 +91,7 @@ public final class DataService extends Service implements LocationListener {
         sensorInfoListener = new SensorInfoListener(this);
         bluetoothInfoReceiver = new BluetoothInfoReceiver(this);
         new AppTrafficReceiver(this);
+        new USBEventsReceiver(this);
 
         final LocationManager locationManager =
                 (LocationManager) getSystemService(Context.LOCATION_SERVICE);

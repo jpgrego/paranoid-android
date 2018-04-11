@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_LOGS" />
+    <!--uses-permission android:name="android.permission.READ_LOGS" /-->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.jpgrego.watchtower.activities.MainActivity"
+            android:name="com.jpgrego.watchtower.activities.WifiAndCells"
             android:label="@string/app_name"
             android:launchMode="singleInstance">
             <intent-filter>
@@ -25,6 +25,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.BaseActivity" />
+        <activity android:name=".activities.AppTrafficActivity" />
+        <activity android:name=".activities.SensorsActivity" />
+        <activity android:name=".activities.MapActivity" />
+
         <service android:name="com.jpgrego.watchtower.services.DataService" />
     </application>
 

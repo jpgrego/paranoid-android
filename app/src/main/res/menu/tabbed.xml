@@ -2,14 +2,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
     <item android:id="@+id/action_radio" android:title="@string/action_radio"
         android:icon="@drawable/network"
+        android:onClick="actionBarButtonClicked"
         app:showAsAction="always" />
     <item android:id="@+id/action_traffic" android:title="@string/action_traffic"
         android:icon="@drawable/traffic"
+        android:onClick="actionBarButtonClicked"
         app:showAsAction="always" />
     <item android:id="@+id/action_sensors" android:title="@string/action_sensors"
         android:icon="@drawable/sensors"
+        android:onClick="actionBarButtonClicked"
         app:showAsAction="always" />
     <item android:id="@+id/action_map" android:title="@string/action_map"
         android:icon="@drawable/location"
+        android:onClick="actionBarButtonClicked"
         app:showAsAction="always" />
 </menu>

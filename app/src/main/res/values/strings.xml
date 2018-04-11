@@ -14,6 +14,7 @@
 
 
     <!-- cell / wifi strings -->
+    <string name="wifi_cells_activity_title">Radio</string>
     <string name="cells_title">Cells</string>
     <string name="wifi_title">WiFi</string>
     <string name="bluetooth_title">Bluetooth Devices</string>
@@ -44,6 +45,7 @@
     <string name="app_traffic_title">Application traffic</string>
 
     <!-- app traffic details dialog -->
+    <string name="app_traffic_activity_title">App Traffic</string>
     <string name="app_detail_pkg_name">Package name</string>
     <string name="app_detail_uid">UID</string>
     <string name="app_detail_transmitted_mbytes">Transmited bytes</string>
