@@ -1,25 +1,24 @@
 package com.jpgrego.watchtower.listeners;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+
+import com.jpgrego.watchtower.activities.AppTrafficActivity;
 import com.jpgrego.watchtower.data.AppTrafficData;
 import com.jpgrego.watchtower.services.DataService;
-import com.jpgrego.watchtower.utils.Constants;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jpgrego on 1/30/17.
  */
 
-public final class AppTrafficReceiver extends BroadcastReceiver {
+public final class AppTrafficReceiver {
 
-    private static final int UPDATE_PERIOD_SECONDS = 10;
+    private static final int UPDATE_PERIOD_SECONDS = 60;
 
     private final PackageManager packageManager;
     private final ArrayList<AppTrafficData> appTrafficDataList = new ArrayList<>();
@@ -31,9 +30,6 @@ public final class AppTrafficReceiver extends BroadcastReceiver {
         this.packageManager = context.getPackageManager();
         DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new UpdateRunnable(), 0,
                 UPDATE_PERIOD_SECONDS, TimeUnit.SECONDS);
-
-        context.registerReceiver(this,
-                new IntentFilter(Constants.APP_TRAFFIC_REQUEST_INTENT_FILTER_NAME));
     }
 
     public long getTotalTransmittedBytes() {
@@ -48,33 +44,43 @@ public final class AppTrafficReceiver extends BroadcastReceiver {
         }
     }
 
-    private class UpdateRunnable implements Runnable {
-        @Override
-        public void run() {
-            synchronized (appTrafficDataList) {
-                totalTransmittedBytes = 0;
-                totalReceivedBytes = 0;
-                appTrafficDataList.clear();
-                for (ApplicationInfo appInfo : packageManager.getInstalledApplications(0)) {
-                    final AppTrafficData data =
-                            AppTrafficData.fromApplicationInfo(appInfo, packageManager);
-                    if (data.hasNetworkActivity()) {
-                        totalTransmittedBytes += data.getTransmittedBytes();
-                        totalReceivedBytes += data.getReceivedBytes();
-                        appTrafficDataList.add(data);
-                    }
-                }
-            }
-
-            Collections.sort(appTrafficDataList);
+    public List<AppTrafficData> getAppTrafficDataList() {
+        synchronized (appTrafficDataList) {
+            return appTrafficDataList;
         }
     }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        final Intent myIntent = new Intent(Constants.APP_TRAFFIC_RESPONSE_INTENT_FILTER_NAME);
-        myIntent.putExtra(Constants.APP_TRAFFIC_LIST_INTENT_EXTRA_NAME,
-                appTrafficDataList);
-        context.sendBroadcast(myIntent);
+    private class UpdateRunnable implements Runnable {
+        @Override
+        public void run() {
+
+            final ArrayList<AppTrafficData> temp = new ArrayList<>();
+            int tempTotalTransmittedBytes = 0;
+            int tempTotalReceivedBytes = 0;
+
+            for (ApplicationInfo appInfo : packageManager.getInstalledApplications(0)) {
+                final AppTrafficData data =
+                        AppTrafficData.fromApplicationInfo(appInfo, packageManager);
+                if (data.hasNetworkActivity()) {
+                    tempTotalTransmittedBytes += data.getTransmittedBytes();
+                    tempTotalReceivedBytes += data.getReceivedBytes();
+                    temp.add(data);
+                }
+            }
+
+            if(tempTotalTransmittedBytes != totalTransmittedBytes ||
+                    tempTotalReceivedBytes != totalReceivedBytes) {
+                totalTransmittedBytes = tempTotalTransmittedBytes;
+                totalReceivedBytes = tempTotalReceivedBytes;
+
+                Collections.sort(temp);
+
+                synchronized (appTrafficDataList) {
+                    appTrafficDataList.clear();
+                    appTrafficDataList.addAll(temp);
+                }
+            }
+        }
     }
+
 }

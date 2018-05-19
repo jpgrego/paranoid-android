@@ -12,11 +12,10 @@ import com.jpgrego.watchtower.data.WifiAP;
 import com.jpgrego.watchtower.services.DataService;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,13 +25,16 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
     private static final int WIFI_SCAN_DELAY_SECONDS = 10;
 
-    private final Set<WifiAP> wifiAPSet = new HashSet<>();
+    private final Set<WifiAP> wifiAPSet = new TreeSet<>();
     private final WifiManager wifiManager;
 
     private String currentBSSID = "";
 
     public WifiInfoReceiver(final Context context) {
-        this.wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        this.wifiManager = (WifiManager) context.getApplicationContext()
+                .getSystemService(Context.WIFI_SERVICE);
+
+        if(wifiManager == null) return;
 
         DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -53,6 +55,8 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
         final String action;
 
         action = intent.getAction();
+
+        if(action == null) return;
 
         switch(action) {
             case WifiManager.NETWORK_STATE_CHANGED_ACTION:
@@ -107,7 +111,7 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
         synchronized (wifiAPSet) {
             wifiAPList = new ArrayList<>(wifiAPSet);
-            Collections.sort(wifiAPList, Collections.reverseOrder());
+            //Collections.sort(wifiAPList, Collections.reverseOrder());
             return wifiAPList;
         }
     }

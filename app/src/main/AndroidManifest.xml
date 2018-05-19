@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.jpgrego.watchtower.activities.WifiAndCells"
+            android:name="com.jpgrego.watchtower.activities.WifiCellsBTActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance">
             <intent-filter>

@@ -121,7 +121,7 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
 
         if(result == 0) {
             result = 17;
-            result *= 31 + uid;
+            result = 31 * result + uid;
             hashCode = result;
         }
 
@@ -130,7 +130,11 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
 
     @Override
     public int compareTo(@NonNull AppTrafficData another) {
-        return Long.compare(another.transmittedBytes + another.receivedBytes,
-                this.transmittedBytes + this.receivedBytes);
+        if(this.equals(another)) return 0;
+        else {
+            final int diff = Long.compare(another.transmittedBytes + another.receivedBytes,
+                    this.transmittedBytes + this.receivedBytes);
+            return diff != 0 ? diff : 1;
+        }
     }
 }

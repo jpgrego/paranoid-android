@@ -10,7 +10,6 @@ import com.jpgrego.watchtower.R;
 import com.jpgrego.watchtower.utils.WifiUtils;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +24,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     private final String securityLabel, ssid, bssid;
     private final int wifiSecurityImageResource, channel, frequency, dbm;
     private final AtomicInteger visibilityCounter;
-    private final AtomicLong timestamp;
+    private volatile long timestamp;
 
     private WifiAP(Parcel in) {
         securityLabel = in.readString();
@@ -36,7 +35,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         frequency = in.readInt();
         dbm = in.readInt();
         visibilityCounter = new AtomicInteger(in.readInt());
-        timestamp = new AtomicLong(in.readLong());
+        timestamp = in.readLong();
     }
 
     private WifiAP(final ScanResult scanResult) {
@@ -83,7 +82,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         this.frequency = scanResult.frequency;
         this.dbm = scanResult.level;
         this.visibilityCounter = new AtomicInteger(3);
-        this.timestamp = new AtomicLong(TimeUnit.MICROSECONDS.toMillis(scanResult.timestamp));
+        this.timestamp = TimeUnit.MICROSECONDS.toMillis(scanResult.timestamp);
     }
 
     public static WifiAP fromScanResult(final ScanResult scanResult) {
@@ -111,7 +110,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
         if (bssid != null && bssid.equals(wifiAP.bssid)) {
             visibilityCounter.set(3);
-            timestamp.set(wifiAP.timestamp.get());
+            timestamp = wifiAP.timestamp;
             return true;
         } else {
             return false;
@@ -125,7 +124,11 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
     @Override
     public int compareTo(@NonNull WifiAP another) {
-        return this.dbm - another.dbm;
+        if(this.equals(another)) return 0;
+        else {
+            final int dbmDiff = another.dbm - this.dbm;
+            return dbmDiff != 0 ? dbmDiff : 1;   // ensure that same dbm doesn't mean same object
+        }
     }
 
     @Override
@@ -143,7 +146,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         parcel.writeInt(frequency);
         parcel.writeInt(dbm);
         parcel.writeInt(visibilityCounter.get());
-        parcel.writeLong(timestamp.get());
+        parcel.writeLong(timestamp);
     }
 
     public String getSecurityLabel() {
@@ -179,7 +182,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     }
 
     public long getTimeSinceLastSeen() {
-        return SystemClock.elapsedRealtime() - this.timestamp.get();
+        return SystemClock.elapsedRealtime() - this.timestamp;
     }
 
 }

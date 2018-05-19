@@ -1,22 +1,23 @@
 package com.jpgrego.watchtower.activities;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.content.ComponentName;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.hardware.Sensor;
 import android.os.Bundle;
-import android.os.PersistableBundle;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import com.jpgrego.watchtower.R;
 import com.jpgrego.watchtower.data.MySensor;
-import com.jpgrego.watchtower.utils.Constants;
-import java.util.ArrayList;
+import com.jpgrego.watchtower.services.DataService;
+
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jpgrego on 28/11/16.
@@ -24,16 +25,30 @@ import java.util.Locale;
 
 public final class SensorsActivity extends BaseActivity {
 
-    private final BroadcastReceiver sensorInfoReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final ArrayList<MySensor> sensorList = intent.getParcelableArrayListExtra(
-                    Constants.SENSOR_INFO_LIST_INTENT_EXTRA_NAME);
-            updateSensorsTable(sensorList);
-        }
-    };
-
+    private static final int UPDATE_PERIOD_SECONDS = 1;
+    private volatile ScheduledFuture<?> scheduledUpdates = null;
     private TableLayout sensorsTable;
+
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            final DataService dataService =
+                    ((DataService.LocalBinder) iBinder).getDataServiceInstance();
+
+            scheduledUpdates = DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(
+                    new UpdateDataRunnable(dataService),
+                    0 ,
+                    UPDATE_PERIOD_SECONDS,
+                    TimeUnit.SECONDS);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            // do nothing
+        }
+
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,22 +60,20 @@ public final class SensorsActivity extends BaseActivity {
     @Override
     public void onResume() {
         super.onResume();
-        registerReceiver(sensorInfoReceiver, new IntentFilter(Constants.SENSOR_INTENT_FILTER_NAME));
+        final Intent serviceIntent = new Intent(this, DataService.class);
+        bindService(serviceIntent, serviceConnection, 0);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        unregisterReceiver(sensorInfoReceiver);
-    }
-
-    //TODO: implement this
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
+        if(scheduledUpdates != null) scheduledUpdates.cancel(true);
+        unbindService(serviceConnection);
     }
 
     private void updateSensorsTable(List<MySensor> sensorList) {
+
+        if(sensorList == null) return;
 
         final TableRow sensorTableTitleRow =
                 (TableRow) View.inflate(this, R.layout.sensors_table_title_row, null);
@@ -124,6 +137,25 @@ public final class SensorsActivity extends BaseActivity {
                 return "Device temperature";
             default:
                 return "Unknown";
+        }
+    }
+
+    private final class UpdateDataRunnable implements Runnable {
+
+        private final DataService service;
+
+        private UpdateDataRunnable(final DataService service) {
+            this.service = service;
+        }
+
+        @Override
+        public void run() {
+            SensorsActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateSensorsTable(service.getSensorList());
+                }
+            });
         }
     }
 

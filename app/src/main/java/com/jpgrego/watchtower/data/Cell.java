@@ -23,10 +23,6 @@ import java.util.concurrent.TimeUnit;
  * Created by jpgrego on 25-08-2016.
  */
 
-/*
- * No real point in implementing equals, since CellID is, unfortunately, not guaranteed to be
- * correct
- */
 public final class Cell implements Comparable<Cell>, Parcelable {
 
     public enum RadioType {
@@ -40,6 +36,7 @@ public final class Cell implements Comparable<Cell>, Parcelable {
     private final String generation;
     private final boolean isRegisteredCell;
     private final long timestamp;
+    private volatile int hashCode;
 
     private Cell(Parcel in) {
         this.radioType = RadioType.valueOf(in.readString());
@@ -190,8 +187,34 @@ public final class Cell implements Comparable<Cell>, Parcelable {
     };
 
     @Override
+    public boolean equals(Object o) {
+        // CellID is not guaranteed to be correct, so there's no foolproof way to ensure cell
+        // equality
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = hashCode;
+
+        if(result == 0) {
+            result = 17;
+            result = 37 * result + mcc;
+            result = 37 * result + mnc;
+            result = 37 * result + cid;
+            result = 37 * result + lac;
+            result = 37 * result + psc;
+            hashCode = result;
+        }
+
+        return result;
+    }
+
+
+    @Override
     public int compareTo(@NonNull Cell another) {
-        return another.dbm - this.dbm;
+        final int dbmDiff = another.dbm - this.dbm;
+        return dbmDiff != 0 ? dbmDiff : 1;
     }
 
     @Override

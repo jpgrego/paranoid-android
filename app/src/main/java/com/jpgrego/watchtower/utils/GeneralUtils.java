@@ -5,7 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import com.jpgrego.watchtower.activities.WifiAndCells;
+import com.jpgrego.watchtower.activities.WifiCellsBTActivity;
 
 /**
  * Created by jpgrego on 7/6/17.
@@ -17,7 +17,7 @@ public final class GeneralUtils {
                                                    final int notificationID, final String title,
                                                    final String bigText) {
 
-        final Intent resultIntent = new Intent(context, WifiAndCells.class);
+        final Intent resultIntent = new Intent(context, WifiCellsBTActivity.class);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);

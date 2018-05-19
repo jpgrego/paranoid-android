@@ -92,7 +92,7 @@ public final class MySensor implements Parcelable {
         if(result == 0) {
             result = 17;
             result += sensorName.hashCode();
-            result *= 31 + sensorType;
+            result = 31 * result + sensorType;
             hashCode = result;
         }
 

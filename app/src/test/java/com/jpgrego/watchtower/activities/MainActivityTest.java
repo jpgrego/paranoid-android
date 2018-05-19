@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
 @Config(constants = BuildConfig.class, sdk = 19)
 public class MainActivityTest {
 
-    private WifiAndCells mainActivityTest;
+    private WifiCellsBTActivity mainActivityTest;
 
     @Mock
     private TableRow tableRowMock;
@@ -25,10 +25,10 @@ public class MainActivityTest {
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         final Field telephonyManagerField, sensorManagerField;
 
-        mainActivityTest = Robolectric.setupActivity(WifiAndCells.class);
+        mainActivityTest = Robolectric.setupActivity(WifiCellsBTActivity.class);
 
-        telephonyManagerField = WifiAndCells.class.getDeclaredField("telephonyManager");
-        sensorManagerField = WifiAndCells.class.getDeclaredField("sensorManager");
+        telephonyManagerField = WifiCellsBTActivity.class.getDeclaredField("telephonyManager");
+        sensorManagerField = WifiCellsBTActivity.class.getDeclaredField("sensorManager");
 
         telephonyManagerField.setAccessible(true);
         sensorManagerField.setAccessible(true);

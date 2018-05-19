@@ -1,16 +1,11 @@
 package com.jpgrego.watchtower.activities;
 
-import android.app.Dialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.content.ComponentName;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.os.Environment;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.util.Log;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TableLayout;
@@ -23,66 +18,47 @@ import com.jpgrego.watchtower.data.MyBluetoothDevice;
 import com.jpgrego.watchtower.data.WifiAP;
 import com.jpgrego.watchtower.services.DataService;
 import com.jpgrego.watchtower.utils.BluetoothUtils;
-import com.jpgrego.watchtower.utils.Constants;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.Process;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-public final class WifiAndCells extends BaseActivity {
+public final class WifiCellsBTActivity extends BaseActivity {
 
-    private static final String LOG_FILE_NAME = "CRASH_LOG.TXT";
+    private static final int UPDATE_PERIOD_SECONDS = 1;
     private static final int HIGHLIGHTED_BACKGROUND = Color.parseColor("#93a2a2");
     private static final int FADED_COLOR = Color.parseColor("#808080");
 
+    private volatile ScheduledFuture<?> scheduledUpdates = null;
+
     private TableLayout cellsTable, wifiTable, bluetoothTable;
 
-    private final BroadcastReceiver cellInfoReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final ArrayList<Cell> cellList = intent.getParcelableArrayListExtra(
-                    Constants.CELL_INFO_LIST_INTENT_EXTRA_NAME);
-            updateCellTable(cellList);
-        }
-    };
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
 
-    private final BroadcastReceiver wifiInfoReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            final ArrayList<WifiAP> wifiAPList = intent.getParcelableArrayListExtra(
-                    Constants.WIFI_INFO_LIST_INTENT_EXTRA_NAME);
-            final String currentBSSID = intent.getStringExtra(
-                    Constants.WIFI_CURRENT_BSSID_INTENT_EXTRA_NAME);
-            updateWifiTable(wifiAPList, currentBSSID);
-        }
-    };
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            final DataService dataService =
+                    ((DataService.LocalBinder) iBinder).getDataServiceInstance();
 
-    private final BroadcastReceiver bluetoothInfoReceiver = new BroadcastReceiver() {
+            scheduledUpdates = DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(
+                    new UpdateDataRunnable(dataService),
+                    0 ,
+                    UPDATE_PERIOD_SECONDS,
+                    TimeUnit.SECONDS);
+        }
+
         @Override
-        public void onReceive(Context context, Intent intent) {
-            final ArrayList<MyBluetoothDevice> bluetoothDevices =
-                    intent.getParcelableArrayListExtra(
-                            Constants.BLUETOOTH_INFO_LIST_INTENT_EXTRA_NAME);
-            final String currentUUID =
-                    intent.getStringExtra(Constants.BLUETOOTH_CURRENT_UUID_INTENT_EXTRA_NAME);
-            updateBluetoothTable(bluetoothDevices, currentUUID);
+        public void onServiceDisconnected(ComponentName componentName) {
+            // do nothing
         }
-    };
 
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.wifi_cells_activity_title);
-        startService(new Intent(this, DataService.class));
-        //Thread.setDefaultUncaughtExceptionHandler(new ThesisAppExceptionHandler());
         setContentView(R.layout.activity_wifiandcells);
 
         cellsTable = (TableLayout) findViewById(R.id.cells_table);
@@ -93,71 +69,15 @@ public final class WifiAndCells extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceiver(cellInfoReceiver, new IntentFilter(Constants.CELL_INTENT_FILTER_NAME));
-        registerReceiver(wifiInfoReceiver, new IntentFilter(Constants.WIFI_INTENT_FILTER_NAME));
-        registerReceiver(bluetoothInfoReceiver,
-                new IntentFilter(Constants.BLUETOOTH_INTENT_FILTER_NAME));
+        final Intent serviceIntent = new Intent(this, DataService.class);
+        bindService(serviceIntent, serviceConnection, 0);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        unregisterReceiver(cellInfoReceiver);
-        unregisterReceiver(wifiInfoReceiver);
-        unregisterReceiver(bluetoothInfoReceiver);
-    }
-
-    //TODO: implement this
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-    }
-
-    public void appTrafficRowClick(View view) {
-        final Dialog dialog = new Dialog(this);
-        final TextView appUidView = (TextView) view.findViewById(R.id.app_uid);
-        final TextView appNameView = (TextView) view.findViewById(R.id.app_name);
-        final TextView appPackageNameView = (TextView) view.findViewById(R.id.app_package_name);
-        final TextView transmittedBytesView = (TextView) view.findViewById(R.id.transmitted_mbytes);
-        final TextView receivedBytesView = (TextView) view.findViewById(R.id.received_mbytes);
-        final TextView transmittedPackagesView =
-                (TextView) view.findViewById(R.id.transmitted_packages);
-        final TextView receivedPackagesView = (TextView) view.findViewById(R.id.received_packages);
-
-        final View detailsView = View.inflate(this, R.layout.app_traffic_details, null);
-
-        final CharSequence packageName = appPackageNameView.getText();
-        final CharSequence uid = appUidView.getText();
-        final CharSequence transmittedBytes = transmittedBytesView.getText();
-        final CharSequence receivedBytes = receivedBytesView.getText();
-        final CharSequence transmittedPackages = transmittedPackagesView.getText();
-        final CharSequence receivedPackages = receivedPackagesView.getText();
-
-        try {
-            final ImageView icon = (ImageView) detailsView.findViewById(R.id.app_icon);
-            icon.setImageDrawable(getPackageManager().getApplicationIcon(packageName.toString()));
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        final TextView detailsPackageName =
-                (TextView) detailsView.findViewById(R.id.package_name_value);
-        final TextView detailsUid = (TextView) detailsView.findViewById(R.id.uid_value);
-        final TextView detailsTxMBytes = (TextView) detailsView.findViewById(R.id.txmbytes_value);
-        final TextView detailsRxMBytes = (TextView) detailsView.findViewById(R.id.rxmbytes_value);
-        final TextView detailsTxPkgs = (TextView) detailsView.findViewById(R.id.txpkg_value);
-        final TextView detailsRxPkgs = (TextView) detailsView.findViewById(R.id.rxpkg_value);
-
-        detailsPackageName.setText(packageName);
-        detailsUid.setText(uid);
-        detailsTxMBytes.setText(String.format("%s MB", transmittedBytes));
-        detailsRxMBytes.setText(String.format("%s MB", receivedBytes));
-        detailsTxPkgs.setText(transmittedPackages);
-        detailsRxPkgs.setText(receivedPackages);
-
-        dialog.setTitle(appNameView.getText().toString());
-        dialog.setContentView(detailsView);
-        dialog.show();
+        if(scheduledUpdates != null) scheduledUpdates.cancel(true);
+        unbindService(serviceConnection);
     }
 
     void updateCellTable(final List<Cell> cellList) {
@@ -353,75 +273,26 @@ public final class WifiAndCells extends BaseActivity {
 
     }
 
-    private class ThesisAppExceptionHandler implements Thread.UncaughtExceptionHandler {
+    private final class UpdateDataRunnable implements Runnable {
+
+        private final DataService service;
+
+        private UpdateDataRunnable(final DataService service) {
+            this.service = service;
+        }
+
         @Override
-        public void uncaughtException(Thread thread, Throwable ex) {
-            final File thesisAppDir, logFile;
-            final FileWriter fileWriter;
-            final Process logProcess;
-            BufferedWriter bufferedWriter = null;
-            InputStreamReader inputStreamReader = null;
-            char[] buffer = new char[10000];
-            int readBytes;
-
-            try {
-
-                Log.e(thread.getName(), Arrays.toString(ex.getStackTrace()));
-
-                thesisAppDir = new File(Environment.getExternalStorageDirectory()
-                        + "/" + getResources().getString(R.string.app_name) + "/");
-                logFile = new File(thesisAppDir + "/" + LOG_FILE_NAME);
-
-
-                if (!thesisAppDir.exists()) {
-                    if (!thesisAppDir.mkdir()) {
-                        throw new IOException("Unable to create ThesisApp dir");
-                    }
-                } else if (!thesisAppDir.isDirectory()) {
-                    throw new IOException("A file named ThesisApp already exists");
+        public void run() {
+            WifiCellsBTActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateCellTable(service.getCellList());
+                    updateWifiTable(service.getWifiAPList(),
+                            service.getCurrentlyConnectedWifiAP());
+                    updateBluetoothTable(service.getBluetoothDeviceList(),
+                            service.getCurrentlyConnectedBTDevice());
                 }
-
-                if (!logFile.exists()) {
-                    if (!logFile.createNewFile()) {
-                        throw new IOException("Unable to create log file");
-                    }
-                } else if (!logFile.isFile()) {
-                    throw new IOException(LOG_FILE_NAME + " already exists");
-                }
-
-                fileWriter = new FileWriter(logFile);
-                bufferedWriter = new BufferedWriter(fileWriter);
-                logProcess = Runtime.getRuntime().exec("logcat -t 1000 -v time");
-                inputStreamReader = new InputStreamReader(logProcess.getInputStream());
-
-                while ((readBytes = inputStreamReader.read(buffer, 0, buffer.length)) > -1) {
-                    bufferedWriter.write(buffer, 0, readBytes);
-                }
-
-                bufferedWriter.close();
-                inputStreamReader.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (bufferedWriter != null) {
-                    try {
-                        bufferedWriter.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (inputStreamReader != null) {
-                    try {
-                        inputStreamReader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            System.exit(1);
+            });
         }
     }
 }
