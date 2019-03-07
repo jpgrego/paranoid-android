@@ -1,36 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jpgrego.watchtower" >
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.jpgrego.paranoidandroid">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!--uses-permission android:name="android.permission.READ_LOGS" /-->
+    <!-- uses-permission android:name="android.permission.READ_LOGS" / -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <uses-feature android:name="android.hardware.location.gps" />
+
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/watchtower_launcher"
+        android:icon="@mipmap/paranoidandroid_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
-            android:name="com.jpgrego.watchtower.activities.WifiCellsBTActivity"
+            android:name=".activities.PermissionsActivity"
             android:label="@string/app_name"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.WifiCellsBTActivity" />
         <activity android:name=".activities.BaseActivity" />
         <activity android:name=".activities.AppTrafficActivity" />
         <activity android:name=".activities.SensorsActivity" />
         <activity android:name=".activities.MapActivity" />
 
-        <service android:name="com.jpgrego.watchtower.services.DataService" />
+        <service android:name=".services.DataService" />
+        <service android:name=".services.NotificationActionHandler" />
     </application>
 
 </manifest>

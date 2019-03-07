@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Watchtower</string>
+    <string name="app_name">Paranoid Android</string>
 
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
@@ -15,7 +15,8 @@
 
     <!-- cell / wifi strings -->
     <string name="wifi_cells_activity_title">Radio</string>
-    <string name="cells_title">Cells</string>
+    <string name="registered_cells_table_title">Registered cells</string>
+    <string name="neighbouring_cells_table_title">Neighbouring cells</string>
     <string name="wifi_title">WiFi</string>
     <string name="bluetooth_title">Bluetooth Devices</string>
     <string name="mcc_string">MCC</string>
@@ -79,7 +80,7 @@
     <!-- error messages -->
     <string name="warning_title">WARNING</string>
     <string name="crash_title">ERROR</string>
-    <string name="crash_message">An error has occurred. Watchtower will now close.</string>
+    <string name="crash_message">An error has occurred. Paranoid Android will now close.</string>
 
     <!-- notifications messages -->
     <string name="currently_monitoring">Monitoring!</string>
@@ -87,5 +88,33 @@
     <string name="trusted_usb_accessory">A trusted USB accessory has been connected! (%1$s)</string>
     <string name="untrusted_usb_device">An untrusted or unknown USB device has been connected! (%1$s:%2$s)</string>
     <string name="untrusted_usb_accessory">An untrusted or unknown USB accessory has been connected! (%1$s)</string>
+    <string name="new_ap_associated_title">New access point</string>
+    <string name="new_ap_associated_desc">%1$s (%2$s) has never been connected by this device before</string>
+    <string name="ap_changed_sec_title">AP security algorithm changed</string>
+    <string name="ap_changed_sec_desc">From %1$s to %2$s</string>
+    <string name="ap_similar_title">Similar AP detected</string>
+    <string name="ap_similar_desc_one">There is record of another AP with SSID \'%1$s\' but with a different BSSID value</string>
+    <string name="ap_similar_desc_many">There are %1$d records of AP\'s with SSID \'%2$s\' but with different BSSID values</string>
+
+    <!-- permissions -->
+    <string name="title_activity_permissions">PermissionsActivity</string>
+    <string name="permission_access_coarse_location_title">Access coarse location</string>
+    <string name="permission_access_coarse_location_message">Paranoid Android needs this in order to obtain information from currently associated and neighbouring base stations</string>
+    <string name="permission_access_wifi_state_title">Access WiFi state</string>
+    <string name="permission_access_wifi_state_message">Paranoid Android needs this in order to obtain info from current connection, and obtain scan results.</string>
+    <string name="permission_change_wifi_state_title">Change WiFi state</string>
+    <string name="permission_change_wifi_state_message">Paranoid Android uses this permission so it can initiate a scan for AP\'s.</string>
+    <string name="permission_write_external_storage_title">Write to external storage</string>
+    <string name="permission_write_external_storage_message">This permission is used by a dependency of Paranoid Android, osmdroid (OpenStreetMaps).</string>
+    <!--<string name="permission_internet_title"></string>-->
+    <!--<string name="permission_internet_message"></string>-->
+    <string name="permission_bluetooth_title">Bluetooth</string>
+    <string name="permission_bluetooth_message">This permission is used to verify the adapter state and obtain current connection information.</string>
+    <string name="permission_bluetooth_admin_title">Bluetooth admin</string>
+    <string name="permission_bluetooth_admin_message">Paranoid Android uses this permission to be able to initiate discovery of nearby bluetooth devices.</string>
+    <string name="permission_read_phone_state_title">Read phone state</string>
+    <string name="permission_read_phone_state_message">Paranoid Android uses this permission in order to obtain the unique subscriber ID of this cell phone (IMEI, IMSI, …). This is necessary to obtain network usage statistics using mobile networks.</string>
+    <string name="permission_package_usage_stats_title">Package usage stats</string>
+    <string name="permission_package_usage_stats_message">*** Please enable this manually, in Android settings. ***\n\nParanoid Android uses this permission so it has the ability to obtain network usage statistics from all applications.</string>
 
 </resources>

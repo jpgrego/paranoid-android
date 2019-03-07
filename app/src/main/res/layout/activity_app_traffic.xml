@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent" android:padding="15dp">
 
     <LinearLayout
         android:id="@+id/root_layout"
@@ -15,6 +15,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/app_traffic_title" />
+
+        <ProgressBar
+            android:id="@+id/app_traffic_loading_icon"
+            android:layout_marginTop="50dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
 
         <TableLayout
             android:id="@+id/app_traffic_table"

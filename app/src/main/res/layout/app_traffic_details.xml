@@ -24,6 +24,8 @@
             android:id="@+id/package_name_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:ellipsize="end"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"/>
     </TableRow>
