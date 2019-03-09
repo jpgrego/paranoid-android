@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
-import android.telephony.SubscriptionPlan;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -167,6 +166,9 @@ public final class AppTrafficReceiver {
                     appTrafficDataList.clear();
                     appTrafficDataList.addAll(temp);
                 }
+            } else if(tempTotalReceivedBytes == 0 && tempTotalTransmittedBytes == 0
+                    && temp.size() == 0 && appTrafficDataList.size() == 0) {
+                appTrafficDataList.add(null);
             }
         }
     }

@@ -44,6 +44,7 @@
 
     <!-- app traffic info strings -->
     <string name="app_traffic_title">Application traffic</string>
+    <string name="app_traffic_error_message">Couldn\'t retrieve app network usage information.</string>
 
     <!-- app traffic details dialog -->
     <string name="app_traffic_activity_title">App Traffic</string>

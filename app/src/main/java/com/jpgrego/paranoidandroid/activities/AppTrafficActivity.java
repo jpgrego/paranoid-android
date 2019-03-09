@@ -39,6 +39,7 @@ public final class AppTrafficActivity extends BaseActivity {
     private volatile ScheduledFuture<?> scheduledUpdates = null;
     private ProgressBar loadingCircle;
     private TableLayout appTrafficTable;
+    private TextView errorMessage;
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -68,6 +69,7 @@ public final class AppTrafficActivity extends BaseActivity {
         setContentView(R.layout.activity_app_traffic);
         appTrafficTable =  findViewById(R.id.app_traffic_table);
         loadingCircle = findViewById(R.id.app_traffic_loading_icon);
+        errorMessage = findViewById(R.id.app_traffic_error_message);
     }
 
 
@@ -267,7 +269,14 @@ public final class AppTrafficActivity extends BaseActivity {
                     }
                 });
 
-                updateAppTrafficTable(appTrafficList);
+                if(appTrafficList.size() == 1 && appTrafficList.get(0) == null
+                        && appTrafficTable.getChildCount() == 0) {
+                    errorMessage.setVisibility(View.VISIBLE);
+                } else {
+                    errorMessage.setVisibility(View.GONE);
+                    updateAppTrafficTable(appTrafficList);
+                }
+
                 scheduledUpdates = DataService.SCHEDULED_EXECUTOR.schedule(this,
                         SUCCESSFUL_UPDATE_PERIOD_SECONDS,
                         TimeUnit.SECONDS);

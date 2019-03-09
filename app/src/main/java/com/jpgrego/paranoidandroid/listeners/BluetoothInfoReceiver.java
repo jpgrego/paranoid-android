@@ -48,14 +48,14 @@ public final class BluetoothInfoReceiver extends BroadcastReceiver implements Bl
     };
 
     public BluetoothInfoReceiver(final Context context) {
-        final IntentFilter bluetoothIntentFilter = new IntentFilter();
-        bluetoothIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-        bluetoothIntentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
-        bluetoothIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        context.registerReceiver(this, bluetoothIntentFilter);
-        DataService.SCHEDULED_EXECUTOR.execute(discoverRunnable);
-
         if(bluetoothAdapter != null) {
+            final IntentFilter bluetoothIntentFilter = new IntentFilter();
+            bluetoothIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+            bluetoothIntentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
+            bluetoothIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+            context.registerReceiver(this, bluetoothIntentFilter);
+            DataService.SCHEDULED_EXECUTOR.execute(discoverRunnable);
+
             bluetoothAdapter.getProfileProxy(context, this, BluetoothProfile.A2DP);
             bluetoothAdapter.getProfileProxy(context, this, BluetoothProfile.HEADSET);
             bluetoothAdapter.getProfileProxy(context, this, BluetoothProfile.HEALTH);
