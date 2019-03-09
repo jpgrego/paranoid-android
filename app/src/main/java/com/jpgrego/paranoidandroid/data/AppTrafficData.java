@@ -1,11 +1,8 @@
 package com.jpgrego.paranoidandroid.data;
 
-import android.app.usage.NetworkStats;
-import android.app.usage.NetworkStatsManager;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.TrafficStats;
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -21,7 +18,7 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
 
     private final String appName, appPackageName;
     private final int uid;
-    private final long transmittedBytes, receivedBytes, transmittedPackages, receivedPackages;
+    private final long wifiTransmittedBytes, wifiReceivedBytes, cellularTransmittedBytes, cellularReceivedBytes;
 
     private volatile int hashCode;
 
@@ -30,10 +27,10 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
         this.appName = appName;
         this.appPackageName = appPackageName;
 
-        this.transmittedBytes = TrafficStats.getUidTxBytes(uid);
-        this.receivedBytes = TrafficStats.getUidRxBytes(uid);
-        this.transmittedPackages = TrafficStats.getUidTxPackets(uid);
-        this.receivedPackages = TrafficStats.getUidRxPackets(uid);
+        this.wifiTransmittedBytes = TrafficStats.getUidTxBytes(uid);
+        this.wifiReceivedBytes = TrafficStats.getUidRxBytes(uid);
+        this.cellularTransmittedBytes = TrafficStats.getUidTxPackets(uid);
+        this.cellularReceivedBytes = TrafficStats.getUidRxPackets(uid);
     }
 
     private AppTrafficData(final int uid, final String appName, final String appPackageName,
@@ -42,20 +39,20 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
         this.appName = appName;
         this.appPackageName = appPackageName;
 
-        this.transmittedBytes = wifiBytes.txBytes;
-        this.receivedBytes = wifiBytes.rxBytes;
-        this.transmittedPackages = mobileBytes.txBytes;
-        this.receivedPackages = mobileBytes.rxBytes;
+        this.wifiTransmittedBytes = wifiBytes.txBytes;
+        this.wifiReceivedBytes = wifiBytes.rxBytes;
+        this.cellularTransmittedBytes = mobileBytes.txBytes;
+        this.cellularReceivedBytes = mobileBytes.rxBytes;
     }
 
     private AppTrafficData(final Parcel in) {
         appName = in.readString();
         appPackageName = in.readString();
         uid = in.readInt();
-        transmittedBytes = in.readLong();
-        receivedBytes = in.readLong();
-        transmittedPackages = in.readLong();
-        receivedPackages = in.readLong();
+        wifiTransmittedBytes = in.readLong();
+        wifiReceivedBytes = in.readLong();
+        cellularTransmittedBytes = in.readLong();
+        cellularReceivedBytes = in.readLong();
     }
 
     @Override
@@ -63,10 +60,10 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
         dest.writeString(appName);
         dest.writeString(appPackageName);
         dest.writeInt(uid);
-        dest.writeLong(transmittedBytes);
-        dest.writeLong(receivedBytes);
-        dest.writeLong(transmittedPackages);
-        dest.writeLong(receivedPackages);
+        dest.writeLong(wifiTransmittedBytes);
+        dest.writeLong(wifiReceivedBytes);
+        dest.writeLong(cellularTransmittedBytes);
+        dest.writeLong(cellularReceivedBytes);
     }
 
     public static final Creator<AppTrafficData> CREATOR = new Creator<AppTrafficData>() {
@@ -107,20 +104,20 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
         return appPackageName;
     }
 
-    public long getTransmittedBytes() {
-        return transmittedBytes;
+    public long getWifiTransmittedBytes() {
+        return wifiTransmittedBytes;
     }
 
-    public long getReceivedBytes() {
-        return receivedBytes;
+    public long getWifiReceivedBytes() {
+        return wifiReceivedBytes;
     }
 
-    public long getTransmittedPackages() {
-        return transmittedPackages;
+    public long getCellularTransmittedBytes() {
+        return cellularTransmittedBytes;
     }
 
-    public long getReceivedPackages() {
-        return receivedPackages;
+    public long getCellularReceivedBytes() {
+        return cellularReceivedBytes;
     }
 
     public int getUid() {
@@ -128,7 +125,8 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
     }
 
     public boolean hasNetworkActivity() {
-        return transmittedBytes > 0 || receivedBytes > 0;
+        return wifiTransmittedBytes > 0 || wifiReceivedBytes > 0 || cellularTransmittedBytes > 0
+                || cellularReceivedBytes > 0;
     }
 
     @Override
@@ -163,8 +161,8 @@ public final class AppTrafficData implements Parcelable, Comparable<AppTrafficDa
     public int compareTo(@NonNull AppTrafficData another) {
         if(this.equals(another)) return 0;
         else {
-            final int diff = Long.compare(another.transmittedBytes + another.receivedBytes,
-                    this.transmittedBytes + this.receivedBytes);
+            final int diff = Long.compare(another.wifiTransmittedBytes + another.wifiReceivedBytes,
+                    this.wifiTransmittedBytes + this.wifiReceivedBytes);
             return diff != 0 ? diff : 1;
         }
     }

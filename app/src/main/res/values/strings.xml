@@ -49,10 +49,10 @@
     <string name="app_traffic_activity_title">App Traffic</string>
     <string name="app_detail_pkg_name">Package name</string>
     <string name="app_detail_uid">UID</string>
-    <string name="app_detail_transmitted_mbytes">Transmited bytes</string>
-    <string name="app_detail_received_mbytes">Received bytes</string>
-    <string name="app_detail_transmitted_packages">TX Packages</string>
-    <string name="app_detail_received_packages">RX Packages</string>
+    <string name="app_detail_wifi_transmitted">Transmitted via Wifi</string>
+    <string name="app_detail_wifi_received">Received via WiFi</string>
+    <string name="app_detail_cellular_transmitted">Transmitted via cellular</string>
+    <string name="app_detail_cellular_received">Received via cellular</string>
 
     <!-- action bar buttons -->
     <string name="action_radio">Radio</string>

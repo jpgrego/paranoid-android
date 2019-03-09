@@ -22,9 +22,9 @@
             android:paddingEnd="5dp" />
         <TextView
             android:id="@+id/package_name_value"
-            android:layout_width="wrap_content"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:singleLine="true"
+            android:maxLines="1"
             android:ellipsize="end"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"/>
@@ -48,16 +48,16 @@
     </TableRow>
     <TableRow>
         <TextView
-            android:id="@+id/txmbytes_label"
+            android:id="@+id/wifi_txmbytes_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="@string/app_detail_transmitted_mbytes"
+            android:text="@string/app_detail_wifi_transmitted"
             android:textStyle="bold"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"/>
         <TextView
-            android:id="@+id/txmbytes_value"
+            android:id="@+id/wifi_txmbytes_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="5dp"
@@ -65,16 +65,16 @@
     </TableRow>
     <TableRow>
         <TextView
-            android:id="@+id/rxmbytes_label"
+            android:id="@+id/wifi_rxmbytes_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="@string/app_detail_received_mbytes"
+            android:text="@string/app_detail_wifi_received"
             android:textStyle="bold"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"/>
         <TextView
-            android:id="@+id/rxmbytes_value"
+            android:id="@+id/wifi_rxmbytes_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="5dp"
@@ -82,16 +82,16 @@
     </TableRow>
     <TableRow>
         <TextView
-            android:id="@+id/txpkg_label"
+            android:id="@+id/cellular_txmbytes_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="@string/app_detail_transmitted_packages"
+            android:text="@string/app_detail_cellular_transmitted"
             android:textStyle="bold"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"/>
         <TextView
-            android:id="@+id/txpkg_value"
+            android:id="@+id/cellular_txmbytes_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="5dp"
@@ -99,16 +99,16 @@
     </TableRow>
     <TableRow>
         <TextView
-            android:id="@+id/rxpkg_label"
+            android:id="@+id/cellular_rxmbytes_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="@string/app_detail_received_packages"
+            android:text="@string/app_detail_cellular_received"
             android:textStyle="bold"
             android:paddingStart="5dp"
             android:paddingEnd="5dp"/>
         <TextView
-            android:id="@+id/rxpkg_value"
+            android:id="@+id/cellular_rxmbytes_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingStart="5dp"

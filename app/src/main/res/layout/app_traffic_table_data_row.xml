@@ -29,34 +29,35 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="1"
-        android:ellipsize="marquee"
+        android:maxLines="1"
+        android:maxLength="30"
+        android:ellipsize="end"
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/transmitted_mbytes"
+        android:id="@+id/wifi_transmitted_mbytes"
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/received_mbytes"
+        android:id="@+id/wifi_received_mbytes"
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/transmitted_packages"
+        android:id="@+id/cellular_transmitted_mbytes"
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/received_packages"
+        android:id="@+id/cellular_received_mbytes"
         android:visibility="gone" />
 
     <TextView
         android:id="@+id/app_name"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="1"
-        android:singleLine="true"
-        android:maxLength="10"
-        android:ellipsize="marquee" />
+        android:maxLines="1"
+        android:ellipsize="end" />
 
     <TextView
         android:id="@+id/app_count"

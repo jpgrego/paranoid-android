@@ -11,7 +11,6 @@ import android.os.PersistableBundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -97,20 +96,20 @@ public final class AppTrafficActivity extends BaseActivity {
         final TextView appUidView =  view.findViewById(R.id.app_uid);
         final TextView appNameView =  view.findViewById(R.id.app_name);
         final TextView appPackageNameView =  view.findViewById(R.id.app_package_name);
-        final TextView transmittedBytesView =  view.findViewById(R.id.transmitted_mbytes);
-        final TextView receivedBytesView =  view.findViewById(R.id.received_mbytes);
+        final TextView transmittedBytesView =  view.findViewById(R.id.wifi_transmitted_mbytes);
+        final TextView receivedBytesView =  view.findViewById(R.id.wifi_received_mbytes);
         final TextView transmittedPackagesView =
-               view.findViewById(R.id.transmitted_packages);
-        final TextView receivedPackagesView =  view.findViewById(R.id.received_packages);
+               view.findViewById(R.id.cellular_transmitted_mbytes);
+        final TextView receivedPackagesView =  view.findViewById(R.id.cellular_received_mbytes);
 
         final View detailsView = View.inflate(this, R.layout.app_traffic_details, null);
 
         final CharSequence packageName = appPackageNameView.getText();
         final CharSequence uid = appUidView.getText();
-        final CharSequence transmittedBytes = transmittedBytesView.getText();
-        final CharSequence receivedBytes = receivedBytesView.getText();
-        final CharSequence transmittedPackages = transmittedPackagesView.getText();
-        final CharSequence receivedPackages = receivedPackagesView.getText();
+        final CharSequence wifiTransmittedBytes = transmittedBytesView.getText();
+        final CharSequence wifiReceivedBytes = receivedBytesView.getText();
+        final CharSequence cellularTransmittedBytes = transmittedPackagesView.getText();
+        final CharSequence cellularReceivedBytes = receivedPackagesView.getText();
 
         try {
             final ImageView icon =  detailsView.findViewById(R.id.app_icon);
@@ -122,17 +121,19 @@ public final class AppTrafficActivity extends BaseActivity {
         final TextView detailsPackageName =
                detailsView.findViewById(R.id.package_name_value);
         final TextView detailsUid =  detailsView.findViewById(R.id.uid_value);
-        final TextView detailsTxMBytes =  detailsView.findViewById(R.id.txmbytes_value);
-        final TextView detailsRxMBytes =  detailsView.findViewById(R.id.rxmbytes_value);
-        final TextView detailsTxPkgs =  detailsView.findViewById(R.id.txpkg_value);
-        final TextView detailsRxPkgs =  detailsView.findViewById(R.id.rxpkg_value);
+        final TextView detailsWifiTxMBytes =  detailsView.findViewById(R.id.wifi_txmbytes_value);
+        final TextView detailsWifiRxMBytes =  detailsView.findViewById(R.id.wifi_rxmbytes_value);
+        final TextView detailsCellularTxMBytes =
+                detailsView.findViewById(R.id.cellular_txmbytes_value);
+        final TextView detailsCellularRxMBytes =
+                detailsView.findViewById(R.id.cellular_rxmbytes_value);
 
         detailsPackageName.setText(packageName);
         detailsUid.setText(uid);
-        detailsTxMBytes.setText(String.format("%s MB", transmittedBytes));
-        detailsRxMBytes.setText(String.format("%s MB", receivedBytes));
-        detailsTxPkgs.setText(transmittedPackages);
-        detailsRxPkgs.setText(receivedPackages);
+        detailsWifiTxMBytes.setText(String.format("%s MB", wifiTransmittedBytes));
+        detailsWifiRxMBytes.setText(String.format("%s MB", wifiReceivedBytes));
+        detailsCellularTxMBytes.setText(String.format("%s MB", cellularTransmittedBytes));
+        detailsCellularRxMBytes.setText(String.format("%s MB", cellularReceivedBytes));
 
         dialog.setTitle(appNameView.getText().toString());
         dialog.setContentView(detailsView);
@@ -176,14 +177,14 @@ public final class AppTrafficActivity extends BaseActivity {
             final TextView appName =  appTrafficTableDataRow.findViewById(R.id.app_name);
             final TextView appCount =
                    appTrafficTableDataRow.findViewById(R.id.app_count);
-            final TextView transmittedMBytes =
-                   appTrafficTableDataRow.findViewById(R.id.transmitted_mbytes);
-            final TextView receivedMBytes =
-                   appTrafficTableDataRow.findViewById(R.id.received_mbytes);
-            final TextView transmittedPackages =
-                   appTrafficTableDataRow.findViewById(R.id.transmitted_packages);
-            final TextView receivedPackages =
-                   appTrafficTableDataRow.findViewById(R.id.received_packages);
+            final TextView wifiTransmittedMBytes =
+                   appTrafficTableDataRow.findViewById(R.id.wifi_transmitted_mbytes);
+            final TextView wifiReceivedMBytes =
+                   appTrafficTableDataRow.findViewById(R.id.wifi_received_mbytes);
+            final TextView cellularTransmittedMBytes =
+                   appTrafficTableDataRow.findViewById(R.id.cellular_transmitted_mbytes);
+            final TextView cellularReceivedMBytes =
+                   appTrafficTableDataRow.findViewById(R.id.cellular_received_mbytes);
 
             try {
                 appIcon.setImageDrawable(getPackageManager()
@@ -192,8 +193,11 @@ public final class AppTrafficActivity extends BaseActivity {
                 // do nothing
             }
 
-            final double transmittedMB = appTrafficData.getTransmittedBytes() / 1048576.0;
-            final double receivedMB = appTrafficData.getReceivedBytes() / 1048576.0;
+            final double wifiTransmittedMB = appTrafficData.getWifiTransmittedBytes() / 1048576.0;
+            final double wifiReceivedMB = appTrafficData.getWifiReceivedBytes() / 1048576.0;
+            final double cellularTransmittedMB =
+                    appTrafficData.getCellularTransmittedBytes() / 1048576.0;
+            final double cellularReceivedMB = appTrafficData.getCellularReceivedBytes() / 1048576.0;
 
             this.runOnUiThread(new Runnable() {
                 @Override
@@ -201,14 +205,18 @@ public final class AppTrafficActivity extends BaseActivity {
                     appUid.setText(appUidVal);
                     appPackageName.setText(appTrafficData.getAppPackageName());
                     appName.setText(appTrafficData.getAppName());
-                    appCount.setText(String.format(Locale.US, "%.1f MB", transmittedMB + receivedMB));
-                    transmittedMBytes.setText(
-                            String.format(Locale.US, "%.3f", transmittedMB));
-                    receivedMBytes.setText(String.format(Locale.US, "%.3f", receivedMB));
-                    transmittedPackages.setText(
-                            String.format(Locale.US, "%d", appTrafficData.getTransmittedPackages()));
-                    receivedPackages.setText(String.format(Locale.US, "%d",
-                            appTrafficData.getReceivedPackages()));
+                    appCount.setText(String.format(Locale.US, "%.1f MB",
+                            wifiTransmittedMB + wifiReceivedMB + cellularTransmittedMB
+                                    + cellularReceivedMB));
+                    wifiTransmittedMBytes.setText(
+                            String.format(Locale.US, "%.3f", wifiTransmittedMB));
+                    wifiReceivedMBytes.setText(String.format(Locale.US, "%.3f",
+                            wifiReceivedMB));
+                    cellularTransmittedMBytes.setText(
+                            String.format(Locale.US, "%.3f",
+                                    cellularTransmittedMB));
+                    cellularReceivedMBytes.setText(String.format(Locale.US, "%.3f",
+                            cellularReceivedMB));
 
                     if(existingRow == null) {
                         lock.lock();

@@ -125,7 +125,7 @@ public class PermissionsActivity extends BasePermissionActivity {
                 .withMessage(messageID)
                 .withPermissionName(permissionName)
                 .withImageResourceId(imageResourceId)
-                .withCanSkip(false)
+                .withCanSkip(true)
                 .build();
     }
 

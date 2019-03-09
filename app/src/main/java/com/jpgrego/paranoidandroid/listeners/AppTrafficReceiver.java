@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
+import android.telephony.SubscriptionPlan;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -13,6 +16,7 @@ import com.jpgrego.paranoidandroid.data.AppTrafficData;
 import com.jpgrego.paranoidandroid.services.DataService;
 import com.jpgrego.paranoidandroid.utils.NetworkStatsUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +41,7 @@ public final class AppTrafficReceiver {
         this.context = context;
         this.packageManager = context.getPackageManager();
 
-        final boolean useTrafficStats = Build.VERSION.SDK_INT < Build.VERSION_CODES.N;
+        final boolean useTrafficStats = Build.VERSION.SDK_INT < Build.VERSION_CODES.M;
 
         DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new UpdateRunnable(useTrafficStats),
                 0, UPDATE_PERIOD_SECONDS, TimeUnit.SECONDS);
@@ -64,19 +68,56 @@ public final class AppTrafficReceiver {
     private class UpdateRunnable implements Runnable {
 
         private final boolean useTrafficStats;
-        private final String subscriberId;
+        private final String[] subscriberIds;
 
         // already checked in the beginning of the app
         @SuppressLint("MissingPermission")
         private UpdateRunnable(final boolean useTrafficStats) {
             this.useTrafficStats = useTrafficStats;
 
-            if(useTrafficStats) subscriberId = "";
+            if(useTrafficStats) subscriberIds = new String[]{""};
             else {
+
                 final TelephonyManager telephonyManager =
                         (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                this.subscriberId =
-                        telephonyManager != null ? telephonyManager.getSubscriberId() : "";
+
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    final SubscriptionManager subscriptionManager = (SubscriptionManager)
+                            context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+
+                    if(subscriptionManager == null) {
+                        this.subscriberIds = new String[]{""};
+                        return;
+                    }
+
+                    final List<SubscriptionInfo> subscriptionInfos =
+                            subscriptionManager.getActiveSubscriptionInfoList();
+
+                    final int[] subscriptionIds = new int[subscriptionInfos.size()];
+
+                    int i = 0;
+                    for(final SubscriptionInfo info : subscriptionInfos) {
+                        subscriptionIds[i++] = info.getSubscriptionId();
+
+                    }
+
+                    subscriberIds = new String[subscriptionIds.length];
+                    i = 0;
+                    for (final int subscriptionId : subscriptionIds) {
+                        try {
+                            final Class cls = Class.forName("android.telephony.TelephonyManager");
+                            final Method method = cls.getMethod("getSubscriberId", int.class);
+                            final Object obj = method.invoke(telephonyManager, subscriptionId);
+
+                            subscriberIds[i++] = (String) obj;
+                        } catch (final Exception ex) {
+                            // do nothing
+                        }
+                    }
+                } else {
+                    this.subscriberIds = new String[]{
+                            telephonyManager != null ? telephonyManager.getSubscriberId() : ""};
+                }
             }
         }
 
@@ -100,7 +141,7 @@ public final class AppTrafficReceiver {
                                     context.getSystemService(Context.NETWORK_STATS_SERVICE);
                     if(networkStatsManager != null) {
                         data = AppTrafficData.fromApplicationInfo(appInfo, packageManager,
-                                new NetworkStatsUtils(networkStatsManager, subscriberId));
+                                new NetworkStatsUtils(networkStatsManager, subscriberIds));
                     } else {
                         Log.e(this.getClass().getSimpleName(),
                                 "Couldn't obtain NetworkStatsManager");
@@ -109,8 +150,8 @@ public final class AppTrafficReceiver {
                 }
 
                 if (data.hasNetworkActivity()) {
-                    tempTotalTransmittedBytes += data.getTransmittedBytes();
-                    tempTotalReceivedBytes += data.getReceivedBytes();
+                    tempTotalTransmittedBytes += data.getWifiTransmittedBytes();
+                    tempTotalReceivedBytes += data.getWifiReceivedBytes();
                     temp.add(data);
                 }
             }

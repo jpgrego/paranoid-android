@@ -3,6 +3,7 @@ package com.jpgrego.paranoidandroid.activities;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -14,6 +15,7 @@ import com.jpgrego.paranoidandroid.R;
 import com.jpgrego.paranoidandroid.services.DataService;
 import com.jpgrego.paranoidandroid.services.LocationResponse;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
@@ -38,6 +40,10 @@ import java.util.concurrent.TimeUnit;
 
 public final class MapActivity extends BaseActivity {
 
+    private static final String LATITUDE_KEY = "latitude";
+    private static final String LONGITUDE_KEY = "longitude";
+    private static final String ZOOM_KEY = "zoom";
+    private static final String ACCURACY_KEY = "accuracy";
     private static final double DEFAULT_LATITUDE = 48.8583;
     private static final double DEFAULT_LONGITUDE = 2.2944;
     private static final double DEFAULT_ZOOM_LEVEL = 6.0;
@@ -128,37 +134,58 @@ public final class MapActivity extends BaseActivity {
                 mapController.setZoom(Math.min(getZoomLevel(accuracy), 19L));
                 mapController.setCenter(point);
 
-                final List<Overlay> overlays = mapView.getOverlays();
-
-                if (currentLocationMarker != null) {
-                    currentLocationMarker.closeInfoWindow();
-                    overlays.remove(currentLocationMarker);
-                }
-
-                if (currentLocationRadius != null) overlays.remove(currentLocationRadius);
-
-                currentLocationMarker = new Marker(mapView);
-                //noinspection deprecation
-                currentLocationMarker.setIcon(getResources()
-                        .getDrawable(R.drawable.marker_default_focused_base));
-                currentLocationMarker.setPosition(point);
-                currentLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                currentLocationMarker.setTitle(
-                        String.format(Locale.US, "%f\n%f", latitude,
-                                longitude));
-                currentLocationMarker.setSubDescription(
-                        String.format(Locale.US, "+-%fm", accuracy));
-                currentLocationMarker.setInfoWindow(new MarkerInfoWindow(R.layout.bonuspack_bubble,
-                        mapView));
-                currentLocationMarker.showInfoWindow();
-                overlays.add(currentLocationMarker);
-
-                currentLocationRadius = new Polygon();
-                currentLocationRadius.setPoints(Polygon.pointsAsCircle(point, accuracy));
-                currentLocationRadius.setStrokeColor(RADIUS_BORDER_COLOR);
-                currentLocationRadius.setFillColor(RADIUS_FILL_COLOR);
-                overlays.add(currentLocationRadius);
+                markPointOnMap(latitude, longitude, accuracy);
             }
+        }
+
+        final IGeoPoint currentCenter = mapView.getMapCenter();
+        final double currentZoomLevel = mapView.getZoomLevelDouble();
+
+        final SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(
+                this.getClass().getSimpleName(), MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(LATITUDE_KEY, Double.doubleToRawLongBits(currentCenter.getLatitude()));
+        editor.putLong(LONGITUDE_KEY, Double.doubleToRawLongBits(currentCenter.getLongitude()));
+        editor.putLong(ZOOM_KEY, Double.doubleToLongBits(currentZoomLevel));
+        editor.putFloat(ACCURACY_KEY, accuracy);
+        editor.apply();
+    }
+
+    private void markPointOnMap(final double latitude, final double longitude,
+                                final float accuracy) {
+
+        final GeoPoint point = new GeoPoint(latitude, longitude);
+        final List<Overlay> overlays = mapView.getOverlays();
+
+        synchronized (lockObj) {
+            if (currentLocationMarker != null) {
+                currentLocationMarker.closeInfoWindow();
+                overlays.remove(currentLocationMarker);
+            }
+
+            if (currentLocationRadius != null) overlays.remove(currentLocationRadius);
+
+            currentLocationMarker = new Marker(mapView);
+            //noinspection deprecation
+            currentLocationMarker.setIcon(getResources()
+                    .getDrawable(R.drawable.marker_default_focused_base));
+            currentLocationMarker.setPosition(point);
+            currentLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            currentLocationMarker.setTitle(
+                    String.format(Locale.US, "%f\n%f", latitude,
+                            longitude));
+            currentLocationMarker.setSubDescription(
+                    String.format(Locale.US, "+-%fm", accuracy));
+            currentLocationMarker.setInfoWindow(new MarkerInfoWindow(R.layout.bonuspack_bubble,
+                    mapView));
+            currentLocationMarker.showInfoWindow();
+            overlays.add(currentLocationMarker);
+
+            currentLocationRadius = new Polygon();
+            currentLocationRadius.setPoints(Polygon.pointsAsCircle(point, accuracy));
+            currentLocationRadius.setStrokeColor(RADIUS_BORDER_COLOR);
+            currentLocationRadius.setFillColor(RADIUS_FILL_COLOR);
+            overlays.add(currentLocationRadius);
         }
     }
 
@@ -168,7 +195,19 @@ public final class MapActivity extends BaseActivity {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        final IGeoPoint currentCenter = mapView.getMapCenter();
+        final double currentZoomLevel = mapView.getZoomLevelDouble();
+
+        outState.putDouble(LATITUDE_KEY, currentCenter.getLatitude());
+        outState.putDouble(LONGITUDE_KEY, currentCenter.getLongitude());
+        outState.putDouble(ZOOM_KEY, currentZoomLevel);
+    }
+
+    @Override
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
@@ -179,9 +218,43 @@ public final class MapActivity extends BaseActivity {
         mapView.addOnFirstLayoutListener(new MapView.OnFirstLayoutListener() {
             @Override
             public void onFirstLayout(View v, int left, int top, int right, int bottom) {
-                final GeoPoint defaultPoint = new GeoPoint(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
-                mapController.setCenter(defaultPoint);
-                mapController.setZoom(DEFAULT_ZOOM_LEVEL);
+
+                final SharedPreferences localSP = getSharedPreferences(
+                        MapActivity.this.getClass().getSimpleName(), MODE_PRIVATE);
+
+                final boolean containsSavedState = localSP.contains(LATITUDE_KEY)
+                        && localSP.contains(LONGITUDE_KEY) && localSP.contains(ZOOM_KEY);
+
+                if(savedInstanceState != null
+                        && savedInstanceState.containsKey(LATITUDE_KEY)
+                        && savedInstanceState.containsKey(LONGITUDE_KEY)
+                        && savedInstanceState.containsKey(ZOOM_KEY)) {
+                    final double latitude = savedInstanceState.getDouble(LATITUDE_KEY);
+                    final double longitude = savedInstanceState.getDouble(LONGITUDE_KEY);
+                    final double zoom = savedInstanceState.getDouble(ZOOM_KEY);
+                    final float accuracy = savedInstanceState.getFloat(ACCURACY_KEY);
+                    final GeoPoint lastPoint = new GeoPoint(latitude, longitude);
+
+                    mapController.setZoom(zoom);
+                    mapController.setCenter(lastPoint);
+                    markPointOnMap(latitude, longitude, accuracy);
+                } else if(containsSavedState) {
+                    final double latitude = Double.longBitsToDouble(
+                            localSP.getLong(LATITUDE_KEY, 0L));
+                    final double longitude = Double.longBitsToDouble(
+                            localSP.getLong(LONGITUDE_KEY, 0L));
+                    final double zoom = Double.longBitsToDouble(localSP.getLong(ZOOM_KEY, 0L));
+                    final float accuracy = localSP.getFloat(ACCURACY_KEY, 0f);
+
+                    final IGeoPoint lastCenter = new GeoPoint(latitude, longitude);
+                    mapController.setZoom(zoom);
+                    mapController.setCenter(lastCenter);
+                    markPointOnMap(latitude, longitude, accuracy);
+                } else {
+                    final GeoPoint defaultPoint = new GeoPoint(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+                    mapController.setZoom(DEFAULT_ZOOM_LEVEL);
+                    mapController.setCenter(defaultPoint);
+                }
             }
         });
         if(mapView != null) {
@@ -217,6 +290,7 @@ public final class MapActivity extends BaseActivity {
         super.onResume();
         Configuration.getInstance().load(this,
                 PreferenceManager.getDefaultSharedPreferences(this));
+
         final Intent serviceIntent = new Intent(this, DataService.class);
         bindService(serviceIntent, serviceConnection, 0);
     }

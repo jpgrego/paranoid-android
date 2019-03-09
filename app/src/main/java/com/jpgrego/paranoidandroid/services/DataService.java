@@ -82,6 +82,7 @@ public final class DataService extends Service {
         cellInfoListener = new CellInfoListener(this);
         wifiInfoReceiver = new WifiInfoReceiver(this);
         sensorInfoListener = new SensorInfoListener(this);
+
         bluetoothInfoReceiver = new BluetoothInfoReceiver(this);
         appTrafficReceiver = new AppTrafficReceiver(this);
         new USBEventsReceiver(this);

@@ -9,27 +9,29 @@ import android.net.ConnectivityManager;
 @SuppressLint("NewApi")
 public final class NetworkStatsUtils {
 
+    private static final long DAYS_IN_MS = 2592000000L;
     private final NetworkStatsManager networkStatsManager;
-    private final String subscriberId;
+    private final String[] subscriberIds;
 
     public NetworkStatsUtils(final NetworkStatsManager networkStatsManager,
-                             final String subscriberId) {
+                             final String[] subscriberIds) {
         this.networkStatsManager = networkStatsManager;
-        this.subscriberId = subscriberId;
+        this.subscriberIds = subscriberIds;
     }
 
     public RxTxData getWifiBytes(final int uid) {
 
+        final long currentTime = System.currentTimeMillis();
         final NetworkStats networkStats = networkStatsManager.queryDetailsForUid(
-                ConnectivityManager.TYPE_WIFI, "", 0,
-                System.currentTimeMillis(), uid);
+                ConnectivityManager.TYPE_WIFI, "", currentTime - DAYS_IN_MS,
+                currentTime, uid);
 
         final NetworkStats.Bucket bucket = new NetworkStats.Bucket();
         long rxBytes = 0L;
         long txBytes = 0L;
 
         while(networkStats.hasNextBucket()) {
-            networkStats.getNextBucket(bucket);
+            if(!networkStats.getNextBucket(bucket)) continue;
             rxBytes += bucket.getRxBytes();
             txBytes += bucket.getTxBytes();
         }
@@ -40,21 +42,25 @@ public final class NetworkStatsUtils {
 
     public RxTxData getMobileBytes(final int uid) {
 
-        final NetworkStats networkStats = networkStatsManager.queryDetailsForUid(
-                ConnectivityManager.TYPE_MOBILE, subscriberId, 0,
-                System.currentTimeMillis(), uid);
-
-        final NetworkStats.Bucket bucket = new NetworkStats.Bucket();
         long rxBytes = 0L;
         long txBytes = 0L;
+        for(final String subscriberId : subscriberIds) {
+            final long currentTime = System.currentTimeMillis();
+            final NetworkStats networkStats = networkStatsManager.queryDetailsForUid(
+                    ConnectivityManager.TYPE_MOBILE, subscriberId,
+                    currentTime - DAYS_IN_MS,
+                    currentTime, uid);
 
-        while(networkStats.hasNextBucket()) {
-            networkStats.getNextBucket(bucket);
-            rxBytes += bucket.getRxBytes();
-            txBytes += bucket.getTxBytes();
+            final NetworkStats.Bucket bucket = new NetworkStats.Bucket();
+
+            while (networkStats.hasNextBucket()) {
+                if (!networkStats.getNextBucket(bucket)) continue;
+                rxBytes += bucket.getRxBytes();
+                txBytes += bucket.getTxBytes();
+            }
+
+            networkStats.close();
         }
-
-        networkStats.close();
         return new RxTxData(rxBytes, txBytes);
     }
 }
