@@ -29,11 +29,10 @@ public final class WifiCellsBTActivity extends BaseActivity {
     private static final int UPDATE_PERIOD_SECONDS = 1;
     private static final int HIGHLIGHTED_BACKGROUND = Color.parseColor("#93a2a2");
     private static final int FADED_COLOR = Color.parseColor("#808080");
-//    private static final int REQUEST_ENABLE_BT = 100;
 
     private volatile ScheduledFuture<?> scheduledUpdates = null;
 
-    private TableLayout registeredCellsTable, neighbouringCellsTable, wifiTable, bluetoothTable;
+    private TableLayout cellsTable, wifiTable, bluetoothTable;
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
 
@@ -62,15 +61,9 @@ public final class WifiCellsBTActivity extends BaseActivity {
         setTitle(R.string.wifi_cells_activity_title);
         setContentView(R.layout.activity_wifiandcells);
 
-        registeredCellsTable = findViewById(R.id.registered_cells_table);
-        neighbouringCellsTable = findViewById(R.id.neighbouring_cells_table);
+        cellsTable = findViewById(R.id.cells_table);
         wifiTable = findViewById(R.id.wifi_table);
         bluetoothTable = findViewById(R.id.bluetooth_table);
-
-//        if(!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-//            final Intent enableBluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//            startActivityForResult(enableBluetoothIntent, REQUEST_ENABLE_BT);
-//        }
     }
 
     @Override
@@ -88,27 +81,10 @@ public final class WifiCellsBTActivity extends BaseActivity {
     }
 
     void updateCellTable(final List<Cell> cellList) {
-        /*
-         * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
-         * fact that getActivity() returns null in case the fragment isn't added to the activity,
-         * which seems to happen occasionally
-         */
-        /*
-        if (!isAdded()) {
-            return;
-        }
-        */
 
-        final int registeredCellsTableSize = registeredCellsTable.getChildCount();
-        final int neighbouringCellsTableSize = neighbouringCellsTable.getChildCount();
+        final int cellsTableSize = cellsTable.getChildCount();
 
-        if(registeredCellsTableSize > 1) {
-            registeredCellsTable.removeViews(1, registeredCellsTableSize - 1);
-        }
-
-        if(neighbouringCellsTableSize > 1) {
-            neighbouringCellsTable.removeViews(1, neighbouringCellsTableSize - 1);
-        }
+        if(cellsTableSize > 1) cellsTable.removeViews(1, cellsTableSize - 1);
 
         addCellsToTable(cellList);
     }
@@ -119,10 +95,12 @@ public final class WifiCellsBTActivity extends BaseActivity {
             final TableRow cellTableDataRow;
             final boolean isRegistered = cell.isRegisteredCell();
 
+            cellTableDataRow = (TableRow) View.inflate(this,
+                    R.layout.cell_table_data_row,
+                    null);
+
             if(isRegistered) {
-                cellTableDataRow = (TableRow) View.inflate(this,
-                        R.layout.registered_cell_table_data_row,
-                        null);
+                cellTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
 
                 mcc = cellTableDataRow.findViewById(R.id.mcc);
                 mnc = cellTableDataRow.findViewById(R.id.mnc);
@@ -133,11 +111,6 @@ public final class WifiCellsBTActivity extends BaseActivity {
                 mnc.setText(String.format(Locale.US, "%d", cell.getMnc()));
                 cid.setText(String.format(Locale.US, "%d", cell.getCid()));
                 lac.setText(String.format(Locale.US, "%d", cell.getLac()));
-
-            } else {
-                cellTableDataRow = (TableRow) View.inflate(this,
-                        R.layout.neighbouring_cell_table_data_row,
-                        null);
             }
 
             generation = cellTableDataRow.findViewById(R.id.generation);
@@ -152,50 +125,22 @@ public final class WifiCellsBTActivity extends BaseActivity {
 
             dbm.setText(String.format(Locale.US, "%d", cell.getDbm()));
 
-//            if (cell.isRegisteredCell()) {
-//                cellTableDataRow.setBackgroundColor(HIGHLIGHTED_BACKGROUND);
-//            }
-
-            if(isRegistered) {
-                registeredCellsTable.addView(cellTableDataRow, new TableLayout.LayoutParams(
-                        TableLayout.LayoutParams.WRAP_CONTENT,
-                        TableLayout.LayoutParams.WRAP_CONTENT));
-            } else {
-                neighbouringCellsTable.addView(cellTableDataRow, new TableLayout.LayoutParams(
-                        TableLayout.LayoutParams.WRAP_CONTENT,
-                        TableLayout.LayoutParams.WRAP_CONTENT));
-            }
+            cellsTable.addView(cellTableDataRow, new TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.WRAP_CONTENT,
+                    TableLayout.LayoutParams.WRAP_CONTENT));
         }
 
-        if(registeredCellsTable.getChildCount() == 0) {
+        if(cellsTable.getChildCount() == 0) {
             final TableRow cellNoDataRow = (TableRow) View.inflate(this,
                     R.layout.cell_table_no_data_row, null);
             final TextView text = cellNoDataRow.findViewById(R.id.text);
             text.setTextColor(FADED_COLOR);
-            registeredCellsTable.addView(cellNoDataRow);
-        }
-
-        if(neighbouringCellsTable.getChildCount() == 0) {
-            final TableRow cellNoDataRow = (TableRow) View.inflate(this,
-                    R.layout.cell_table_no_data_row, null);
-            final TextView text = cellNoDataRow.findViewById(R.id.text);
-            text.setTextColor(FADED_COLOR);
-            neighbouringCellsTable.addView(cellNoDataRow);
+            cellsTable.addView(cellNoDataRow);
         }
     }
 
     void updateWifiTable(final List<WifiAP> wifiAPList,
                          final String currentWifiConnectionBSSID) {
-        /*
-         * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
-         * fact that getActivity() returns null in case the fragment isn't added to the activity,
-         * which seems to happen occasionally
-         */
-        /*
-        if (!isAdded()) {
-            return;
-        }
-        */
 
         final int wifiTableSize = wifiTable.getChildCount();
 
@@ -255,16 +200,6 @@ public final class WifiCellsBTActivity extends BaseActivity {
 
     void updateBluetoothTable(final List<MyBluetoothDevice> bluetoothDevices,
                               final String currentUUID) {
-        /*
-         * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
-         * fact that getActivity() returns null in case the fragment isn't added to the activity,
-         * which seems to happen occasionally
-         */
-        /*
-        if (!isAdded()) {
-            return;
-        }
-        */
 
         final int bluetoothTableSize = bluetoothTable.getChildCount();
 

@@ -143,20 +143,6 @@ public final class AppTrafficActivity extends BaseActivity {
     }
 
     private void updateAppTrafficTable(List<AppTrafficData> appTrafficList) {
-        /*
-         * This is done to avoid a NullPointerException being thrown by View.inflate, due to the
-         * fact that getActivity() returns null in case the fragment isn't added to the activity,
-         * which seems to happen occasionally
-         */
-        /*
-        if (!isAdded()) {
-            return;
-        }
-        */
-
-        //final TableRow sensorTableTitleRow =
-        //        (TableRow) View.inflate(getActivity(), R.layout.sensors_table_title_row, null);
-
 
         for (final AppTrafficData appTrafficData : appTrafficList) {
 

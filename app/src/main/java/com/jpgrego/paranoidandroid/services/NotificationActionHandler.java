@@ -10,7 +10,7 @@ import com.jpgrego.paranoidandroid.db.DatabaseHelper;
 
 public final class NotificationActionHandler extends IntentService {
 
-    public static final String ACTION_ADD_TRUSTED_AP = "add_trusted _AP";
+    public static final String ACTION_ADD_TRUSTED_AP = "add_trusted_AP";
     private final SQLiteDatabase db;
 
     public NotificationActionHandler() {

@@ -16,11 +16,11 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/registered_cells_table_title"
+                android:id="@+id/cells_table_title"
                 style="@style/titleTextViewStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/registered_cells_table_title" />
+                android:text="@string/cells_table_title" />
 
             <!--<LinearLayout-->
                 <!--android:id="@+id/cells_table_header_layout"-->
@@ -31,7 +31,7 @@
             <!--</LinearLayout>-->
 
             <TableLayout
-                android:id="@+id/registered_cells_table"
+                android:id="@+id/cells_table"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:divider="?android:attr/listDivider"
@@ -95,52 +95,6 @@
 
                     <TextView
                         android:id="@+id/cell_dbm"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:text="@string/dbm_string"
-                        android:textStyle="bold" />
-                </TableRow>
-            </TableLayout>
-
-            <TextView
-                android:id="@+id/neighbouring_cells_table_title"
-                style="@style/titleTextViewStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/neighbouring_cells_table_title" />
-
-            <TableLayout
-                android:id="@+id/neighbouring_cells_table"
-                android:layout_gravity="center"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:divider="?android:attr/listDivider"
-                android:showDividers="beginning|middle">
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-                    <TextView
-                        android:id="@+id/neighbouring_cell_generation"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1" />
-
-                    <TextView
-                        android:id="@+id/neighbouring_cell_psc"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:text="@string/psc_string"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/neighbouring_cell_dbm"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"

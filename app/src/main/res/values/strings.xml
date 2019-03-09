@@ -15,8 +15,7 @@
 
     <!-- cell / wifi strings -->
     <string name="wifi_cells_activity_title">Radio</string>
-    <string name="registered_cells_table_title">Registered cells</string>
-    <string name="neighbouring_cells_table_title">Neighbouring cells</string>
+    <string name="cells_table_title">Cells</string>
     <string name="wifi_title">WiFi</string>
     <string name="bluetooth_title">Bluetooth Devices</string>
     <string name="mcc_string">MCC</string>

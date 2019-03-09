@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -21,7 +20,7 @@ import com.jpgrego.paranoidandroid.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PermissionsActivity extends BasePermissionActivity {
+public final class PermissionsActivity extends BasePermissionActivity {
 
     @NonNull
     @Override
