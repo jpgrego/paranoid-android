@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -109,8 +108,10 @@ public final class DataService extends Service {
     private String createNotificationChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             final String id = "myChannel";
-            final NotificationChannel notChannel = new NotificationChannel(id, "change this", NotificationManager.IMPORTANCE_NONE);
-            final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            final NotificationChannel notChannel = new NotificationChannel(id, "change this",
+                    NotificationManager.IMPORTANCE_NONE);
+            final NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(notChannel);
             return id;
         } else return "";

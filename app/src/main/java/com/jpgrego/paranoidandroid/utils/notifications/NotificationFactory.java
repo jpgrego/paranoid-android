@@ -1,35 +1,50 @@
 package com.jpgrego.paranoidandroid.utils.notifications;
 
+import android.app.Application;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
 import com.jpgrego.paranoidandroid.R;
 import com.jpgrego.paranoidandroid.services.DataService;
 import com.jpgrego.paranoidandroid.services.NotificationActionHandler;
 
-import static com.jpgrego.paranoidandroid.utils.notifications.NotificationEnum.*;
+import static com.jpgrego.paranoidandroid.utils.notifications.ENotification.*;
 
 public final class NotificationFactory implements IRadioNotificationFactory,
         IUSBNotificationFactory, IDebugNotificationFactory {
 
-    private final String appName;
+    private static final String WIFI_NOTIFICATION_CHANNEL_ID = ENotificationChannel.WIFI.name();
+    private static final String USB_NOTIFICATION_CHANNEL_ID = ENotificationChannel.USB.name();
+    private static final String DEBUG_NOTIFICATION_CHANNEL_ID = ENotificationChannel.DEBUG.name();
+    private static NotificationFactory instance = null;
+
     private final NotificationManager notificationManager;
-    private final Context context;
-    //private final Intent resultIntent;
+    private final String appName;
+    private final Application context;
     private final PendingIntent notificationPendingIntent;
 
-    public NotificationFactory(final Context context) {
-        this.context = context;
+    private NotificationFactory(final Context context) {
+        // guaranteed to be passed Application Context from getInstance() method
+        this.context = (Application) context;
 
-        // TODO: "monitoring" notification obtained name too. how?
-        this.appName = getApplicationName();
+        this.appName = getApplicationName(context);
         this.notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && this.notificationManager != null) {
+            for(final ENotificationChannel eChannel : ENotificationChannel.values()) {
+                final NotificationChannel channel = new NotificationChannel(eChannel.name(),
+                        eChannel.toString(), NotificationManager.IMPORTANCE_HIGH);
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
 
         // this is the intent responsible to trigger the consequence of clicking in the notification
         // in this case, open the first activity. revisit this to be more flexible later
@@ -43,20 +58,30 @@ public final class NotificationFactory implements IRadioNotificationFactory,
                 PendingIntent.getService(context, 0, serviceIntent, 0);
     }
 
+    public static synchronized NotificationFactory getInstance(final Context context) {
+        if(instance == null) {
+            instance = new NotificationFactory(context.getApplicationContext());
+        }
+        return instance;
+    }
+
     @Override
     public void wifiNewAPNotification(final String ssid, final String bssid) {
         final String notificationTicker = context.getString(R.string.new_ap_associated_title);
         final String notificationDesc =
-                context.getString(R.string.new_ap_associated_desc, ssid, bssid);
+                    context.getString(R.string.new_ap_associated_desc, ssid, bssid);
 
         final NotificationCompat.Action trustAction =
                 new NotificationCompat.Action(R.drawable.direction_arrow, "Trust this network",
                         notificationPendingIntent);
-        final Notification notification = generateNotification(WIFI_NEW_AP.id(),
+
+        final Notification notification = generateNotification(WIFI_NOTIFICATION_CHANNEL_ID,
                 notificationTicker, notificationDesc, trustAction);
 
         final NotificationRunnable runnable =
-                new NotificationRunnable(WIFI_NEW_AP.id(), notificationManager, notification);
+                new NotificationRunnable(WIFI_NEW_AP.notificationId(), notificationManager,
+                        notification);
+
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
@@ -65,10 +90,12 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationTicker = context.getString(R.string.ap_changed_sec_title);
         final String notificationDesc = context.getString(R.string.ap_changed_sec_desc, oldSec,
                 newSec);
-        final Notification notification = generateNotification(WIFI_SEC_CHANGE.id(),
+
+        final Notification notification = generateNotification(WIFI_NOTIFICATION_CHANNEL_ID,
                 notificationTicker, notificationDesc);
         final NotificationRunnable runnable =
-                new NotificationRunnable(WIFI_SEC_CHANGE.id(), notificationManager, notification);
+                new NotificationRunnable(WIFI_SEC_CHANGE.notificationId(), notificationManager,
+                        notification);
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
@@ -80,11 +107,12 @@ public final class NotificationFactory implements IRadioNotificationFactory,
             notificationDesc = context.getString(R.string.ap_similar_desc_many, similarCount, ssid);
         } else notificationDesc = context.getString(R.string.ap_similar_desc_one, ssid);
 
-        final Notification notification =
-                generateNotification(WIFI_SIMILAR_AP.id(), notificationTicker, notificationDesc);
+        final Notification notification = generateNotification(WIFI_NOTIFICATION_CHANNEL_ID,
+                notificationTicker, notificationDesc);
 
         final NotificationRunnable runnable =
-                new NotificationRunnable(WIFI_SIMILAR_AP.id(), notificationManager, notification);
+                new NotificationRunnable(WIFI_SIMILAR_AP.notificationId(), notificationManager,
+                        notification);
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
@@ -95,11 +123,11 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationDesc =
                 context.getString(R.string.trusted_usb_device, vendorID, productID);
         final Notification notification =
-                generateNotification(USB_TRUSTED_DEVICE_CONNECTED.id(), notificationTicker,
+                generateNotification(USB_NOTIFICATION_CHANNEL_ID, notificationTicker,
                         notificationDesc);
         final NotificationRunnable runnable =
-                new NotificationRunnable(USB_TRUSTED_DEVICE_CONNECTED.id(), notificationManager,
-                        notification);
+                new NotificationRunnable(USB_TRUSTED_DEVICE_CONNECTED.notificationId(),
+                        notificationManager, notification);
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
@@ -109,11 +137,11 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationDesc =
                 context.getString(R.string.trusted_usb_accessory, serial);
         final Notification notification =
-                generateNotification(USB_TRUSTED_DEVICE_CONNECTED.id(), notificationTicker,
+                generateNotification(USB_NOTIFICATION_CHANNEL_ID, notificationTicker,
                         notificationDesc);
         final NotificationRunnable runnable =
-                new NotificationRunnable(USB_TRUSTED_DEVICE_CONNECTED.id(), notificationManager,
-                        notification);
+                new NotificationRunnable(USB_TRUSTED_DEVICE_CONNECTED.notificationId(),
+                        notificationManager, notification);
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
@@ -123,11 +151,11 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationDesc =
                 context.getString(R.string.untrusted_usb_device, vendorID, productID);
         final Notification notification =
-                generateNotification(USB_UNKNOWN_DEVICE_CONNECTED.id(), notificationTicker,
+                generateNotification(USB_NOTIFICATION_CHANNEL_ID, notificationTicker,
                         notificationDesc);
         final NotificationRunnable runnable =
-                new NotificationRunnable(USB_UNKNOWN_DEVICE_CONNECTED.id(), notificationManager,
-                        notification);
+                new NotificationRunnable(USB_UNKNOWN_DEVICE_CONNECTED.notificationId(),
+                        notificationManager, notification);
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
@@ -136,35 +164,37 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationTicker = context.getString(R.string.accessory_connected_title);
         final String notificationDesc = context.getString(R.string.untrusted_usb_accessory, serial);
         final Notification notification =
-                generateNotification(USB_UNKNOWN_DEVICE_CONNECTED.id(), notificationTicker,
+                generateNotification(USB_NOTIFICATION_CHANNEL_ID, notificationTicker,
                         notificationDesc);
         final NotificationRunnable runnable =
-                new NotificationRunnable(USB_UNKNOWN_DEVICE_CONNECTED.id(), notificationManager,
-                        notification);
+                new NotificationRunnable(USB_UNKNOWN_DEVICE_CONNECTED.notificationId(),
+                        notificationManager, notification);
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
-    // TODO: delete
     @Override
     public void testNotification(final String ticker, final String desc) {
-        final Notification notification = generateNotification(9999, ticker, desc);
+        final Notification notification = generateNotification(DEBUG_NOTIFICATION_CHANNEL_ID,
+                ticker, desc);
+
         final NotificationRunnable runnable =
-                new NotificationRunnable(9999, notificationManager, notification);
+                new NotificationRunnable(DEBUG.notificationId(), notificationManager, notification);
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
     }
 
+    /*
     private Notification generateNotification(final int id, final String ticker,
                                               final String text,
                                               final NotificationCompat.Action... actions) {
         //notificationBuilder.setContentIntent(PendingIntent.getActivity(context,
-        //        id, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        //        notificationId, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
         final NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.mipmap.paranoidandroid_launcher)
                         .setContentTitle(appName)
                         .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setTicker(ticker)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
                         .setContentText(text);
@@ -173,8 +203,32 @@ public final class NotificationFactory implements IRadioNotificationFactory,
 
         return notificationBuilder.build();
     }
+    */
 
-    private String getApplicationName() {
+    private Notification generateNotification(final String channelId,
+                                              final String ticker,
+                                              final String text,
+                                              final NotificationCompat.Action... actions) {
+        final NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(context, channelId)
+                        .setSmallIcon(R.mipmap.paranoidandroid_launcher)
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setTicker(ticker)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
+                        .setContentText(text);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            notificationBuilder.setContentTitle(ticker);
+        } else notificationBuilder.setContentTitle(appName);
+
+
+        for(final NotificationCompat.Action action : actions) notificationBuilder.addAction(action);
+
+        return notificationBuilder.build();
+    }
+
+    private static String getApplicationName(final Context context) {
         final ApplicationInfo applicationInfo = context.getApplicationInfo();
         final int stringId = applicationInfo.labelRes;
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() :

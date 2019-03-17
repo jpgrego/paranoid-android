@@ -40,10 +40,11 @@ public final class USBEventsReceiver extends BroadcastReceiver {
         intentFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
         intentFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
         context.registerReceiver(this, intentFilter);
-        context.registerReceiver(this, new IntentFilter("android.hardware.usb.action.USB_STATE"));
+        context.registerReceiver(this, new IntentFilter(
+                "android.hardware.usb.action.USB_STATE"));
         this.usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         this.context = context;
-        this.notificationFactory = new NotificationFactory(context);
+        this.notificationFactory = NotificationFactory.getInstance(context);
     }
 
     @Override

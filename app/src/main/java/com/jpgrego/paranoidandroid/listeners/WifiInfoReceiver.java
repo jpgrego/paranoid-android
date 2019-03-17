@@ -15,7 +15,6 @@ import com.jpgrego.paranoidandroid.data.WifiAP;
 import com.jpgrego.paranoidandroid.db.DatabaseContract.WifiAPEntry;
 import com.jpgrego.paranoidandroid.db.DatabaseHelper;
 import com.jpgrego.paranoidandroid.services.DataService;
-import com.jpgrego.paranoidandroid.utils.notifications.IDebugNotificationFactory;
 import com.jpgrego.paranoidandroid.utils.notifications.IRadioNotificationFactory;
 import com.jpgrego.paranoidandroid.utils.notifications.NotificationFactory;
 
@@ -37,7 +36,6 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
     private final Set<WifiAP> wifiAPSet = new TreeSet<>();
     private final WifiManager wifiManager;
     private final IRadioNotificationFactory notificationFactory;
-    private final IDebugNotificationFactory debugNotificationFactory;
 
     private String currentBSSID = "";
 
@@ -45,8 +43,7 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
         this.db = new DatabaseHelper(context).getWritableDatabase();
         this.wifiManager = (WifiManager) context.getApplicationContext()
                 .getSystemService(Context.WIFI_SERVICE);
-        this.notificationFactory = new NotificationFactory(context);
-        this.debugNotificationFactory = new NotificationFactory(context);
+        this.notificationFactory = NotificationFactory.getInstance(context);
 
         if(wifiManager == null) return;
 
@@ -78,10 +75,12 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
                 networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 
+
                 if(networkInfo.isConnected()) {
-                    currentBSSID = intent.getStringExtra(WifiManager.EXTRA_BSSID);
+                    //currentBSSID = intent.getStringExtra(WifiManager.EXTRA_BSSID);
 
                     final WifiInfo info = wifiManager.getConnectionInfo();
+                    currentBSSID = info.getBSSID();
                     final String ssid = info.getSSID()
                             .replaceAll("\"", "");
 
@@ -108,7 +107,7 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
                         }
                     }
 
-                    final boolean wasConnectedBefore = wasConnectedBefore(currentBSSID);
+                    final boolean wasConnectedBefore = wasConnectedBefore(ssid, currentBSSID);
                     final int sameSsidDifferentBssidCount =
                             sameSsidDifferentBssidStored(ssid, currentBSSID);
                     final boolean sameSsidDifferentBssid = sameSsidDifferentBssidCount > 0;
@@ -132,9 +131,6 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
                             db.insertWithOnConflict(WifiAPEntry.TABLE_NAME,
                                     null, cv, SQLiteDatabase.CONFLICT_REPLACE);
-
-                            // TODO: delete
-                            debugNotificationFactory.testNotification("reached", "yup!");
                         }
 
                         // TODO: consider changing the text of this notification ("unknown" is misleading)
@@ -212,10 +208,10 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
         }
     }
 
-    private boolean wasConnectedBefore(final String bssid) {
+    private boolean wasConnectedBefore(final String ssid, final String bssid) {
         try (final Cursor cursor = db.query(WifiAPEntry.TABLE_NAME,
                 new String[]{WifiAPEntry.SSID_COLUMN},
-                "bssid=? and connected=?", new String[]{bssid, "1"},
+                "ssid=? and bssid=? and connected=?", new String[]{ssid, bssid, "1"},
                 null, null, null)) {
             return cursor.getCount() > 0;
         }
