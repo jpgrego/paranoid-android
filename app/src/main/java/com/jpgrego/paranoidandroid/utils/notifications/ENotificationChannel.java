@@ -1,6 +1,7 @@
 package com.jpgrego.paranoidandroid.utils.notifications;
 
 enum ENotificationChannel {
+    STICKY("Sticky"),
     WIFI("WiFi"),
     USB("USB"),
     DEBUG("Debug");

@@ -1,18 +1,14 @@
 package com.jpgrego.paranoidandroid.services;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 
-import com.jpgrego.paranoidandroid.R;
 import com.jpgrego.paranoidandroid.data.AppTrafficData;
 import com.jpgrego.paranoidandroid.data.Cell;
 import com.jpgrego.paranoidandroid.data.MyBluetoothDevice;
@@ -26,6 +22,8 @@ import com.jpgrego.paranoidandroid.listeners.CellInfoListener;
 import com.jpgrego.paranoidandroid.listeners.SensorInfoListener;
 import com.jpgrego.paranoidandroid.listeners.USBEventsReceiver;
 import com.jpgrego.paranoidandroid.listeners.WifiInfoReceiver;
+import com.jpgrego.paranoidandroid.utils.notifications.IStickyNotificationFactory;
+import com.jpgrego.paranoidandroid.utils.notifications.NotificationFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -98,13 +96,21 @@ public final class DataService extends Service {
     }
 
     private Notification generateNotification() {
+        final IStickyNotificationFactory notificationFactory =
+                NotificationFactory.getInstance(this);
+
+        return notificationFactory.stickyNotification();
+
+        /*
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, createNotificationChannel());
         notificationBuilder.setSmallIcon(R.drawable.paranoidandroid_notification);
         notificationBuilder.setContentTitle(getResources().getString(R.string.app_name));
         notificationBuilder.setContentText(getString(R.string.currently_monitoring));
         return notificationBuilder.build();
+        */
     }
 
+    /*
     private String createNotificationChannel() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             final String id = "myChannel";
@@ -116,6 +122,7 @@ public final class DataService extends Service {
             return id;
         } else return "";
     }
+    */
 
     public LocationResponse getCurrentLocationResponse() {
         return currentLocation;
@@ -207,30 +214,46 @@ public final class DataService extends Service {
                 if (cell.getCid() == -1) {
                     continue;
                 }
+
                 values.put(DatabaseContract.CellEntry.CID_COLUMN, cell.getCid());
                 values.put(DatabaseContract.CellEntry.MCC_COLUMN, cell.getMcc());
                 values.put(DatabaseContract.CellEntry.MNC_COLUMN, cell.getMnc());
                 values.put(DatabaseContract.CellEntry.LAC_COLUMN, cell.getLac());
                 values.put(DatabaseContract.CellEntry.PSC_COLUMN, cell.getPsc());
-            }
-            if (values.size() > 0) {
-                db.insertWithOnConflict(DatabaseContract.CellEntry.TABLE_NAME, null, values,
-                        SQLiteDatabase.CONFLICT_IGNORE);
+
+                try {
+                    db.insertOrThrow(DatabaseContract.CellEntry.TABLE_NAME, null,
+                            values);
+                } catch (final SQLException ex) {
+                    values.remove(DatabaseContract.CellEntry.CID_COLUMN);
+                    db.update(DatabaseContract.CellEntry.TABLE_NAME, values,
+                            DatabaseContract.CellEntry.CID_COLUMN + "=?",
+                            new String[]{String.valueOf(cell.getCid())});
+                }
+
             }
         }
 
         private void writeWifiAPInfoToDB(final ArrayList<WifiAP> wifiAPList) {
             final ContentValues values = new ContentValues();
 
+
             for (WifiAP wifiAP : wifiAPList) {
                 values.put(DatabaseContract.WifiAPEntry.BSSID_COLUMN, wifiAP.getBssid());
                 values.put(DatabaseContract.WifiAPEntry.SSID_COLUMN, wifiAP.getSsid());
                 values.put(DatabaseContract.WifiAPEntry.CHANNEL_COLUMN, wifiAP.getChannel());
                 values.put(DatabaseContract.WifiAPEntry.SECURITY_COLUMN, wifiAP.getSecurityLabel());
-            }
-            if (values.size() > 0) {
-                db.insertWithOnConflict(DatabaseContract.WifiAPEntry.TABLE_NAME, null, values,
-                        SQLiteDatabase.CONFLICT_IGNORE);
+                values.put(DatabaseContract.WifiAPEntry.FREQUENCY_COLUMN, wifiAP.getFrequency());
+
+                try {
+                    db.insertOrThrow(DatabaseContract.WifiAPEntry.TABLE_NAME, null,
+                            values);
+                } catch (final SQLException ex) {
+                    values.remove(DatabaseContract.WifiAPEntry.BSSID_COLUMN);
+                    db.update(DatabaseContract.WifiAPEntry.TABLE_NAME, values,
+                            DatabaseContract.WifiAPEntry.BSSID_COLUMN + "=?",
+                            new String[]{wifiAP.getBssid()});
+                }
             }
         }
 
@@ -245,11 +268,16 @@ public final class DataService extends Service {
                         bluetoothDevice.getAddress());
                 values.put(DatabaseContract.BluetoothEntry.TYPE_COLUMN,
                         bluetoothDevice.getType());
-            }
 
-            if(values.size() > 0) {
-                db.insertWithOnConflict(DatabaseContract.BluetoothEntry.TABLE_NAME, null,
-                        values, SQLiteDatabase.CONFLICT_IGNORE);
+                try {
+                    db.insertOrThrow(DatabaseContract.BluetoothEntry.TABLE_NAME, null,
+                            values);
+                } catch (final SQLException ex) {
+                    values.remove(DatabaseContract.BluetoothEntry.ADDRESS_COLUMN);
+                    db.update(DatabaseContract.BluetoothEntry.TABLE_NAME, values,
+                            DatabaseContract.BluetoothEntry.ADDRESS_COLUMN + "=?",
+                            new String[]{bluetoothDevice.getAddress()});
+                }
             }
         }
 

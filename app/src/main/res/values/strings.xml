@@ -83,7 +83,8 @@
     <string name="crash_message">An error has occurred. Paranoid Android will now close.</string>
 
     <!-- notifications messages -->
-    <string name="currently_monitoring">Monitoring!</string>
+    <string name="currently_monitoring_title">Monitoring!</string>
+    <string name="currently_monitoring_message">The monitoring service is currently running.</string>
     <string name="trusted_usb_device">A trusted USB device has been connected! (%1$s:%2$s)</string>
     <string name="trusted_usb_accessory">A trusted USB accessory has been connected! (%1$s)</string>
     <string name="untrusted_usb_device">An untrusted or unknown USB device has been connected! (%1$s:%2$s)</string>

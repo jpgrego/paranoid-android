@@ -18,17 +18,18 @@ import com.jpgrego.paranoidandroid.services.NotificationActionHandler;
 import static com.jpgrego.paranoidandroid.utils.notifications.ENotification.*;
 
 public final class NotificationFactory implements IRadioNotificationFactory,
-        IUSBNotificationFactory, IDebugNotificationFactory {
+        IUSBNotificationFactory, IDebugNotificationFactory, IStickyNotificationFactory {
+
+    private static NotificationFactory instance = null;
 
     private static final String WIFI_NOTIFICATION_CHANNEL_ID = ENotificationChannel.WIFI.name();
     private static final String USB_NOTIFICATION_CHANNEL_ID = ENotificationChannel.USB.name();
     private static final String DEBUG_NOTIFICATION_CHANNEL_ID = ENotificationChannel.DEBUG.name();
-    private static NotificationFactory instance = null;
+    private static final String STICKY_NOTIFICATION_CHANNEL_ID = ENotificationChannel.STICKY.name();
 
     private final NotificationManager notificationManager;
     private final String appName;
     private final Application context;
-    private final PendingIntent notificationPendingIntent;
 
     private NotificationFactory(final Context context) {
         // guaranteed to be passed Application Context from getInstance() method
@@ -52,10 +53,6 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         //resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         //resultIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         //resultIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-
-        final Intent serviceIntent = new Intent(context, NotificationActionHandler.class);
-        notificationPendingIntent =
-                PendingIntent.getService(context, 0, serviceIntent, 0);
     }
 
     public static synchronized NotificationFactory getInstance(final Context context) {
@@ -66,10 +63,30 @@ public final class NotificationFactory implements IRadioNotificationFactory,
     }
 
     @Override
+    public Notification stickyNotification() {
+        final String title = context.getString(R.string.currently_monitoring_title);
+        final String message = context.getString(R.string.currently_monitoring_message);
+        return generateNotification(STICKY_NOTIFICATION_CHANNEL_ID, title, message);
+    }
+
+    @Override
     public void wifiNewAPNotification(final String ssid, final String bssid) {
         final String notificationTicker = context.getString(R.string.new_ap_associated_title);
         final String notificationDesc =
                     context.getString(R.string.new_ap_associated_desc, ssid, bssid);
+
+
+        final Intent trustButtonIntent = new Intent(context, NotificationActionHandler.class);
+        trustButtonIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        trustButtonIntent.setAction(NotificationActionHandler.ACTION_ADD_TRUSTED_AP);
+        trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_NOT_ID,
+                WIFI_NEW_AP.notificationId());
+
+        trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_BSSID, bssid);
+
+        final PendingIntent notificationPendingIntent =
+                PendingIntent.getService(context, 0, trustButtonIntent, 0);
 
         final NotificationCompat.Action trustAction =
                 new NotificationCompat.Action(R.drawable.direction_arrow, "Trust this network",
@@ -209,6 +226,7 @@ public final class NotificationFactory implements IRadioNotificationFactory,
                                               final String ticker,
                                               final String text,
                                               final NotificationCompat.Action... actions) {
+
         final NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context, channelId)
                         .setSmallIcon(R.mipmap.paranoidandroid_launcher)
@@ -221,7 +239,6 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             notificationBuilder.setContentTitle(ticker);
         } else notificationBuilder.setContentTitle(appName);
-
 
         for(final NotificationCompat.Action action : actions) notificationBuilder.addAction(action);
 

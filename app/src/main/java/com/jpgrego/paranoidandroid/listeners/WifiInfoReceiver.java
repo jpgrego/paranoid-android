@@ -113,13 +113,13 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
                     final boolean sameSsidDifferentBssid = sameSsidDifferentBssidCount > 0;
 
                     // TODO: investigate how to add to existing notification, instead of creating new one
-                    // TODO: work out "decision" notifications
                     if(!wasConnectedBefore) {
                         if(storedAP != null) { // if it's not null, it exists in DB
                             final ContentValues cv = new ContentValues();
                             cv.put(WifiAPEntry.CONNECTED_COLUMN, 1);
 
-                            db.update(WifiAPEntry.TABLE_NAME, cv, "bssid=?",
+                            db.update(WifiAPEntry.TABLE_NAME, cv,
+                                    WifiAPEntry.BSSID_COLUMN + "=?",
                                     new String[]{currentBSSID});
                         } else if (connectedAP != null) {
                             final ContentValues cv = new ContentValues();
@@ -198,7 +198,7 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
     private WifiAP getAPFromDB(final String bssid) {
         try (final Cursor cursor = db.query(WifiAPEntry.TABLE_NAME, null,
-                "bssid=?", new String[]{bssid},
+                WifiAPEntry.BSSID_COLUMN + "=?", new String[]{bssid},
                 null, null, null)) {
             // we only expect one result, BSSID is unique in our DB wifi table
             if(cursor.getCount() > 0) {
@@ -211,7 +211,10 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
     private boolean wasConnectedBefore(final String ssid, final String bssid) {
         try (final Cursor cursor = db.query(WifiAPEntry.TABLE_NAME,
                 new String[]{WifiAPEntry.SSID_COLUMN},
-                "ssid=? and bssid=? and connected=?", new String[]{ssid, bssid, "1"},
+                WifiAPEntry.SSID_COLUMN + "=? and " +
+                        WifiAPEntry.BSSID_COLUMN + "=? and " +
+                        WifiAPEntry.CONNECTED_COLUMN + "=?",
+                new String[]{ssid, bssid, "1"},
                 null, null, null)) {
             return cursor.getCount() > 0;
         }
@@ -219,7 +222,9 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
     private int sameSsidDifferentBssidStored(final String ssid, final String bssid) {
         try (final Cursor cursor = db.query(WifiAPEntry.TABLE_NAME,
-                new String[]{WifiAPEntry.SSID_COLUMN}, "ssid=? and bssid!=?",
+                new String[]{WifiAPEntry.SSID_COLUMN},
+                WifiAPEntry.SSID_COLUMN + "=? and " +
+                        WifiAPEntry.BSSID_COLUMN + "!=?",
                 new String[]{ssid, bssid}, null, null, null)) {
             return cursor.getCount();
         }
