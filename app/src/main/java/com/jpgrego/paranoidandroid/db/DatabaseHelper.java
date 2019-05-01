@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public final class DatabaseHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION    = 8;
+    private static final int DATABASE_VERSION    = 9;
     private static final String DATABASE_NAME    = "database.db";
 
     public DatabaseHelper(final Context context) {
@@ -43,14 +43,14 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
             case 5:
                 sqLiteDatabase.execSQL(
                         "ALTER TABLE wifi ADD COLUMN connected BOOLEAN NOT NULL DEFAULT 0");
-                break;
             case 6:
                 sqLiteDatabase.execSQL(
                         "ALTER TABLE wifi ADD COLUMN frequency INTEGER DEFAULT 0");
-                break;
             case 7:
                 sqLiteDatabase.execSQL(
                         "ALTER TABLE wifi ADD COLUMN trusted BOOLEAN NOT NULL DEFAULT 0");
+            case 8:
+                sqLiteDatabase.execSQL("ALTER TABLE wifi ADD COLUMN last_security TEXT DEFAULT ''");
             default:
                 sqLiteDatabase.execSQL(DatabaseContract.CellEntry.SQL_DELETE_TABLE);
                 sqLiteDatabase.execSQL(DatabaseContract.WifiAPEntry.SQL_DELETE_TABLE);

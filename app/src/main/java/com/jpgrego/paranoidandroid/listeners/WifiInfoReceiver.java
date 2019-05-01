@@ -94,12 +94,19 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
                             connectedAP = WifiAP.fromScanResult(scanResult);
 
                             if(storedAP != null) {
-                                final String oldSec = storedAP.getSecurityLabel();
+                                final String oldSec = storedAP.getLastSecurityLabel();
                                 final String newSec = connectedAP.getSecurityLabel();
 
-                                if (!oldSec.equalsIgnoreCase(newSec)) {
+                                // check for null, to accomodate undetected or unknown algorithms
+                                if (oldSec == null && newSec != null ||
+                                        oldSec != null && !oldSec.equalsIgnoreCase(newSec)) {
                                     notificationFactory
                                             .wifiSecurityChangedNotification(oldSec, newSec);
+                                    final ContentValues cv = new ContentValues();
+                                    cv.put(WifiAPEntry.LAST_SECURITY_COLUMN, newSec);
+                                    db.update(WifiAPEntry.TABLE_NAME, cv,
+                                            WifiAPEntry.BSSID_COLUMN + "=?",
+                                            new String[]{currentBSSID});
                                 }
                             }
 

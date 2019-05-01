@@ -11,6 +11,7 @@ public final class DatabaseContract {
     private static final String TEXT_TYPE       = " TEXT";
     private static final String INTEGER_TYPE    = " INTEGER";
     private static final String BOOLEAN_TYPE    = " BOOLEAN";
+    private static final String DEFAULT_KEYWORD = " DEFAULT ";
     private static final String PRIMARY_KEY_CONSTRAINT = " PRIMARY KEY";
     private static final String UNIQUE_CONSTRAINT = " UNIQUE";
     private static final String COMMA_SEP       = ",";
@@ -48,6 +49,7 @@ public final class DatabaseContract {
         public static final String SSID_COLUMN = "ssid";
         public static final String CHANNEL_COLUMN = "channel";
         public static final String SECURITY_COLUMN = "security";
+        public static final String LAST_SECURITY_COLUMN = "last_security";
         public static final String CONNECTED_COLUMN = "connected";
         public static final String FREQUENCY_COLUMN = "frequency";
         public static final String TRUSTED_COLUMN = "trusted";
@@ -59,9 +61,10 @@ public final class DatabaseContract {
                         SSID_COLUMN + TEXT_TYPE + COMMA_SEP +
                         CHANNEL_COLUMN + INTEGER_TYPE + COMMA_SEP +
                         SECURITY_COLUMN + TEXT_TYPE + COMMA_SEP +
-                        CONNECTED_COLUMN + BOOLEAN_TYPE + COMMA_SEP +
-                        FREQUENCY_COLUMN + INTEGER_TYPE + COMMA_SEP +
-                        TRUSTED_COLUMN + BOOLEAN_TYPE + " )";
+                        LAST_SECURITY_COLUMN + TEXT_TYPE + DEFAULT_KEYWORD + "''" + COMMA_SEP +
+                        CONNECTED_COLUMN + BOOLEAN_TYPE + DEFAULT_KEYWORD + "0" + COMMA_SEP +
+                        FREQUENCY_COLUMN + INTEGER_TYPE + DEFAULT_KEYWORD + "0" + COMMA_SEP +
+                        TRUSTED_COLUMN + BOOLEAN_TYPE + DEFAULT_KEYWORD + "0" + " )";
 
         static final String SQL_DELETE_TABLE =
                 "DROP TABLE IF EXISTS " + TABLE_NAME;

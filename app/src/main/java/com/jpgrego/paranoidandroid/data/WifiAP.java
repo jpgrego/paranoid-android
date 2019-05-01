@@ -6,30 +6,30 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import com.jpgrego.paranoidandroid.R;
 import com.jpgrego.paranoidandroid.utils.WifiUtils;
 import com.jpgrego.paranoidandroid.db.DatabaseContract.WifiAPEntry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by jpgrego on 24-08-2016.
  */
 public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
-    private final static Pattern WIFI_SECURITY_PATTERN =
-            java.util.regex.Pattern.compile(".*?(IBSS)|.*?(WPA2)|.*?(WPA)|.*?(WEP)");
+    //private final static Pattern WIFI_SECURITY_PATTERN =
+    //        java.util.regex.Pattern.compile(".*?(IBSS)|.*?(WPA2)|.*?(WPA)|.*?(WEP)");
+    //private final static Pattern WIFI_SECURITY_PATTERN =
+    //        java.util.regex.Pattern.compile("(IBSS(?=-))|(WPA2(?=-))|(WPA(?=-))|(WEP(?=-))");
 
-    private final String securityLabel, ssid, bssid;
+    private final String securityLabel, lastSecurityLabel, ssid, bssid;
     private final int wifiSecurityImageResource, channel, frequency, dbm;
     private final AtomicInteger visibilityCounter;
     private volatile long timestamp;
 
     private WifiAP(Parcel in) {
         securityLabel = in.readString();
+        lastSecurityLabel = in.readString();
         ssid = in.readString();
         bssid = in.readString();
         wifiSecurityImageResource = in.readInt();
@@ -43,6 +43,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     private WifiAP(final ScanResult scanResult) {
 
         this.securityLabel = getSecurityFromCapabilities(scanResult.capabilities);
+        this.lastSecurityLabel = "";
         this.wifiSecurityImageResource = getImageResourceFromLabel(this.securityLabel);
 
         this.ssid = scanResult.SSID;
@@ -55,11 +56,13 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     }
 
     private WifiAP(final String ssid, final String bssid, final int channel,
-                   final String securityLabel, final int frequency) {
+                   final String securityLabel, final String lastSecurityLabel,
+                   final int frequency) {
         this.ssid = ssid;
         this.bssid = bssid;
         this.channel = channel;
         this.securityLabel = securityLabel;
+        this.lastSecurityLabel = lastSecurityLabel;
         this.wifiSecurityImageResource = getImageResourceFromLabel(this.securityLabel);
         this.frequency = frequency;
         this.dbm = 0;
@@ -77,10 +80,13 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         final String ssid = cursor.getString(cursor.getColumnIndex(WifiAPEntry.SSID_COLUMN));
         final String bssid = cursor.getString(cursor.getColumnIndex(WifiAPEntry.BSSID_COLUMN));
         final int channel = cursor.getInt(cursor.getColumnIndex(WifiAPEntry.CHANNEL_COLUMN));
-        final String securityLabel = cursor.getString(cursor.getColumnIndex(WifiAPEntry.SECURITY_COLUMN));
+        final String securityLabel = cursor.getString(
+                cursor.getColumnIndex(WifiAPEntry.SECURITY_COLUMN));
+        final String lastSecurityLabel = cursor.getString(
+                cursor.getColumnIndex(WifiAPEntry.LAST_SECURITY_COLUMN));
         final int frequency = cursor.getInt(cursor.getColumnIndex(WifiAPEntry.FREQUENCY_COLUMN));
 
-        return new WifiAP(ssid, bssid, channel, securityLabel, frequency);
+        return new WifiAP(ssid, bssid, channel, securityLabel, lastSecurityLabel, frequency);
     }
 
     public static final Creator<WifiAP> CREATOR = new Creator<WifiAP>() {
@@ -133,6 +139,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(securityLabel);
+        parcel.writeString(lastSecurityLabel);
         parcel.writeString(ssid);
         parcel.writeString(bssid);
         parcel.writeInt(wifiSecurityImageResource);
@@ -145,6 +152,10 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
     public String getSecurityLabel() {
         return securityLabel;
+    }
+
+    public String getLastSecurityLabel() {
+        return lastSecurityLabel;
     }
 
     public String getSsid() {
@@ -180,28 +191,49 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
     }
 
     private String getSecurityFromCapabilities(final String capabilities) {
+
+        if(capabilities == null) return "?";
+
+        if(capabilities.contains("WPA2-") && capabilities.contains("WPA-")) {
+            return "WPA2/WPA";
+        } else if(capabilities.contains("WPA2-")) {
+            return "WPA2";
+        } else if(capabilities.contains("WPA-")) {
+            return "WPA";
+        } else if(capabilities.contains("WEP-")) {
+            return "WEP";
+        } else if(capabilities.contains("IBSS-")) {
+            return "IBSS";
+        } else return "-";
+
+        /*
         if(capabilities != null) {
             final Matcher matcher = WIFI_SECURITY_PATTERN.matcher(capabilities);
-            if (matcher.find()) {
-                final String securityLabel = matcher.group(2);
 
-                if(securityLabel == null) {
-                    Log.e(this.getClass().getName(),
-                            "Weird WiFi capabilities found, please investigate!");
-                    Log.e(this.getClass().getName(), "capabilities: " + capabilities);
-                }
+            final StringBuilder securityLabel = new StringBuilder();
+            while(matcher.find()) {
+                securityLabel.append(matcher.group(0));
+                securityLabel.append(" ");
+            }
 
-                return securityLabel;
+            if(securityLabel.length() > 0) {
+
+                final String labelsObtained = securityLabel.toString();
+
+                if(labelsObtained.equals("WPA2/WPA") || labelsObtained.equals("WPA/WPA2")) {
+                    return "WPA2/WPA";
+                } else return labelsObtained.trim();
+
             } else {
                 return "-";
             }
         } else {
             return "?";
         }
+        */
     }
 
     private int getImageResourceFromLabel(final String securityLabel) {
-        // TODO: switch com valor null, o que acontece?
         if(securityLabel == null) {
             return R.drawable.wifi_security_unknown;
         }
@@ -210,6 +242,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
                 return R.drawable.wifi_security_adhoc;
             case "-":
                 return R.drawable.wifi_security_open;
+            case "WPA2/WPA":
             case "WPA2":
             case "WPA":
             case "WEP":

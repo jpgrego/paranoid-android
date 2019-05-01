@@ -92,25 +92,33 @@ public final class AppTrafficReceiver {
                     final List<SubscriptionInfo> subscriptionInfos =
                             subscriptionManager.getActiveSubscriptionInfoList();
 
-                    final int[] subscriptionIds = new int[subscriptionInfos.size()];
+                    if(subscriptionInfos == null) {
+                        this.subscriberIds = new String[]{
+                                telephonyManager != null ? telephonyManager.getSubscriberId() : ""};
+                    } else {
 
-                    int i = 0;
-                    for(final SubscriptionInfo info : subscriptionInfos) {
-                        subscriptionIds[i++] = info.getSubscriptionId();
+                        final int[] subscriptionIds = new int[subscriptionInfos.size()];
 
-                    }
+                        int i = 0;
+                        for (final SubscriptionInfo info : subscriptionInfos) {
+                            subscriptionIds[i++] = info.getSubscriptionId();
 
-                    subscriberIds = new String[subscriptionIds.length];
-                    i = 0;
-                    for (final int subscriptionId : subscriptionIds) {
-                        try {
-                            final Class cls = Class.forName("android.telephony.TelephonyManager");
-                            final Method method = cls.getMethod("getSubscriberId", int.class);
-                            final Object obj = method.invoke(telephonyManager, subscriptionId);
+                        }
 
-                            subscriberIds[i++] = (String) obj;
-                        } catch (final Exception ex) {
-                            // do nothing
+                        subscriberIds = new String[subscriptionIds.length];
+                        i = 0;
+                        for (final int subscriptionId : subscriptionIds) {
+                            try {
+                                final Class cls =
+                                        Class.forName("android.telephony.TelephonyManager");
+                                final Method method = cls.getMethod("getSubscriberId",
+                                        int.class);
+                                final Object obj = method.invoke(telephonyManager, subscriptionId);
+
+                                subscriberIds[i++] = (String) obj;
+                            } catch (final Exception ex) {
+                                // do nothing
+                            }
                         }
                     }
                 } else {
