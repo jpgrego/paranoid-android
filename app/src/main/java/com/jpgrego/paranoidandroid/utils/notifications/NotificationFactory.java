@@ -22,6 +22,7 @@ public final class NotificationFactory implements IRadioNotificationFactory,
 
     private static NotificationFactory instance = null;
 
+    private static final int ADD_TRUSTED_AP_REQUEST_CODE = 1000;
     private static final String WIFI_NOTIFICATION_CHANNEL_ID = ENotificationChannel.WIFI.name();
     private static final String USB_NOTIFICATION_CHANNEL_ID = ENotificationChannel.USB.name();
     private static final String DEBUG_NOTIFICATION_CHANNEL_ID = ENotificationChannel.DEBUG.name();
@@ -86,7 +87,8 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_BSSID, bssid);
 
         final PendingIntent notificationPendingIntent =
-                PendingIntent.getService(context, 0, trustButtonIntent, 0);
+                PendingIntent.getService(context, ADD_TRUSTED_AP_REQUEST_CODE, trustButtonIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
 
         final NotificationCompat.Action trustAction =
                 new NotificationCompat.Action(R.drawable.direction_arrow, "Trust this network",
@@ -113,12 +115,13 @@ public final class NotificationFactory implements IRadioNotificationFactory,
                 Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         trustButtonIntent.setAction(NotificationActionHandler.ACTION_ADD_TRUSTED_AP);
         trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_NOT_ID,
-                WIFI_NEW_AP.notificationId());
+                WIFI_UNTRUSTED_AP.notificationId());
 
         trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_BSSID, bssid);
 
         final PendingIntent notificationPendingIntent =
-                PendingIntent.getService(context, 0, trustButtonIntent, 0);
+                PendingIntent.getService(context, ADD_TRUSTED_AP_REQUEST_CODE, trustButtonIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
 
         final NotificationCompat.Action trustAction =
                 new NotificationCompat.Action(R.drawable.direction_arrow, "Trust this network",
@@ -128,7 +131,7 @@ public final class NotificationFactory implements IRadioNotificationFactory,
                 notificationTicker, notificationDesc, trustAction);
 
         final NotificationRunnable runnable =
-                new NotificationRunnable(WIFI_NEW_AP.notificationId(), notificationManager,
+                new NotificationRunnable(WIFI_UNTRUSTED_AP.notificationId(), notificationManager,
                         notification);
 
         DataService.SCHEDULED_EXECUTOR.execute(runnable);
