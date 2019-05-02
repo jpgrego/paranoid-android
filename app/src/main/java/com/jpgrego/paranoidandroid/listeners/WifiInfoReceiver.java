@@ -7,10 +7,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+
+import com.jpgrego.paranoidandroid.R;
 import com.jpgrego.paranoidandroid.data.WifiAP;
 import com.jpgrego.paranoidandroid.db.DatabaseContract.WifiAPEntry;
 import com.jpgrego.paranoidandroid.db.DatabaseHelper;
@@ -35,6 +39,7 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
     private final SQLiteDatabase db;
     private final Set<WifiAP> wifiAPSet = new TreeSet<>();
     private final WifiManager wifiManager;
+    private final ConnectivityManager connectivityManager;
     private final IRadioNotificationFactory notificationFactory;
 
     private String currentBSSID = "";
@@ -43,6 +48,8 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
         this.db = new DatabaseHelper(context).getWritableDatabase();
         this.wifiManager = (WifiManager) context.getApplicationContext()
                 .getSystemService(Context.WIFI_SERVICE);
+        this.connectivityManager = (ConnectivityManager) context.getApplicationContext()
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         this.notificationFactory = NotificationFactory.getInstance(context);
 
         if(wifiManager == null) return;
@@ -75,6 +82,12 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
                 networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 
+                // TODO: find a better way to do this
+                // A bit hacky, but I couldn't find a better way to avoid processing the two
+                // consecutive NETWORK_STATE_CHANGED actions that fired up when connecting to a WiFi
+                // network. Since I'm only interested in the first event, when there still isn't an
+                // active network info, I do this hack. This might not work very well in the future.
+                if(connectivityManager.getActiveNetworkInfo() != null) return;
 
                 if(networkInfo.isConnected()) {
                     //currentBSSID = intent.getStringExtra(WifiManager.EXTRA_BSSID);
@@ -95,19 +108,22 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
                             if(storedAP != null) {
                                 final String oldSec = storedAP.getLastSecurityLabel();
-                                final String newSec = connectedAP.getSecurityLabel();
+                                final String newSec = connectedAP.getSecurityLabel()
+                                        .replace("-", context.getString(
+                                                R.string.ap_changed_sec_no_sec));
 
-                                // check for null, to accomodate undetected or unknown algorithms
-                                if (oldSec == null && newSec != null ||
-                                        oldSec != null && !oldSec.equalsIgnoreCase(newSec)) {
+                                if (oldSec != null && !oldSec.equals("") &&
+                                        !oldSec.equalsIgnoreCase(newSec)) {
                                     notificationFactory
-                                            .wifiSecurityChangedNotification(oldSec, newSec);
-                                    final ContentValues cv = new ContentValues();
-                                    cv.put(WifiAPEntry.LAST_SECURITY_COLUMN, newSec);
-                                    db.update(WifiAPEntry.TABLE_NAME, cv,
-                                            WifiAPEntry.BSSID_COLUMN + "=?",
-                                            new String[]{currentBSSID});
+                                            .wifiSecurityChangedNotification(ssid, oldSec, newSec);
                                 }
+
+                                final ContentValues cv = new ContentValues();
+                                cv.put(WifiAPEntry.LAST_SECURITY_COLUMN, newSec);
+
+                                db.update(WifiAPEntry.TABLE_NAME, cv,
+                                        WifiAPEntry.BSSID_COLUMN + "=?",
+                                        new String[]{currentBSSID});
                             }
 
                             break;
@@ -142,6 +158,8 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
 
                         // TODO: consider changing the text of this notification ("unknown" is misleading)
                         notificationFactory.wifiNewAPNotification(ssid, currentBSSID);
+                    } else if(storedAP != null && !storedAP.isTrusted()) {
+                        notificationFactory.wifiUntrustedAPNotification(ssid, currentBSSID);
                     }
 
                     if(sameSsidDifferentBssid) {
@@ -177,6 +195,24 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
                             tempAP = WifiAP.fromScanResult(scanResult);
                             wifiAPSet.remove(tempAP);
                             wifiAPSet.add(tempAP);
+
+                            final String oldSec = getAPLastSecurity(tempAP.getBssid());
+                            final String newSec = tempAP.getSecurityLabel().replace("-",
+                                    context.getString(R.string.ap_changed_sec_no_sec));
+
+                            if (oldSec != null && !oldSec.equals("") &&
+                                    !oldSec.equalsIgnoreCase(newSec)) {
+                                notificationFactory
+                                        .wifiSecurityChangedNotification(tempAP.getSsid(), oldSec,
+                                                newSec);
+                            }
+
+                            final ContentValues cv = new ContentValues();
+                            cv.put(WifiAPEntry.LAST_SECURITY_COLUMN, newSec);
+                            db.update(WifiAPEntry.TABLE_NAME, cv,
+                                    WifiAPEntry.BSSID_COLUMN + "=?",
+                                    new String[]{tempAP.getBssid()});
+
                         }
                     }
                 }
@@ -234,6 +270,19 @@ public final class WifiInfoReceiver extends BroadcastReceiver {
                         WifiAPEntry.BSSID_COLUMN + "!=?",
                 new String[]{ssid, bssid}, null, null, null)) {
             return cursor.getCount();
+        }
+    }
+
+    private String getAPLastSecurity(final String bssid) {
+        try (final Cursor cursor = db.query(WifiAPEntry.TABLE_NAME,
+                new String[]{WifiAPEntry.LAST_SECURITY_COLUMN},
+                WifiAPEntry.BSSID_COLUMN + "=?", new String[]{bssid}, null,
+                null, null)) {
+            if(cursor.moveToFirst()) {
+                return cursor.getString(0);
+            } else {
+                return null;
+            }
         }
     }
 }

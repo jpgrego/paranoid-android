@@ -91,8 +91,11 @@
     <string name="untrusted_usb_accessory">An untrusted or unknown USB accessory has been connected! (%1$s)</string>
     <string name="new_ap_associated_title">New access point</string>
     <string name="new_ap_associated_desc">%1$s (%2$s) has never been connected by this device before</string>
+    <string name="untrusted_ap_associated_title">Untrusted access point</string>
+    <string name="untrusted_ap_associated_desc">%1$s (%2$s) has been connected to before, but remains untrusted.</string>
     <string name="ap_changed_sec_title">AP security algorithm changed</string>
-    <string name="ap_changed_sec_desc">From %1$s to %2$s</string>
+    <string name="ap_changed_sec_desc">%1$s: from %2$s to %3$s</string>
+    <string name="ap_changed_sec_no_sec">none</string>
     <string name="ap_similar_title">Similar AP detected</string>
     <string name="ap_similar_desc_one">There is record of another AP with SSID \'%1$s\' but with a different BSSID value</string>
     <string name="ap_similar_desc_many">There are %1$d records of AP\'s with SSID \'%2$s\' but with different BSSID values</string>
@@ -101,6 +104,8 @@
     <string name="title_activity_permissions">PermissionsActivity</string>
     <string name="permission_access_coarse_location_title">Access coarse location</string>
     <string name="permission_access_coarse_location_message">Paranoid Android needs this in order to obtain information from currently associated and neighbouring base stations</string>
+    <string name="permission_access_network_state_title">Access network state</string>
+    <string name="permission_access_network_state_message">Paranoid Android needs this in order to obtain info from current connection.</string>
     <string name="permission_access_wifi_state_title">Access WiFi state</string>
     <string name="permission_access_wifi_state_message">Paranoid Android needs this in order to obtain info from current connection, and obtain scan results.</string>
     <string name="permission_change_wifi_state_title">Change WiFi state</string>

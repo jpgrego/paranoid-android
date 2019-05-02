@@ -24,6 +24,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
     private final String securityLabel, lastSecurityLabel, ssid, bssid;
     private final int wifiSecurityImageResource, channel, frequency, dbm;
+    private final boolean trusted;
     private final AtomicInteger visibilityCounter;
     private volatile long timestamp;
 
@@ -32,6 +33,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         lastSecurityLabel = in.readString();
         ssid = in.readString();
         bssid = in.readString();
+        trusted = Boolean.valueOf(in.readString());
         wifiSecurityImageResource = in.readInt();
         channel = in.readInt();
         frequency = in.readInt();
@@ -48,6 +50,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
         this.ssid = scanResult.SSID;
         this.bssid = scanResult.BSSID;
+        this.trusted = false;
         this.channel = WifiUtils.frequencyToChannel(scanResult.frequency);
         this.frequency = scanResult.frequency;
         this.dbm = scanResult.level;
@@ -57,7 +60,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
     private WifiAP(final String ssid, final String bssid, final int channel,
                    final String securityLabel, final String lastSecurityLabel,
-                   final int frequency) {
+                   final int frequency, final boolean trusted) {
         this.ssid = ssid;
         this.bssid = bssid;
         this.channel = channel;
@@ -67,6 +70,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         this.frequency = frequency;
         this.dbm = 0;
         this.visibilityCounter = null;
+        this.trusted = trusted;
     }
 
     public static WifiAP fromScanResult(final ScanResult scanResult) {
@@ -85,8 +89,11 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         final String lastSecurityLabel = cursor.getString(
                 cursor.getColumnIndex(WifiAPEntry.LAST_SECURITY_COLUMN));
         final int frequency = cursor.getInt(cursor.getColumnIndex(WifiAPEntry.FREQUENCY_COLUMN));
+        final boolean trusted =
+                cursor.getInt(cursor.getColumnIndex(WifiAPEntry.TRUSTED_COLUMN)) != 0;
 
-        return new WifiAP(ssid, bssid, channel, securityLabel, lastSecurityLabel, frequency);
+        return new WifiAP(ssid, bssid, channel, securityLabel, lastSecurityLabel, frequency,
+                trusted);
     }
 
     public static final Creator<WifiAP> CREATOR = new Creator<WifiAP>() {
@@ -142,6 +149,7 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
         parcel.writeString(lastSecurityLabel);
         parcel.writeString(ssid);
         parcel.writeString(bssid);
+        parcel.writeString(String.valueOf(trusted));
         parcel.writeInt(wifiSecurityImageResource);
         parcel.writeInt(channel);
         parcel.writeInt(frequency);
@@ -188,6 +196,10 @@ public final class WifiAP implements Comparable<WifiAP>, Parcelable {
 
     public long getTimeSinceLastSeen() {
         return SystemClock.elapsedRealtime() - this.timestamp;
+    }
+
+    public boolean isTrusted() {
+        return trusted;
     }
 
     private String getSecurityFromCapabilities(final String capabilities) {

@@ -30,6 +30,15 @@ public final class PermissionsActivity extends BasePermissionActivity {
         final List<PermissionModel> permissions = new ArrayList<>();
 
         if(ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(buildPermissionModel(R.string.permission_access_network_state_title,
+                    R.string.permission_access_network_state_message,
+                    Manifest.permission.ACCESS_NETWORK_STATE,
+                    // Icon made by Pixel Buddha from www.flaticon.com
+                    R.drawable.ic_wifi));
+        }
+
+        if(ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             permissions.add(buildPermissionModel(R.string.permission_access_coarse_location_title,
                     R.string.permission_access_coarse_location_message,

@@ -103,10 +103,43 @@ public final class NotificationFactory implements IRadioNotificationFactory,
     }
 
     @Override
-    public void wifiSecurityChangedNotification(final String oldSec, final String newSec) {
+    public void wifiUntrustedAPNotification(final String ssid, final String bssid) {
+        final String notificationTicker = context.getString(R.string.untrusted_ap_associated_title);
+        final String notificationDesc =
+                context.getString(R.string.untrusted_ap_associated_desc, ssid, bssid);
+
+        final Intent trustButtonIntent = new Intent(context, NotificationActionHandler.class);
+        trustButtonIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        trustButtonIntent.setAction(NotificationActionHandler.ACTION_ADD_TRUSTED_AP);
+        trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_NOT_ID,
+                WIFI_NEW_AP.notificationId());
+
+        trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_BSSID, bssid);
+
+        final PendingIntent notificationPendingIntent =
+                PendingIntent.getService(context, 0, trustButtonIntent, 0);
+
+        final NotificationCompat.Action trustAction =
+                new NotificationCompat.Action(R.drawable.direction_arrow, "Trust this network",
+                        notificationPendingIntent);
+
+        final Notification notification = generateNotification(WIFI_NOTIFICATION_CHANNEL_ID,
+                notificationTicker, notificationDesc, trustAction);
+
+        final NotificationRunnable runnable =
+                new NotificationRunnable(WIFI_NEW_AP.notificationId(), notificationManager,
+                        notification);
+
+        DataService.SCHEDULED_EXECUTOR.execute(runnable);
+    }
+
+    @Override
+    public void wifiSecurityChangedNotification(final String ssid, final String oldSec,
+                                                final String newSec) {
         final String notificationTicker = context.getString(R.string.ap_changed_sec_title);
-        final String notificationDesc = context.getString(R.string.ap_changed_sec_desc, oldSec,
-                newSec);
+        final String notificationDesc = context.getString(R.string.ap_changed_sec_desc, ssid,
+                oldSec, newSec);
 
         final Notification notification = generateNotification(WIFI_NOTIFICATION_CHANNEL_ID,
                 notificationTicker, notificationDesc);
