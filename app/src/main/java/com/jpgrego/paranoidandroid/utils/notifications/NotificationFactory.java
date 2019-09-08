@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
 import com.jpgrego.paranoidandroid.R;
@@ -23,6 +24,7 @@ public final class NotificationFactory implements IRadioNotificationFactory,
     private static NotificationFactory instance = null;
 
     private static final int ADD_TRUSTED_AP_REQUEST_CODE = 1000;
+    private static final int ADD_TRUSTED_USB_DEVICE_REQUEST_CODE = 1001;
     private static final String WIFI_NOTIFICATION_CHANNEL_ID = ENotificationChannel.WIFI.name();
     private static final String USB_NOTIFICATION_CHANNEL_ID = ENotificationChannel.USB.name();
     private static final String DEBUG_NOTIFICATION_CHANNEL_ID = ENotificationChannel.DEBUG.name();
@@ -76,23 +78,10 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationDesc =
                     context.getString(R.string.new_ap_associated_desc, ssid, bssid);
 
+        final Bundle extras = new Bundle();
+        extras.putString(NotificationActionHandler.EXTRA_BSSID, bssid);
 
-        final Intent trustButtonIntent = new Intent(context, NotificationActionHandler.class);
-        trustButtonIntent.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        trustButtonIntent.setAction(NotificationActionHandler.ACTION_ADD_TRUSTED_AP);
-        trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_NOT_ID,
-                WIFI_NEW_AP.notificationId());
-
-        trustButtonIntent.putExtra(NotificationActionHandler.EXTRA_BSSID, bssid);
-
-        final PendingIntent notificationPendingIntent =
-                PendingIntent.getService(context, ADD_TRUSTED_AP_REQUEST_CODE, trustButtonIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-
-        final NotificationCompat.Action trustAction =
-                new NotificationCompat.Action(R.drawable.direction_arrow, "Trust this network",
-                        notificationPendingIntent);
+        final NotificationCompat.Action trustAction = generateTrustButton(WIFI_NEW_AP, extras);
 
         final Notification notification = generateNotification(WIFI_NOTIFICATION_CHANNEL_ID,
                 notificationTicker, notificationDesc, trustAction);
@@ -110,6 +99,10 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationDesc =
                 context.getString(R.string.untrusted_ap_associated_desc, ssid, bssid);
 
+        final Bundle extras = new Bundle();
+        extras.putString(NotificationActionHandler.EXTRA_BSSID, bssid);
+
+        /*
         final Intent trustButtonIntent = new Intent(context, NotificationActionHandler.class);
         trustButtonIntent.setFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -126,6 +119,10 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final NotificationCompat.Action trustAction =
                 new NotificationCompat.Action(R.drawable.direction_arrow, "Trust this network",
                         notificationPendingIntent);
+        */
+
+        final NotificationCompat.Action trustAction = generateTrustButton(WIFI_UNTRUSTED_AP,
+                extras);
 
         final Notification notification = generateNotification(WIFI_NOTIFICATION_CHANNEL_ID,
                 notificationTicker, notificationDesc, trustAction);
@@ -203,9 +200,17 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final String notificationTicker = context.getString(R.string.device_connected_title);
         final String notificationDesc =
                 context.getString(R.string.untrusted_usb_device, vendorID, productID);
+
+        final Bundle extras = new Bundle();
+        extras.putString(NotificationActionHandler.EXTRA_VENDOR_ID, vendorID);
+        extras.putString(NotificationActionHandler.EXTRA_PRODUCT_ID, productID);
+
+        final NotificationCompat.Action trustAction = generateTrustButton(
+                USB_UNKNOWN_DEVICE_CONNECTED, extras);
+
         final Notification notification =
                 generateNotification(USB_NOTIFICATION_CHANNEL_ID, notificationTicker,
-                        notificationDesc);
+                        notificationDesc, trustAction);
         final NotificationRunnable runnable =
                 new NotificationRunnable(USB_UNKNOWN_DEVICE_CONNECTED.notificationId(),
                         notificationManager, notification);
@@ -286,5 +291,39 @@ public final class NotificationFactory implements IRadioNotificationFactory,
         final int stringId = applicationInfo.labelRes;
         return stringId == 0 ? applicationInfo.nonLocalizedLabel.toString() :
                 context.getString(stringId);
+    }
+
+    private NotificationCompat.Action generateTrustButton(final ENotification notificationType,
+                                                          final Bundle... extras) {
+        final Intent trustButtonIntent = new Intent(context, NotificationActionHandler.class);
+        trustButtonIntent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        trustButtonIntent.putExtra(
+                NotificationActionHandler.EXTRA_NOT_ID, notificationType.notificationId());
+
+        for(final Bundle bundle : extras) trustButtonIntent.putExtras(bundle);
+
+        final PendingIntent notificationPendingIntent;
+        switch(notificationType) {
+            case WIFI_NEW_AP:
+            case WIFI_UNTRUSTED_AP:
+                trustButtonIntent.setAction(NotificationActionHandler.ACTION_ADD_TRUSTED_AP);
+                notificationPendingIntent =
+                        PendingIntent.getService(context, ADD_TRUSTED_AP_REQUEST_CODE,
+                                trustButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                break;
+            case USB_UNKNOWN_DEVICE_CONNECTED:
+                trustButtonIntent.setAction(
+                        NotificationActionHandler.ACTION_ADD_TRUSTED_USB_DEVICE);
+                notificationPendingIntent = PendingIntent.getService(context,
+                        ADD_TRUSTED_USB_DEVICE_REQUEST_CODE, trustButtonIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+                break;
+            default:
+                return null;
+        }
+
+        return new NotificationCompat.Action(R.drawable.direction_arrow, "Trust",
+                notificationPendingIntent);
     }
 }

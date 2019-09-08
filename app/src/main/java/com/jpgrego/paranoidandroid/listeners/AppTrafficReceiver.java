@@ -42,8 +42,8 @@ public final class AppTrafficReceiver {
 
         final boolean useTrafficStats = Build.VERSION.SDK_INT < Build.VERSION_CODES.M;
 
-        DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new UpdateRunnable(useTrafficStats),
-                0, UPDATE_PERIOD_SECONDS, TimeUnit.SECONDS);
+        //DataService.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(new UpdateRunnable(useTrafficStats),
+        //        0, UPDATE_PERIOD_SECONDS, TimeUnit.SECONDS);
     }
 
     public long getTotalTransmittedBytes() {

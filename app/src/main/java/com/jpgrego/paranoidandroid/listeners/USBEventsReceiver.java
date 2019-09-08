@@ -39,9 +39,9 @@ public final class USBEventsReceiver extends BroadcastReceiver {
         intentFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         intentFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
         intentFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+        intentFilter.addAction("android.hardware.usb.action.USB_STATE");
         context.registerReceiver(this, intentFilter);
-        context.registerReceiver(this, new IntentFilter(
-                "android.hardware.usb.action.USB_STATE"));
+
         this.usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         this.context = context;
         this.notificationFactory = NotificationFactory.getInstance(context);
@@ -83,7 +83,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                             });
                     alertDialogBuilder.setNegativeButton(R.string.no_button, null);
                     alertDialogBuilder.setCancelable(false);
-                    alertDialogBuilder.show();
+                    //alertDialogBuilder.show();
 
                     notificationFactory.usbUnknownDeviceConnected(vendorID, productID);
                 }
@@ -99,7 +99,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 alertDialogBuilder.setTitle(R.string.device_disconnected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.device_disconnected,
                         vendorID, productID));
-                alertDialogBuilder.show();
+                //alertDialogBuilder.show();
                 break;
             }
             case UsbManager.ACTION_USB_ACCESSORY_ATTACHED: {
@@ -113,7 +113,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                     alertDialogBuilder.setTitle(R.string.accessory_connected_title);
                     alertDialogBuilder.setMessage(context.getString(R.string.accessory_connected,
                             accessory.getModel(), accessory.getSerial()));
-                    alertDialogBuilder.show();
+                    //alertDialogBuilder.show();
 
                     notificationFactory.usbTrustedDeviceConnectedNotification(
                             accessory.getSerial());
@@ -129,7 +129,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                 alertDialogBuilder.setTitle(R.string.accessory_disconnected_title);
                 alertDialogBuilder.setMessage(context.getString(R.string.accessory_disconnected,
                         accessory.getModel(), accessory.getSerial()));
-                alertDialogBuilder.show();
+                //alertDialogBuilder.show();
                 break;
             }
             case "android.hardware.usb.action.USB_STATE": {
@@ -149,7 +149,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                         alertDialogBuilder.setMessage(context.getString(R.string.device_untrusted,
                                 Integer.toHexString(device.getVendorId()),
                                 Integer.toHexString(device.getProductId())));
-                        alertDialogBuilder.show();
+                        //alertDialogBuilder.show();
 
                         notificationFactory.usbUnknownDeviceConnected(vendorID, productID);
                     }
@@ -166,7 +166,7 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                             alertDialogBuilder.setMessage(context.getString(
                                     R.string.accessory_untrusted, accessory.getModel(),
                                     accessory.getSerial()));
-                            alertDialogBuilder.show();
+                            //alertDialogBuilder.show();
 
                             notificationFactory.usbUnknownDeviceConnected(accessory.getSerial());
                         }
@@ -199,8 +199,9 @@ public final class USBEventsReceiver extends BroadcastReceiver {
                         results.getColumnIndex(
                                 DatabaseContract.TrustedUSBDeviceEntry.PRODUCTID_COLUMN));
 
-                if(resultVendorID.equalsIgnoreCase(vendorID)
-                        && resultProductID.equalsIgnoreCase(productID)) {
+                if(resultVendorID != null && resultProductID != null &&
+                        resultVendorID.equalsIgnoreCase(vendorID) &&
+                        resultProductID.equalsIgnoreCase(productID)) {
                     results.close();
                     readableDB.close();
                     notificationFactory.usbTrustedDeviceConnectedNotification(vendorID, productID);

@@ -35,11 +35,15 @@
     <string name="cell_no_data_string">No cells detected</string>
 
     <!-- sensor strings -->
+    <string name="sensors_activity_title">Sensors</string>
     <string name="sensors_title">Sensors</string>
     <string name="sensors_name">Name</string>
     <string name="sensors_xcoord">X Axis</string>
     <string name="sensors_ycoord">Y Axis</string>
     <string name="sensors_zcoord">Z Axis</string>
+
+    <!-- location strings -->
+    <string name="location_activity_title">Location</string>
 
     <!-- app traffic info strings -->
     <string name="app_traffic_title">Application traffic</string>
@@ -49,7 +53,7 @@
     <string name="app_traffic_activity_title">App Traffic</string>
     <string name="app_detail_pkg_name">Package name</string>
     <string name="app_detail_uid">UID</string>
-    <string name="app_detail_wifi_transmitted">Transmitted via Wifi</string>
+    <string name="app_detail_wifi_transmitted">Transmitted via WiFi</string>
     <string name="app_detail_wifi_received">Received via WiFi</string>
     <string name="app_detail_cellular_transmitted">Transmitted via cellular</string>
     <string name="app_detail_cellular_received">Received via cellular</string>
@@ -122,5 +126,10 @@
     <string name="permission_read_phone_state_message">Paranoid Android uses this permission in order to obtain the unique subscriber ID of this cell phone (IMEI, IMSI, …). This is necessary to obtain network usage statistics using mobile networks.</string>
     <string name="permission_package_usage_stats_title">Package usage stats</string>
     <string name="permission_package_usage_stats_message">*** Please enable this manually, in Android settings. ***\n\nParanoid Android uses this permission so it has the ability to obtain network usage statistics from all applications.</string>
+
+    <string name="connecting">connecting</string>
+    <string name="connected">connected</string>
+    <string name="disconnecting">disconnecting</string>
+    <string name="disconnected">disconnected</string>
 
 </resources>

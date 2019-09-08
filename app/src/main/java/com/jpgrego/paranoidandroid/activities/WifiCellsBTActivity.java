@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public final class WifiCellsBTActivity extends BaseActivity {
 
-    private static final int UPDATE_PERIOD_SECONDS = 1;
+    private static final int UPDATE_PERIOD_SECONDS = 10;
     private static final int HIGHLIGHTED_BACKGROUND = Color.parseColor("#93a2a2");
     private static final int FADED_COLOR = Color.parseColor("#808080");
 

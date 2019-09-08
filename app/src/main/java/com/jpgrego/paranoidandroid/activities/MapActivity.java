@@ -209,6 +209,7 @@ public final class MapActivity extends BaseActivity {
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.location_activity_title);
         setContentView(R.layout.activity_map);
 
         Configuration.getInstance().load(this,

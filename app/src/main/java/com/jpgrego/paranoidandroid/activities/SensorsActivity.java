@@ -53,6 +53,7 @@ public final class SensorsActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.sensors_activity_title);
         setContentView(R.layout.activity_sensors);
         sensorsTable =  findViewById(R.id.sensors_table);
     }
